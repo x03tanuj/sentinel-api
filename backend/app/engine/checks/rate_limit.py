@@ -12,6 +12,7 @@ from typing import Any
 from app.engine.checks.base import BaseCheck, register_check
 from app.engine.checks.common import make_finding, provisional_severity
 from app.engine.context import ScanContext
+from app.engine.risk import RiskInputs
 from app.engine.differential import DiffResult
 from app.engine.errors import BudgetExceededError, TargetUnreachableError
 from app.engine.http_executor import build_url
@@ -127,7 +128,7 @@ class RateLimitCheck(BaseCheck):
             if len(latencies) >= 10:
                 first_5_avg = sum(latencies[:5]) / 5.0
                 last_5_avg = sum(latencies[-5:]) / 5.0
-                if first_5_avg > 0 and (last_5_avg > 2.0 * first_5_avg):
+                if first_5_avg > 0 and (last_5_avg > 2.0 * first_5_avg) and (last_5_avg - first_5_avg > 25.0):
                     latency_slowdown = True
 
             # If no 429/503, no rate-limit headers, and latency didn't slow down significantly
@@ -148,6 +149,16 @@ class RateLimitCheck(BaseCheck):
                         changed_fields=[],
                         attack_body_empty=False,
                         attack_body_is_error=False,
+                    )
+                    risk_inputs = RiskInputs(
+                        check_name="rate_limit",
+                        method=ep.method,
+                        is_privileged_endpoint=False,
+                        requires_auth=False,
+                        object_id_sequential=False,
+                        diff=diff_res,
+                        attacker_identity_role="anonymous",
+                        base_confidence=confidence,
                     )
                     finding = make_finding(
                         check="rate_limit",
@@ -170,8 +181,8 @@ class RateLimitCheck(BaseCheck):
                         baseline_response=responses[0][1],
                         diff_result=diff_res,
                         expected_status=429,
-                        severity=Severity.MEDIUM,
                         owasp_id=self.owasp_id,
+                        risk_inputs=risk_inputs,
                     )
                     findings.append(finding)
 

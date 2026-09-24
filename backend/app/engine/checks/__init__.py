@@ -12,7 +12,7 @@ SAFETY RULES FOR THIS PHASE:
    logged (no secrets), and reported as a 'check_error' note.
 """
 
-from app.engine.checks.base import CHECKS, BaseCheck, register_check, run_checks
+from app.engine.checks.base import CHECKS, BaseCheck, register_check, run_checks, run_checks_with_reproduction
 import app.engine.checks.bfla
 import app.engine.checks.bola
 import app.engine.checks.data_exposure
@@ -25,4 +25,5 @@ __all__ = [
     "BaseCheck",
     "register_check",
     "run_checks",
+    "run_checks_with_reproduction",
 ]

@@ -10,6 +10,7 @@ from typing import Any
 from app.engine.checks.base import BaseCheck, register_check
 from app.engine.checks.common import make_finding, provisional_severity
 from app.engine.context import ScanContext
+from app.engine.risk import RiskInputs
 from app.engine.differential import compare, is_denied, is_not_found, is_success
 from app.engine.errors import BudgetExceededError, TargetUnreachableError
 from app.engine.http_executor import build_url
@@ -148,7 +149,16 @@ class BflaCheck(BaseCheck):
                     if confidence < ctx.settings.MIN_REPORT_CONFIDENCE:
                         continue
 
-                    severity = provisional_severity("bfla", "GET", diff_result=diff)
+                    risk_inputs = RiskInputs(
+                        check_name="bfla",
+                        method="GET",
+                        is_privileged_endpoint=True,
+                        requires_auth=ep.requires_auth,
+                        object_id_sequential=True if (object_id and str(object_id).isdigit()) else False,
+                        diff=diff,
+                        attacker_identity_role=attacker.role,
+                        base_confidence=confidence,
+                    )
                     finding = make_finding(
                         check="bfla",
                         endpoint=ep,
@@ -169,8 +179,8 @@ class BflaCheck(BaseCheck):
                         diff_result=diff,
                         object_id=object_id,
                         expected_status=403,
-                        severity=severity,
                         owasp_id=self.owasp_id,
+                        risk_inputs=risk_inputs,
                     )
                     findings.append(finding)
 

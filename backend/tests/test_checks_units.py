@@ -346,26 +346,32 @@ async def test_run_checks_error_isolation_threshold_and_deduplication() -> None:
             )
             return [f1, f2]
 
-    register_check(FailingCheck())
-    register_check(LowConfCheck())
-    register_check(DuplicateCheck())
+    try:
+        register_check(FailingCheck())
+        register_check(LowConfCheck())
+        register_check(DuplicateCheck())
 
-    ctx = _create_context(httpx.MockTransport(lambda req: httpx.Response(200)))
-    findings = await run_checks(ctx, enabled=["failing_check", "low_conf_check", "dup_check"])
+        ctx = _create_context(httpx.MockTransport(lambda req: httpx.Response(200)))
+        findings = await run_checks(ctx, enabled=["failing_check", "low_conf_check", "dup_check"])
 
-    # 1. Failing check didn't crash scan; error was logged in notes
-    check_errs = [n for n in ctx.notes if "check_error:failing_check:RuntimeError" in n]
-    assert len(check_errs) == 1
+        # 1. Failing check didn't crash scan; error was logged in notes
+        check_errs = [n for n in ctx.notes if "check_error:failing_check:RuntimeError" in n]
+        assert len(check_errs) == 1
 
-    # 2. Low confidence finding was dropped and noted
-    dropped_notes = [n for n in ctx.notes if "findings dropped below confidence threshold" in n]
-    assert len(dropped_notes) == 1
+        # 2. Low confidence finding was dropped and noted
+        dropped_notes = [n for n in ctx.notes if "findings dropped below confidence threshold" in n]
+        assert len(dropped_notes) == 1
 
-    # 3. Duplicate findings on (dup_check, GET, /orders/{id}, userB) aggregated into 1
-    assert len(findings) == 1
-    agg = findings[0]
-    assert agg.confidence == 0.90
-    assert agg.evidence is not None
-    assert "affected_objects" in agg.evidence.response_diff
-    assert "101" in agg.evidence.response_diff["affected_objects"]
-    assert "102" in agg.evidence.response_diff["affected_objects"]
+        # 3. Duplicate findings on (dup_check, GET, /orders/{id}, userB) aggregated into 1
+        assert len(findings) == 1
+        agg = findings[0]
+        assert agg.confidence == 0.90
+        assert agg.evidence is not None
+        assert "affected_objects" in agg.evidence.response_diff
+        assert "101" in agg.evidence.response_diff["affected_objects"]
+        assert "102" in agg.evidence.response_diff["affected_objects"]
+    finally:
+        from app.engine.checks.base import CHECKS
+        CHECKS.pop("failing_check", None)
+        CHECKS.pop("low_conf_check", None)
+        CHECKS.pop("dup_check", None)

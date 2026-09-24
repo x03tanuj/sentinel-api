@@ -1,11 +1,14 @@
-"""Shared finding construction and provisional severity helpers for security checks."""
+"""Shared finding construction and risk evaluation helpers for security checks."""
 
+import logging
 from typing import Any
 
-from app.engine.differential import DiffResult, summarize_diff_for_evidence
-from app.engine.http_executor import generate_curl
-from app.engine.redaction import redact_response
-from app.models import Endpoint, Evidence, Finding, RequestRecord, ResponseRecord, Severity
+from app.engine.differential import DiffResult
+from app.engine.evidence import build_evidence, curl_for_evidence
+from app.engine.risk import RiskInputs, compute_severity
+from app.models import Endpoint, Finding, RequestRecord, ResponseRecord, Severity
+
+logger = logging.getLogger(__name__)
 
 OWASP_MAP: dict[str, str] = {
     "bola": "API1:2023",
@@ -26,7 +29,7 @@ def provisional_severity(
     """Determine provisional vulnerability severity for a check finding.
 
     Note:
-        Provisional. Phase 7 replaces this with the Risk Engine.
+        Maintained as a documented fallback if RiskEngine raises during evaluation.
 
     Rules:
     - BOLA write (PUT/PATCH/DELETE) -> CRITICAL
@@ -91,11 +94,15 @@ def make_finding(
     expected_status: int | None = None,
     severity: Severity | None = None,
     owasp_id: str | None = None,
+    risk_inputs: RiskInputs | None = None,
 ) -> Finding:
-    """Construct a clean, sanitized Finding model with linked Evidence.
+    """Construct a clean, sanitized Finding model with linked Evidence and risk scoring.
 
-    Guarantees that credentials in request/response records are scrubbed and
-    that copy-paste curl PoCs use $TOKEN placeholders.
+    Guarantees:
+    - Evidence artifacts are scrubbed of credentials with defense-in-depth sanitization.
+    - Copy-paste curl PoCs use $TOKEN placeholders.
+    - Severity and risk sub-scores are calculated via the Risk Engine, with provisional_severity
+      used solely as a safe fallback path.
 
     Args:
         check: Identifier of the check module.
@@ -111,39 +118,74 @@ def make_finding(
         diff_result: Optional DiffResult.
         object_id: Target object identifier.
         expected_status: Expected authorization status code.
-        severity: Optional explicit severity; defaults to provisional calculation.
+        severity: Optional explicit severity override.
         owasp_id: Optional OWASP identifier; defaults to standard 2023 mapping.
+        risk_inputs: Optional RiskInputs for standardized severity and breakdown calculation.
 
     Returns:
         Fully populated Finding model.
     """
     resolved_owasp = owasp_id or OWASP_MAP.get(check.lower(), "API1:2023")
-
     has_data = attack_response.body is not None and attack_response.size > 2
-    calc_severity = severity or provisional_severity(
-        check=check,
-        method=endpoint.method,
-        diff_result=diff_result,
-        has_data=has_data,
-    )
 
-    # Sanitize response diff for evidence
-    resp_diff: dict[str, Any] = {}
-    if diff_result is not None:
-        resp_diff = summarize_diff_for_evidence(diff_result, attack_response)
+    # 1. Evaluate severity via RiskEngine with provisional fallback
+    calc_severity: Severity | None = severity
+    risk_score: int | None = None
+    risk_breakdown: dict[str, int] | None = None
 
-    evidence = Evidence(
+    if risk_inputs is not None:
+        try:
+            sev_res = compute_severity(risk_inputs)
+            if calc_severity is None:
+                calc_severity = sev_res[0]
+            risk_score = sev_res[1]
+            risk_breakdown = getattr(
+                sev_res,
+                "breakdown",
+                {
+                    "impact": 0,
+                    "exploitability": 0,
+                    "sensitivity": 0,
+                    "evidence_strength": 0,
+                    "total": risk_score,
+                },
+            )
+        except Exception as exc:
+            logger.warning("compute_severity failed (%s); falling back to provisional_severity", exc)
+            if calc_severity is None:
+                calc_severity = provisional_severity(
+                    check=check,
+                    method=endpoint.method,
+                    diff_result=diff_result,
+                    has_data=has_data,
+                )
+    elif calc_severity is None:
+        calc_severity = provisional_severity(
+            check=check,
+            method=endpoint.method,
+            diff_result=diff_result,
+            has_data=has_data,
+        )
+
+    # 2. Build structured, sanitized technical Evidence
+    evidence = build_evidence(
+        case_result_or_context=None,
+        request=request,
+        baseline_response=baseline_response,
+        attack_response=attack_response,
+        diff=diff_result,
         identity=identity_name,
         object_id=object_id,
         expected_status=expected_status,
-        actual_status=attack_response.status,
-        request=request,  # headers already scrubbed by Executor
-        baseline_response=redact_response(baseline_response) if baseline_response else None,
-        attack_response=redact_response(attack_response),
-        response_diff=resp_diff,
     )
 
-    curl_poc = generate_curl(request)
+    if risk_score is not None:
+        evidence.response_diff["risk_score"] = risk_score
+    if risk_breakdown is not None:
+        evidence.response_diff["risk_breakdown"] = risk_breakdown
+
+    # 3. Generate curl PoC from scrubbed Evidence request
+    curl_poc = curl_for_evidence(evidence)
 
     return Finding(
         check=check,

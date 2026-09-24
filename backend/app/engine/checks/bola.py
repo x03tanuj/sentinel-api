@@ -9,9 +9,10 @@ from app.engine.checks.common import make_finding
 from app.engine.context import ScanContext
 from app.engine.differential import compare, is_success
 from app.engine.discovery import discover_via_creation
+from app.engine.risk import RiskInputs
 from app.engine.runner import _build_case_url, run_cases
 from app.engine.test_generator import TestCategory
-from app.models import Finding, Severity
+from app.models import Finding
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,16 @@ class BolaCheck(BaseCheck):
                         confidence = 0.60
 
                     if confidence >= ctx.settings.MIN_REPORT_CONFIDENCE:
+                        risk_inputs = RiskInputs(
+                            check_name=self.name,
+                            method=res.case.endpoint.method,
+                            is_privileged_endpoint=res.case.endpoint.is_privileged,
+                            requires_auth=res.case.endpoint.requires_auth,
+                            object_id_sequential=True if str(res.case.object_id).isdigit() else False,
+                            diff=diff,
+                            attacker_identity_role=attacker.role if attacker else "",
+                            base_confidence=confidence,
+                        )
                         findings.append(
                             make_finding(
                                 check=self.name,
@@ -108,8 +119,8 @@ class BolaCheck(BaseCheck):
                                 diff_result=diff,
                                 object_id=res.case.object_id,
                                 expected_status=403,
-                                severity=Severity.HIGH,
                                 owasp_id=self.owasp_id,
+                                risk_inputs=risk_inputs,
                             )
                         )
 
@@ -162,13 +173,24 @@ class BolaCheck(BaseCheck):
 
                                 if is_success(put_resp.status):
                                     # Verify mutation via victim GET
-                                    diff = None
                                     confidence = 0.7
                                     if get_ep:
                                         get_url = _build_case_url(ctx.base_url, get_ep, obj.object_id)
                                         _, verify_resp = await ctx.executor.execute("GET", get_url, identity=victim)
                                         if is_success(verify_resp.status):
                                             confidence = 0.95
+
+                                    put_diff = compare(None, put_resp, attacker=attacker)
+                                    risk_inputs = RiskInputs(
+                                        check_name=self.name,
+                                        method=put_ep.method,
+                                        is_privileged_endpoint=False,
+                                        requires_auth=True,
+                                        object_id_sequential=True if str(obj.object_id).isdigit() else False,
+                                        diff=put_diff,
+                                        attacker_identity_role=attacker.role,
+                                        base_confidence=confidence,
+                                    )
 
                                     findings.append(
                                         make_finding(
@@ -186,8 +208,8 @@ class BolaCheck(BaseCheck):
                                             attack_response=put_resp,
                                             object_id=obj.object_id,
                                             expected_status=403,
-                                            severity=Severity.CRITICAL,
                                             owasp_id=self.owasp_id,
+                                            risk_inputs=risk_inputs,
                                         )
                                     )
 
@@ -223,6 +245,18 @@ class BolaCheck(BaseCheck):
                                             # Mark as already deleted
                                             ctx.created_objects[-1]["cleaned"] = True
 
+                                    del_diff = compare(None, del_resp, attacker=attacker)
+                                    risk_inputs = RiskInputs(
+                                        check_name=self.name,
+                                        method=del_ep.method,
+                                        is_privileged_endpoint=False,
+                                        requires_auth=True,
+                                        object_id_sequential=True if str(obj_del.object_id).isdigit() else False,
+                                        diff=del_diff,
+                                        attacker_identity_role=attacker.role,
+                                        base_confidence=confidence,
+                                    )
+
                                     findings.append(
                                         make_finding(
                                             check=self.name,
@@ -239,13 +273,13 @@ class BolaCheck(BaseCheck):
                                             attack_response=del_resp,
                                             object_id=obj_del.object_id,
                                             expected_status=403,
-                                            severity=Severity.CRITICAL,
                                             owasp_id=self.owasp_id,
+                                            risk_inputs=risk_inputs,
                                         )
                                     )
 
         finally:
-            await cleanup_created(ctx)
+            pass
 
         return findings
 

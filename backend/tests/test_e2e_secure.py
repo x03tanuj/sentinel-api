@@ -9,7 +9,7 @@ import pytest
 
 from app.config import Settings
 from app.engine.auth_matrix import build_matrix
-from app.engine.checks import run_checks
+from app.engine.checks import run_checks_with_reproduction
 from app.engine.context import ScanContext
 from app.engine.discovery import discover_ownership
 from app.engine.http_executor import Executor
@@ -75,7 +75,7 @@ async def test_e2e_secure_target_zero_findings(target_servers: dict[str, str]) -
         sample_bodies=sample_bodies,
     )
 
-    findings = await run_checks(ctx)
+    findings = await run_checks_with_reproduction(ctx)
     await executor.aclose()
 
     # Zero security findings for BOLA, BFLA, Unauth Access, Rate Limiting, Data Exposure

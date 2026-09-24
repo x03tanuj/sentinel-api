@@ -10,7 +10,7 @@ import pytest
 
 from app.config import Settings
 from app.engine.auth_matrix import build_matrix
-from app.engine.checks import run_checks
+from app.engine.checks import run_checks_with_reproduction
 from app.engine.context import ScanContext
 from app.engine.discovery import discover_ownership
 from app.engine.http_executor import Executor
@@ -73,7 +73,7 @@ async def _run_full_scan_pipeline(base_url: str) -> tuple[ScanContext, list[Any]
         sample_bodies=sample_bodies,
     )
 
-    findings = await run_checks(ctx)
+    findings = await run_checks_with_reproduction(ctx)
     await executor.aclose()
     return ctx, findings
 
@@ -112,8 +112,15 @@ async def test_e2e_vulnerable_target_findings(target_servers: dict[str, str]) ->
     rate_findings = [f for f in findings if f.check == "rate_limit" and "/auth" in f.endpoint]
     assert len(rate_findings) >= 1, "Missing Rate Limit finding on POST /auth/login"
 
-    # 2. Assert evidence, curl_poc, and redaction compliance on every finding
+    # 2. Assert evidence, curl_poc, reproduction, and redaction compliance on every finding
     serialized_findings = json.dumps([f.to_dict() for f in findings])
+
+    # Assert top findings carry reproduction evidence
+    reproduced_findings = [
+        f for f in findings
+        if f.evidence and "reproduction" in f.evidence.response_diff
+    ]
+    assert len(reproduced_findings) >= 1, "Top findings must carry reproduction metadata in evidence"
 
     for f in findings:
         assert f.evidence is not None, f"Finding {f.title} lacks evidence artifact"

@@ -14,7 +14,7 @@ from rich.table import Table
 
 from app.config import get_settings
 from app.engine.auth_matrix import build_matrix, render_matrix
-from app.engine.checks import CHECKS, run_checks
+from app.engine.checks import CHECKS, run_checks_with_reproduction
 from app.engine.context import ScanContext
 from app.engine.discovery import discover_ownership
 from app.engine.http_executor import Executor
@@ -304,9 +304,9 @@ async def execute_scan(
                 sample_bodies=sample_bodies,
             )
 
-            # 7. Execute security check modules
+            # 7. Execute security check modules with empirical reproduction
             start_time = time.monotonic()
-            findings = await run_checks(ctx, enabled=enabled_checks)
+            findings = await run_checks_with_reproduction(ctx, enabled=enabled_checks)
             elapsed_secs = time.monotonic() - start_time
 
             # 8. Sort findings by severity and confidence
@@ -360,13 +360,35 @@ async def execute_scan(
 
             console.print(summary_table)
 
-            # 11. Render context notes (skipped tests & errors)
+            # 11. Render reproduction summary
+            reproduced_count = sum(
+                1 for f in findings
+                if f.evidence and f.evidence.response_diff.get("reproduction", {}).get("reproduced", 0) > 0
+            )
+            downgraded_count = sum(
+                1 for f in findings
+                if f.evidence and f.evidence.response_diff.get("downgraded") is True
+            )
+            attempted_count = sum(
+                1 for f in findings
+                if f.evidence and "reproduction" in f.evidence.response_diff
+            )
+            skipped_count = len(findings) - attempted_count
+
+            console.print("\n[bold cyan]Vulnerability Reproduction Summary:[/bold cyan]")
+            console.print(
+                f" • Verified & Reproduced: [bold green]{reproduced_count}[/bold green]\n"
+                f" • Failed / Downgraded: [bold red]{downgraded_count}[/bold red]\n"
+                f" • Skipped (top_n cap): [bold yellow]{skipped_count}[/bold yellow]"
+            )
+
+            # 12. Render context notes (skipped tests & errors)
             if ctx.notes:
                 console.print("\n[bold yellow]Scan Execution Notes:[/bold yellow]")
                 for note in ctx.notes:
                     console.print(f" • [dim yellow]{note}[/dim yellow]")
 
-            # 12. Execution metrics
+            # 13. Execution metrics
             console.print(
                 f"\n[bold cyan]Scan Execution Metrics:[/bold cyan] "
                 f"Requests Sent: [bold white]{executor.requests_sent}[/bold white] / Budget: [bold white]{budget}[/bold white] | "
@@ -376,7 +398,7 @@ async def execute_scan(
             # Clear FINDINGS count line
             console.print(f"\n[bold white]FINDINGS: {len(findings)}[/bold white]\n")
 
-            # 13. Write JSON output if requested
+            # 14. Write JSON output if requested
             if json_out:
                 data = [f.to_dict() for f in findings]
                 with open(json_out, "w", encoding="utf-8") as fp:
@@ -388,6 +410,130 @@ async def execute_scan(
     except Exception as exc:
         err_console.print(f"[bold red]Scan Execution Error:[/bold red] {exc}")
         return 0
+
+
+def execute_report(json_in: str) -> int:
+    """Load findings JSON and render rich findings table plus explainable risk breakdown."""
+    console = Console()
+    err_console = Console(stderr=True)
+    in_path = Path(json_in)
+    if not in_path.exists():
+        err_console.print(f"[bold red]File not found:[/bold red] {json_in}")
+        return 1
+
+    try:
+        with open(in_path, encoding="utf-8") as fp:
+            data = json.load(fp)
+    except Exception as exc:
+        err_console.print(f"[bold red]Failed to read JSON file:[/bold red] {exc}")
+        return 1
+
+    if not isinstance(data, list):
+        err_console.print("[bold red]Expected a list of findings in JSON file[/bold red]")
+        return 1
+
+    # Sort data by severity and confidence
+    def _sort_key(item: dict[str, Any]) -> tuple[int, float]:
+        sev_str = item.get("severity", "INFO")
+        try:
+            sev = Severity(sev_str)
+            order = SEVERITY_ORDER.get(sev, 99)
+        except Exception:
+            order = 99
+        conf = float(item.get("confidence", 0.0))
+        return (order, -conf)
+
+    data.sort(key=_sort_key)
+
+    # 1. Findings table
+    table = Table(
+        title="SentinelAPI Security Vulnerability Findings",
+        show_lines=True,
+        header_style="bold cyan",
+    )
+    table.add_column("SEVERITY", style="bold", justify="center")
+    table.add_column("CONFIDENCE", justify="center")
+    table.add_column("CHECK", justify="left")
+    table.add_column("METHOD + PATH", justify="left")
+    table.add_column("ATTACKER IDENTITY", justify="center")
+    table.add_column("TITLE", justify="left")
+
+    for f in data:
+        sev_str = f.get("severity", "INFO")
+        try:
+            sev = Severity(sev_str)
+            sev_style = SEVERITY_COLORS.get(sev, "white")
+        except Exception:
+            sev_style = "white"
+
+        conf = float(f.get("confidence", 0.0))
+        evidence = f.get("evidence") or {}
+        attacker = evidence.get("identity") or "-"
+
+        table.add_row(
+            f"[{sev_style}]{sev_str}[/{sev_style}]",
+            f"{conf:.2f}",
+            str(f.get("check", "-")),
+            f"{f.get('method', '')} {f.get('endpoint', '')}",
+            attacker,
+            str(f.get("title", "")),
+        )
+    console.print(table)
+
+    # 2. Risk breakdown table (Explainable severity)
+    breakdown_table = Table(
+        title="Explainable Risk Score Breakdown (Why This Severity)",
+        show_lines=True,
+        header_style="bold magenta",
+    )
+    breakdown_table.add_column("SEVERITY", style="bold", justify="center")
+    breakdown_table.add_column("TITLE / ENDPOINT", justify="left")
+    breakdown_table.add_column("RISK SCORE", justify="center", style="bold white")
+    breakdown_table.add_column("IMPACT (0-40)", justify="center")
+    breakdown_table.add_column("EXPLOIT (0-25)", justify="center")
+    breakdown_table.add_column("SENSITIVITY (0-30)", justify="center")
+    breakdown_table.add_column("EVIDENCE (0-15)", justify="center")
+    breakdown_table.add_column("REPRODUCED?", justify="center")
+
+    for f in data:
+        sev_str = f.get("severity", "INFO")
+        try:
+            sev = Severity(sev_str)
+            sev_style = SEVERITY_COLORS.get(sev, "white")
+        except Exception:
+            sev_style = "white"
+
+        evidence = f.get("evidence") or {}
+        resp_diff = evidence.get("response_diff") or {}
+        total_score = resp_diff.get("risk_score", "-")
+        breakdown = resp_diff.get("risk_breakdown") or {}
+        impact = breakdown.get("impact", "-")
+        exploit = breakdown.get("exploitability", "-")
+        sens = breakdown.get("sensitivity", "-")
+        evid = breakdown.get("evidence_strength", "-")
+
+        repro_info = resp_diff.get("reproduction")
+        if repro_info:
+            repro_str = f"[green]Yes ({repro_info.get('reproduced', 0)}/{repro_info.get('attempts', 0)})[/green]"
+            if resp_diff.get("downgraded"):
+                repro_str = "[red]Failed (Downgraded)[/red]"
+        else:
+            repro_str = "[dim]Skipped[/dim]"
+
+        breakdown_table.add_row(
+            f"[{sev_style}]{sev_str}[/{sev_style}]",
+            f"[bold]{f.get('title', '')}[/bold]\n[dim]{f.get('method', '')} {f.get('endpoint', '')}[/dim]",
+            f"[{sev_style}]{total_score}[/{sev_style}]",
+            str(impact),
+            str(exploit),
+            str(sens),
+            str(evid),
+            repro_str,
+        )
+
+    console.print(breakdown_table)
+    console.print(f"\n[bold white]TOTAL FINDINGS REPORTED: {len(data)}[/bold white]\n")
+    return 0
 
 
 def main() -> None:
@@ -503,6 +649,17 @@ def main() -> None:
         help="Optional path to export redacted findings JSON",
     )
 
+    # Subcommand: report
+    report_parser = subparsers.add_parser(
+        "report",
+        help="Display vulnerability findings and explainable risk breakdown from JSON",
+    )
+    report_parser.add_argument(
+        "--json-in",
+        required=True,
+        help="Path to exported findings JSON file",
+    )
+
     args = parser.parse_args()
 
     if args.command == "surface":
@@ -526,6 +683,9 @@ def main() -> None:
                 json_out=args.json_out,
             )
         )
+        sys.exit(exit_code)
+    elif args.command == "report":
+        exit_code = execute_report(args.json_in)
         sys.exit(exit_code)
 
 

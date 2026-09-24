@@ -297,4 +297,85 @@ python -m app.cli scan \
 - `--checks`: Optional comma-separated list of checks to run (e.g. `bola,bfla,data_exposure`).
 - `--json-out`: Optional path to write redacted findings JSON.
 
+---
+
+## Risk and Confidence Engines (Explainable Scoring & Reproduction)
+
+SentinelAPI avoids black-box heuristics or arbitrary severities. Every finding is assigned an explainable risk score and an empirical confidence rating calculated through modular, transparent scoring engines and verified via live reproduction.
+
+### 1. Explainable Risk Engine (`risk.py`)
+
+Severities are calculated by summing four weighted components into a 0–100 score mapped to standardized severity thresholds:
+
+$$\text{Risk Score} = \min(100, \text{Impact} + \text{Exploitability} + \text{Data Sensitivity} + \text{Evidence Strength})$$
+
+#### A. Impact Factor (0–40 Points)
+Measures the consequence of unauthorized access:
+- **`WRITE` (40 pts)**: Unauthorized modification or deletion of another tenant's data (e.g. Write-BOLA on `PUT` / `DELETE`). Write access to another user's data is the most damaging category.
+- **`PRIVILEGE_ESCALATION` (35 pts)**: Access to administrative or horizontal tenant boundaries (e.g. BFLA on `/admin/*`).
+- **`UNAUTHENTICATED_ACCESS` (30 pts)**: Sensitive endpoints completely open without credentials; literally anyone on the network can reach it.
+- **`READ` (20 pts)**: Unauthorized read access or cross-user data leakage.
+
+#### B. Exploitability (0–25 Points)
+Measures attacker effort and prerequisites:
+- **`no_auth_needed` (25 pts)**: Exploitable anonymously without prior registration or tokens.
+- **`single_valid_token_needed` (15 pts)**: Exploitable by any registered user with standard tenant credentials.
+- **`requires_specific_knowledge_of_id` (10 pts)**: Requires targeting a specific object identifier.
+- **`sequential_ids_bonus` (+5 pts)**: Automatically awarded when object IDs are provably sequential integers (e.g. `[101, 102, 103]`), converting targeted access into trivial bulk enumeration.
+- **`admin_token_needed_but_used_lower_priv` (5 pts)**: Internal privilege mismatch.
+
+#### C. Data Sensitivity (0–30 Points)
+Measures the classification tier of exposed fields (takes maximum across exposed tiers):
+- **`SECRET` Tier (30 pts)**: Passwords, password hashes, API tokens, Private keys, SSNs.
+- **`PERSONAL` Tier (15 pts)**: Physical shipping addresses, phone numbers, email addresses, real names.
+- **`LOW` Tier (5 pts)**: System metadata, status tags, roles, timestamps.
+- **None (0 pts)**: No data fields exposed.
+
+#### D. Evidence Strength (0–15 Points)
+Measures statistical proof from differential analysis:
+- **`baseline_match_high` (15 pts)**: Attack response matches legitimate owner baseline ($\ge 90\%$ body similarity) with owner ID mismatch.
+- **`baseline_match_medium` (8 pts)**: Moderate body similarity ($\ge 60\%$).
+- **`no_baseline_but_owner_mismatch` (6 pts)**: Proven cross-user data observed without baseline comparison.
+- **`weak` (0 pts)**: Minimal corroborating telemetry.
+
+#### Severity Mapping
+| Raw Score Range | Assigned Severity |
+|---|---|
+| **$\ge 80$** | **`CRITICAL`** |
+| **$60$ – $79$** | **`HIGH`** |
+| **$35$ – $59$** | **`MEDIUM`** |
+| **$15$ – $34$** | **`LOW`** |
+| **$< 15$** | **`INFO`** |
+
+Every finding stores both the final severity and the transparent breakdown in `evidence.response_diff["risk_breakdown"]` and `evidence.response_diff["risk_score"]`.
+
+---
+
+### 2. Empirical Reproduction & Confidence Engine (`reproduce.py`)
+
+Findings are not merely reported on a single observation. SentinelAPI validates findings empirically through an active reproduction step:
+
+1. **Prioritization**: `reproduce_top_findings` selects the top-priority findings (by severity and initial confidence, default `top_n=8`) within the scan request budget.
+2. **Re-Execution**: The scanner reconstructs the exact original request from `finding.evidence.request` and re-resolves credentials fresh from the active session (never from cached tokens).
+3. **Outcome Comparison**: The scanner tests the endpoint up to 2 times, verifying that the status code class and differential pattern repeat identically.
+4. **Confidence Adjustments**:
+   - **`+0.05`**: Awarded when the finding successfully reproduces on the first attempt.
+   - **`+0.03`**: Additional bump when reproduced repeatedly ($\ge 2$ times).
+   - **`-0.20`**: Penalized immediately if reproduction fails (the exploit did not repeat).
+5. **Severity Safety Net**: If a finding fails reproduction entirely ($0/\text{attempts}$), its severity is downgraded by one level (e.g. `CRITICAL` $\to$ `HIGH`, never below `INFO`), and marked with `downgraded: true` in the diff evidence. Findings are never silently discarded.
+
+---
+
+### 3. CLI Report & Explainable Risk Inspection
+
+Inspect previously saved scan findings and display the transparent risk breakdown table:
+
+```bash
+cd backend
+python -m app.cli report --json-in findings.json
+```
+
+Outputs a formatted table detailing the four component scores (`IMPACT`, `EXPLOIT`, `SENSITIVITY`, `EVIDENCE`) alongside live reproduction status (`Yes (2/2)`, `Failed (Downgraded)`, or `Skipped`).
+
+
 

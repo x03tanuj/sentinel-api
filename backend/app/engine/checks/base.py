@@ -138,3 +138,29 @@ async def run_checks(
             aggregated[key] = chosen
 
     return list(aggregated.values())
+
+
+async def run_checks_with_reproduction(
+    ctx: ScanContext,
+    enabled: list[str] | None = None,
+    top_n: int = 8,
+) -> list[Finding]:
+    """Execute enabled security checks and empirically reproduce top-priority findings.
+
+    Args:
+        ctx: Active ScanContext.
+        enabled: Optional list of check names to execute.
+        top_n: Maximum number of top findings to empirically reproduce.
+
+    Returns:
+        List of finalized findings with reproduction evidence and refined confidence scores.
+    """
+    from app.engine.reproduce import reproduce_top_findings
+    from app.engine.checks.bola import cleanup_created
+
+    findings = await run_checks(ctx, enabled=enabled)
+    try:
+        return await reproduce_top_findings(findings, ctx, top_n=top_n)
+    finally:
+        await cleanup_created(ctx)
+

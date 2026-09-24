@@ -13,9 +13,10 @@ from app.engine.checks.base import BaseCheck, register_check
 from app.engine.checks.common import make_finding, provisional_severity
 from app.engine.context import ScanContext
 from app.engine.differential import compare, is_success
+from app.engine.risk import RiskInputs
 from app.engine.runner import run_cases
 from app.engine.test_generator import TestCategory
-from app.models import Finding, Severity
+from app.models import Finding
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,17 @@ class InputHandlingCheck(BaseCheck):
         for res in results:
             # 1. Check for unhandled 5xx server crashes
             if 500 <= res.response.status <= 599:
+                risk_inputs = RiskInputs(
+                    check_name="input_handling",
+                    method=res.case.endpoint.method,
+                    is_privileged_endpoint=False,
+                    requires_auth=res.case.endpoint.requires_auth,
+                    object_id_sequential=False,
+                    diff=None,
+                    attacker_identity_role=res.case.identity_name,
+                    base_confidence=0.70,
+                    has_data=False,
+                )
                 finding = make_finding(
                     check="input_handling",
                     endpoint=res.case.endpoint,
@@ -80,8 +92,8 @@ class InputHandlingCheck(BaseCheck):
                     baseline_response=res.baseline_response,
                     object_id=res.case.object_id,
                     expected_status=400,
-                    severity=Severity.INFO,
                     owasp_id=self.owasp_id,
+                    risk_inputs=risk_inputs,
                 )
                 findings.append(finding)
 
@@ -109,6 +121,17 @@ class InputHandlingCheck(BaseCheck):
                 if is_probe and has_id:
                     confidence = 0.60
                     if confidence >= ctx.settings.MIN_REPORT_CONFIDENCE:
+                        risk_inputs_exist = RiskInputs(
+                            check_name="input_handling",
+                            method=res.case.endpoint.method,
+                            is_privileged_endpoint=False,
+                            requires_auth=res.case.endpoint.requires_auth,
+                            object_id_sequential=False,
+                            diff=diff,
+                            attacker_identity_role=res.case.identity_name,
+                            base_confidence=confidence,
+                            has_data=True,
+                        )
                         finding = make_finding(
                             check="input_handling",
                             endpoint=res.case.endpoint,
@@ -126,8 +149,8 @@ class InputHandlingCheck(BaseCheck):
                             diff_result=diff,
                             object_id=res.case.object_id,
                             expected_status=404,
-                            severity=Severity.LOW,
                             owasp_id=self.owasp_id,
+                            risk_inputs=risk_inputs_exist,
                         )
                         findings.append(finding)
 

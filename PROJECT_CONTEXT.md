@@ -102,4 +102,19 @@ Core Rules:
 - All requests flow strictly through `Executor.execute`.
 - Zero cleartext tokens or SSNs in serialized findings or evidence.
 
+## Phase 7 completed
+Implemented explainable Risk and Confidence engines, structured Evidence builder with defense-in-depth sanitization, empirical live reproduction pipeline, and CLI reporting with component score breakdowns.
 
+Public classes and functions:
+- `build_evidence(case_result_or_context, request, baseline_response, attack_response, diff, identity, object_id, expected_status=None) -> Evidence`: Structured evidence builder enforcing defense-in-depth re-redaction of headers/bodies, inferring expected status codes, tracking masked sensitive values, and initializing affected object tracking.
+- `curl_for_evidence(evidence: Evidence) -> str`: Thin wrapper exporting sanitized, reproducible curl commands using `$TOKEN` placeholders.
+- `compute_severity(finding_inputs: RiskInputs) -> tuple[Severity, int, dict[str, int]]`: Transparent severity calculator summing Impact (0-40), Exploitability (0-25), Data Sensitivity (0-30), and Evidence Strength (0-15) into a 0-100 raw score mapped to standardized severity levels (CRITICAL >= 80, HIGH >= 60, MEDIUM >= 35, LOW >= 15, INFO < 15).
+- `compute_confidence(diff: DiffResult | None, category: TestCategory | None, reproduced: bool, reproduction_count: int, base_confidence: float | None = None) -> float`: Dynamic confidence calculator adjusting per-signal base confidence with live reproduction bonuses (+0.05 on 1st repeat, +0.03 for >=2 repeats) and severe penalties (-0.20 on failure), clamped to [0.0, 1.0].
+- `reproduce_finding(finding: Finding, ctx: ScanContext, attempts: int = 2) -> Finding`: Re-executes finding requests fresh against the target, refines confidence, and downgrades severity by one level (never below INFO) if reproduction fails entirely.
+- `reproduce_top_findings(findings: list[Finding], ctx: ScanContext, top_n: int = 8) -> list[Finding]`: Prioritizes top findings by severity and initial confidence within request budget allowances, documenting skipped findings in `ctx.notes`.
+- `run_checks_with_reproduction(ctx: ScanContext, enabled: list[str] | None = None, top_n: int = 8) -> list[Finding]`: Primary scan pipeline wrapper running security checks followed by empirical reproduction of top findings and deferred cleanup of test objects.
+- `RiskInputs(BaseModel)`: Input vector encapsulating check name, method, privileged status, auth requirements, sequential ID detection, diff results, and attacker identity role.
+- `sequential_ids_bonus(...) -> int`: Helper awarding +5 exploitability points when scanned object IDs form sequential integer sequences.
+
+Core Rule:
+Finding.severity and Finding.confidence must always be set via `risk.py`, never hardcoded in a check, except through the documented `provisional_severity` fallback path wrapped in try/except.

@@ -10,6 +10,7 @@ from typing import Any
 from app.engine.checks.base import BaseCheck, register_check
 from app.engine.checks.common import make_finding, provisional_severity
 from app.engine.context import ScanContext
+from app.engine.risk import RiskInputs
 from app.engine.differential import (
     DiffResult,
     classify_field,
@@ -247,7 +248,16 @@ class DataExposureCheck(BaseCheck):
                             attack_body_is_error=False,
                         )
 
-                        severity = provisional_severity("data_exposure", "GET", diff_result=diff_res)
+                        risk_inputs = RiskInputs(
+                            check_name="data_exposure",
+                            method=ep.method,
+                            is_privileged_endpoint=False,
+                            requires_auth=ep.requires_auth,
+                            object_id_sequential=True if (object_id and str(object_id).isdigit()) else False,
+                            diff=diff_res,
+                            attacker_identity_role=identity.role,
+                            base_confidence=confidence,
+                        )
                         fields_str = ", ".join(f"'{f}'" for f in all_flagged)
                         finding = make_finding(
                             check="data_exposure",
@@ -269,8 +279,8 @@ class DataExposureCheck(BaseCheck):
                             diff_result=diff_res,
                             object_id=object_id,
                             expected_status=resp_rec.status,
-                            severity=severity,
                             owasp_id=self.owasp_id,
+                            risk_inputs=risk_inputs,
                         )
                         findings.append(finding)
 
@@ -292,6 +302,16 @@ class DataExposureCheck(BaseCheck):
                             attack_body_empty=False,
                             attack_body_is_error=False,
                         )
+                        risk_inputs_low = RiskInputs(
+                            check_name="data_exposure",
+                            method=ep.method,
+                            is_privileged_endpoint=False,
+                            requires_auth=ep.requires_auth,
+                            object_id_sequential=True if (object_id and str(object_id).isdigit()) else False,
+                            diff=diff_res,
+                            attacker_identity_role=identity.role,
+                            base_confidence=conf,
+                        )
                         finding = make_finding(
                             check="data_exposure",
                             endpoint=ep,
@@ -309,8 +329,8 @@ class DataExposureCheck(BaseCheck):
                             diff_result=diff_res,
                             object_id=object_id,
                             expected_status=resp_rec.status,
-                            severity=Severity.LOW,
                             owasp_id=self.owasp_id,
+                            risk_inputs=risk_inputs_low,
                         )
                         findings.append(finding)
 
