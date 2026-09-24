@@ -56,6 +56,36 @@ export interface EvidenceData {
   timestamp?: string;
 }
 
+export interface AiAnalysisData {
+  plain_explanation: string;
+  business_impact: string;
+  attacker_scenario: string;
+  remediation_steps: string[];
+  code_fix_example: string;
+  code_language: string;
+  verification_steps: string[];
+  source: 'llm' | 'template';
+  model?: string | null;
+  prompt_version?: string;
+  generated_at?: string;
+  warning?: string | null;
+}
+
+export interface AiStatus {
+  enabled: boolean;
+  provider: string | null;
+  model: string | null;
+  max_calls_per_scan: number;
+}
+
+export interface AiSummaryData {
+  text: string;
+  source: string;
+  model?: string | null;
+  generated_at: string;
+  calls_used: number;
+}
+
 export interface Finding {
   id: string;
   check: string;
@@ -70,10 +100,7 @@ export interface Finding {
   fix_hint: string;
   owasp_id?: string | null;
   timestamp?: string;
-  ai_analysis?: {
-    suggested_fix?: string;
-    explanation?: string;
-  } | null;
+  ai_analysis?: AiAnalysisData | null;
 }
 
 export interface ScanSummary {
@@ -177,6 +204,7 @@ export interface ScanConfigInput {
   enabled_checks?: string[] | null;
   test_case_budget?: number;
   max_requests?: number;
+  use_ai_hints?: boolean;
   sample_bodies?: Record<string, Record<string, unknown>>;
 }
 

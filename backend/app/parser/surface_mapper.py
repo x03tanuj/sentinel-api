@@ -235,6 +235,7 @@ def build_attack_surface(spec: dict[str, Any]) -> list[Endpoint]:
                     is_object_level=is_object,
                     is_privileged=is_priv,
                     tags=tags,
+                    summary=str(description)[:120],
                 )
             )
 

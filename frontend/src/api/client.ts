@@ -15,7 +15,10 @@ export class ApiError extends Error {
 }
 
 export const rawClient = createClient<paths>({
-  baseUrl: '/api',
+  baseUrl: typeof window !== 'undefined' && window.location?.origin && !window.location.origin.includes('null')
+    ? `${window.location.origin.replace(/\/$/, '')}/api`
+    : '/api',
+  fetch: (req: Request) => fetch(req),
 });
 
 // Middleware to inject X-API-Key and handle 401

@@ -854,6 +854,279 @@
         }
       }
     },
+    "/ai/status": {
+      "get": {
+        "tags": [
+          "AI Analyst"
+        ],
+        "summary": "AI feature detection",
+        "description": "Returns whether the AI analyst is configured. Never returns the LLM API key. Always available.",
+        "operationId": "get_ai_status",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{scan_id}/findings/{finding_id}/explain": {
+      "post": {
+        "tags": [
+          "AI Analyst"
+        ],
+        "summary": "Explain a finding with AI",
+        "description": "Generate an AI explanation for a specific finding. Returns 503 when AI is not configured, 409 if scan is not finished, 422 for invalid framework_hint, 429 when call cap is reached.",
+        "operationId": "explain_finding",
+        "parameters": [
+          {
+            "name": "scan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scan Id"
+            }
+          },
+          {
+            "name": "finding_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Finding Id"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainRequest",
+                "default": {
+                  "framework_hint": "generic",
+                  "force_refresh": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiAnalysis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{scan_id}/explain-top": {
+      "post": {
+        "tags": [
+          "AI Analyst"
+        ],
+        "summary": "Explain the top-N findings",
+        "description": "Explain the top-N findings by severity then confidence. Skips already-analyzed findings. Stops at the call cap and reports skipped.",
+        "operationId": "explain_top_findings",
+        "parameters": [
+          {
+            "name": "scan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scan Id"
+            }
+          },
+          {
+            "name": "n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "description": "Number of findings to explain",
+              "default": 5,
+              "title": "N"
+            },
+            "description": "Number of findings to explain"
+          },
+          {
+            "name": "framework_hint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "generic",
+              "title": "Framework Hint"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainTopResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{scan_id}/ai-summary": {
+      "post": {
+        "tags": [
+          "AI Analyst"
+        ],
+        "summary": "Generate AI executive summary",
+        "description": "Generate an AI executive summary for a completed scan. Returns 503 if unconfigured, 409 if scan is not finished, 429 if cap reached.",
+        "operationId": "generate_ai_summary",
+        "parameters": [
+          {
+            "name": "scan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scan Id"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -907,6 +1180,176 @@
   },
   "components": {
     "schemas": {
+      "AiAnalysis": {
+        "properties": {
+          "plain_explanation": {
+            "type": "string",
+            "maxLength": 700,
+            "title": "Plain Explanation",
+            "default": ""
+          },
+          "business_impact": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Business Impact",
+            "default": ""
+          },
+          "attacker_scenario": {
+            "type": "string",
+            "maxLength": 600,
+            "title": "Attacker Scenario",
+            "default": ""
+          },
+          "remediation_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Remediation Steps"
+          },
+          "code_fix_example": {
+            "type": "string",
+            "maxLength": 1600,
+            "title": "Code Fix Example",
+            "default": ""
+          },
+          "code_language": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Code Language",
+            "default": "generic"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Verification Steps"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "template"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "prompt_version": {
+            "type": "string",
+            "title": "Prompt Version",
+            "default": "v1"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "type": "object",
+        "title": "AiAnalysis",
+        "description": "Validated output schema for LLM-generated or template-based analysis."
+      },
+      "AiStatusResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "max_calls_per_scan": {
+            "type": "integer",
+            "title": "Max Calls Per Scan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "max_calls_per_scan"
+        ],
+        "title": "AiStatusResponse",
+        "description": "Response for GET /ai/status."
+      },
+      "AiSummaryResponse": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At"
+          },
+          "calls_used": {
+            "type": "integer",
+            "title": "Calls Used"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "source",
+          "model",
+          "generated_at",
+          "calls_used"
+        ],
+        "title": "AiSummaryResponse",
+        "description": "Response for POST /scans/{id}/ai-summary."
+      },
       "CancelResponse": {
         "properties": {
           "scan_id": {
@@ -929,6 +1372,56 @@
           "status"
         ],
         "title": "CancelResponse"
+      },
+      "ExplainRequest": {
+        "properties": {
+          "framework_hint": {
+            "type": "string",
+            "title": "Framework Hint",
+            "default": "generic"
+          },
+          "force_refresh": {
+            "type": "boolean",
+            "title": "Force Refresh",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ExplainRequest",
+        "description": "Request body for POST /scans/{id}/findings/{fid}/explain."
+      },
+      "ExplainTopResponse": {
+        "properties": {
+          "analyses": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Analyses"
+          },
+          "skipped_count": {
+            "type": "integer",
+            "title": "Skipped Count"
+          },
+          "calls_used": {
+            "type": "integer",
+            "title": "Calls Used"
+          },
+          "calls_remaining": {
+            "type": "integer",
+            "title": "Calls Remaining"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analyses",
+          "skipped_count",
+          "calls_used",
+          "calls_remaining"
+        ],
+        "title": "ExplainTopResponse",
+        "description": "Response for POST /scans/{id}/explain-top."
       },
       "FindingsListResponse": {
         "properties": {
@@ -1154,6 +1647,12 @@
             "type": "object",
             "title": "Sample Bodies",
             "description": "Sample request bodies for POST/PUT resource mutations"
+          },
+          "use_ai_hints": {
+            "type": "boolean",
+            "title": "Use Ai Hints",
+            "description": "When true (and AI is configured), use LLM to suggest extra test coverage flags",
+            "default": false
           }
         },
         "type": "object",

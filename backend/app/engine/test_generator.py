@@ -157,20 +157,26 @@ def generate_adjacent_id_cases(
 def generate_boundary_cases(
     endpoints: list[Endpoint],
     identity_name: str = "userA",
+    extra_boundary_ids: list[str] | None = None,
 ) -> list[TestCase]:
     """Generate boundary condition test cases for object-level endpoints.
 
-    Probes extreme values ('0', '-1', '999999999', and non-existent UUIDs) expecting DENY.
+    Probes extreme values ('0', '-1', '999999999', non-existent UUIDs, and optional extra_boundary_ids) expecting DENY.
 
     Args:
         endpoints: Attack surface endpoints.
         identity_name: Default test persona to execute the probe.
+        extra_boundary_ids: Optional extra boundary IDs suggested by AI.
 
     Returns:
         List of BOUNDARY TestCase specifications.
     """
     cases: list[TestCase] = []
     boundary_values = ["0", "-1", "999999999", "00000000-0000-0000-0000-000000000000"]
+    if extra_boundary_ids:
+        for bid in extra_boundary_ids:
+            if bid not in boundary_values:
+                boundary_values.append(bid)
 
     for ep in endpoints:
         if not ep.is_object_level:
@@ -320,12 +326,38 @@ def generate_privileged_cases(
     return cases
 
 
-def llm_suggested_cases(endpoints: list[Endpoint]) -> list[TestCase]:
-    """Placeholder hook for Phase 10 LLM-suggested edge cases.
+def llm_suggested_cases(
+    endpoints: list[Endpoint],
+    hints: Any | None = None,
+    identity_name: str = "userA",
+) -> list[TestCase]:
+    """Generate extra BOUNDARY test cases suggested by the LLM (GET only).
 
-    Returns an empty list in Phase 5.
+    Returns an empty list when hints is None or contains no extra_boundary_ids.
     """
-    return []
+    if not hints:
+        return []
+    extra_ids = getattr(hints, "extra_boundary_ids", None) or []
+    if not extra_ids:
+        return []
+
+    cases: list[TestCase] = []
+    for ep in endpoints:
+        if ep.method.upper() != "GET" or not ep.is_object_level:
+            continue
+        for val in extra_ids:
+            cases.append(
+                TestCase(
+                    endpoint=ep,
+                    identity_name=identity_name,
+                    object_id=val,
+                    category=TestCategory.BOUNDARY,
+                    expected_outcome=Outcome.DENY,
+                    owner_identity=None,
+                    notes=f"AI-suggested boundary probe with ID '{val}'",
+                )
+            )
+    return cases
 
 
 def generate_all(
@@ -334,6 +366,7 @@ def generate_all(
     owned: dict[str, dict[str, list[OwnedObject]]],
     matrix_cells: list[MatrixCell],
     budget: int = 150,
+    hints: Any | None = None,
 ) -> GenerationResult:
     """Generate a prioritized, deduplicated, budget-capped list of test cases.
 
@@ -349,6 +382,7 @@ def generate_all(
         owned: Discovered object ownership map.
         matrix_cells: Authorization matrix cells.
         budget: Maximum number of test cases to return.
+        hints: Optional AnalystHints suggested by AI.
 
     Returns:
         GenerationResult tuple containing (kept_cases, stats_dict).
@@ -360,14 +394,15 @@ def generate_all(
             break
 
     # 1. Run all generators in priority order
+    extra_bids = getattr(hints, "extra_boundary_ids", None) if hints else None
     raw_cases: list[TestCase] = []
     raw_cases.extend(generate_cross_user_cases(endpoints, matrix_cells))
     raw_cases.extend(generate_privileged_cases(endpoints, identities))
     raw_cases.extend(generate_adjacent_id_cases(endpoints, owned))
-    raw_cases.extend(generate_boundary_cases(endpoints, default_ident))
+    raw_cases.extend(generate_boundary_cases(endpoints, default_ident, extra_boundary_ids=extra_bids))
     raw_cases.extend(generate_anonymous_cases(endpoints, owned))
     raw_cases.extend(generate_invalid_type_cases(endpoints, default_ident))
-    raw_cases.extend(llm_suggested_cases(endpoints))
+    raw_cases.extend(llm_suggested_cases(endpoints, hints=hints, identity_name=default_ident))
 
     # 2. Deduplicate
     seen_keys: set[tuple[str, str, str | None, str]] = set()

@@ -1,0 +1,27 @@
+services:
+  mock_llm:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python -m app.ai.mock_server
+    ports:
+      - "127.0.0.1:8001:8001"
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+
+  scanner:
+    environment:
+      - AI_ENABLED=true
+      - LLM_PROVIDER=groq
+      - LLM_MODEL=llama-3.1-8b-instant
+      - LLM_API_KEY=mock-test-key-for-e2e
+      - LLM_MOCK_URL=http://mock_llm:8001
+    depends_on:
+      mock_llm:
+        condition: service_healthy

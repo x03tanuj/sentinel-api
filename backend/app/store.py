@@ -77,6 +77,8 @@ class ScanRecord(BaseModel):
     events: list[dict[str, Any]] = Field(default_factory=list)
     result: ScanResult | None = None
     error: str | None = None
+    ai_cache: dict[str, Any] = Field(default_factory=dict, description="fingerprint → AiAnalysis dict; persisted in snapshot")
+    ai_calls_used: int = Field(default=0, description="LLM API calls consumed for this scan")
 
 
 class ScanStore(ABC):
@@ -127,6 +129,28 @@ class ScanStore(ABC):
     @abstractmethod
     async def mark_interrupted_on_startup(self) -> int:
         """Mark any lingering queued or running scans as interrupted."""
+        pass
+
+    @abstractmethod
+    async def set_finding_analysis(
+        self, scan_id: str, finding_id: str, fp: str, analysis: dict[str, Any]
+    ) -> bool:
+        """Attach an AI analysis to a finding and update the AI cache."""
+        pass
+
+    @abstractmethod
+    async def set_ai_summary(self, scan_id: str, summary: dict[str, Any]) -> bool:
+        """Attach the AI executive summary to a scan's result."""
+        pass
+
+    @abstractmethod
+    async def increment_ai_calls(self, scan_id: str, count: int = 1) -> int:
+        """Increment ai_calls_used counter and return the new total."""
+        pass
+
+    @abstractmethod
+    async def get_ai_calls_used(self, scan_id: str) -> int:
+        """Return current ai_calls_used for the scan."""
         pass
 
 
@@ -370,3 +394,66 @@ class JsonSnapshotStore(ScanStore):
                 await self._write_snapshot_locked()
                 return True
             return False
+
+    async def set_finding_analysis(
+        self, scan_id: str, finding_id: str, fp: str, analysis: dict[str, Any]
+    ) -> bool:
+        """Attach an AI analysis dict to a finding by ID and cache by fingerprint.
+
+        The analysis dict must already be safe (caller must pass sanitized data).
+        """
+        async with self._lock:
+            record = self._records.get(scan_id)
+            if not record or not record.result:
+                return False
+
+            updated = False
+            for finding_dict in record.result.findings:
+                if finding_dict.get("id") == finding_id:
+                    finding_dict["ai_analysis"] = analysis
+                    updated = True
+                    break
+
+            if updated:
+                # Cache by fingerprint
+                record.ai_cache[fp] = analysis
+                await self._write_snapshot_locked()
+            return updated
+
+    async def set_ai_summary(self, scan_id: str, summary: dict[str, Any]) -> bool:
+        """Attach the AI executive summary to a scan result."""
+        async with self._lock:
+            record = self._records.get(scan_id)
+            if not record or not record.result:
+                return False
+            record.result.ai_summary = summary
+            await self._write_snapshot_locked()
+            return True
+
+    async def increment_ai_calls(self, scan_id: str, count: int = 1) -> int:
+        """Increment the AI call counter for this scan and return the new total."""
+        async with self._lock:
+            record = self._records.get(scan_id)
+            if not record:
+                return 0
+            record.ai_calls_used += count
+            # Mirror into result if it exists
+            if record.result:
+                record.result.ai_calls_used = record.ai_calls_used
+            return record.ai_calls_used
+
+    async def get_ai_calls_used(self, scan_id: str) -> int:
+        """Return the current AI call count for this scan."""
+        async with self._lock:
+            record = self._records.get(scan_id)
+            if not record:
+                return 0
+            return record.ai_calls_used
+
+    async def get_cached_analysis(self, scan_id: str, fp: str) -> dict[str, Any] | None:
+        """Return a cached analysis dict for the given fingerprint, or None."""
+        async with self._lock:
+            record = self._records.get(scan_id)
+            if not record:
+                return None
+            return record.ai_cache.get(fp)

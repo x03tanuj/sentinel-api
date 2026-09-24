@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import Settings, get_settings
+from app.routes.ai import router as ai_router
 from app.routes.scans import router as scans_router
 from app.scan_manager import ScanManager
 from app.store import JsonSnapshotStore
@@ -60,6 +61,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
 
+    if settings is not None:
+        app.dependency_overrides[get_settings] = lambda: active_settings
+
     # CORS configuration restricted to authorized origins and methods
     app.add_middleware(
         CORSMiddleware,
@@ -80,6 +84,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Include Scan Orchestration Router
     app.include_router(scans_router)
+
+    # Include AI Analyst Router
+    app.include_router(ai_router)
 
     # Public Unauthenticated Routes
     @app.get("/health", tags=["system"], operation_id="health_check")

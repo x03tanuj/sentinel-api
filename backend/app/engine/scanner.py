@@ -97,6 +97,10 @@ class ScanConfig(BaseModel):
         default_factory=dict,
         description="Sample request bodies for POST/PUT resource mutations",
     )
+    use_ai_hints: bool = Field(
+        default=False,
+        description="When true (and AI is configured), use LLM to suggest extra test coverage flags",
+    )
 
     @model_validator(mode="after")
     def validate_spec_source(self) -> ScanConfig:
@@ -180,6 +184,7 @@ class ScanConfig(BaseModel):
             "test_case_budget": self.test_case_budget,
             "max_requests": self.max_requests,
             "sample_resources": list(self.sample_bodies.keys()),
+            "use_ai_hints": self.use_ai_hints,
         }
 
 
@@ -195,6 +200,11 @@ class ScanResult(BaseModel):
     summary: dict[str, Any] = Field(default_factory=dict, description="High-level executive metrics summary")
     requests_sent: int = Field(default=0, description="Total HTTP requests dispatched")
     duration_seconds: float = Field(default=0.0, description="Total execution duration in seconds")
+    ai_summary: dict[str, Any] | None = Field(
+        default=None,
+        description="AI-generated executive summary (text, source, model, generated_at)",
+    )
+    ai_calls_used: int = Field(default=0, description="Number of LLM API calls consumed by this scan")
 
 
 def safe_error_message(exc: Exception) -> str:
@@ -308,6 +318,20 @@ async def run_scan(
         await tracker.emit(ScanStage.MAPPING_SURFACE, 10, "Extracting endpoints and parameter schemas")
         raw_endpoints = build_attack_surface(resolved_spec)
         endpoints = prioritize(raw_endpoints)
+
+        # AI hints hook (Task 5)
+        hints = None
+        if config.use_ai_hints:
+            from app.ai.providers import get_provider
+            ai_provider = get_provider(active_settings)
+            if ai_provider is not None:
+                try:
+                    from app.ai.analyst import apply_hints, suggest_hints
+                    hints = await suggest_hints(endpoints, ai_provider, active_settings)
+                    endpoints = apply_hints(endpoints, hints)
+                except Exception as hint_exc:
+                    logger.warning("AI hint generation failed: %s", hint_exc)
+
         surface_summary = summarize(endpoints)
         await tracker.emit(
             ScanStage.MAPPING_SURFACE,
@@ -358,6 +382,7 @@ async def run_scan(
             owned=owned,
             matrix_cells=matrix_cells,
             budget=config.test_case_budget,
+            hints=hints,
         )
         matrix_summary_data = summarize_matrix(matrix_cells)
         await tracker.emit(
@@ -381,6 +406,18 @@ async def run_scan(
             settings=scan_settings,
             sample_bodies=config.sample_bodies,
         )
+
+        if hints:
+            for flag in hints.endpoint_flags:
+                types = []
+                if flag.likely_object_level:
+                    types.append("object-level")
+                if flag.likely_privileged:
+                    types.append("privileged")
+                if types:
+                    ctx.notes.append(
+                        f"AI hint applied: {flag.operation_id} flagged as {'|'.join(types)} ({flag.reason})"
+                    )
 
         # Progress tracking for running checks
         enabled_list = config.enabled_checks or list(CHECKS.keys())
@@ -415,6 +452,15 @@ async def run_scan(
         )
         findings = await reproduce_top_findings(findings, ctx, top_n=8)
         await tracker.emit(ScanStage.REPRODUCING, 95, "Empirical reproduction complete")
+
+        # Label findings from hinted endpoints (Task 5)
+        hinted_paths = {ep.path for ep in endpoints if getattr(ep, "hint_source", None) == "llm"}
+        if hinted_paths:
+            for f in findings:
+                if f.endpoint in hinted_paths and f.evidence:
+                    if f.evidence.response_diff is None:
+                        f.evidence.response_diff = {}
+                    f.evidence.response_diff["hint_source"] = "llm"
 
         # -------------------------------------------------------------
         # Stage 8: Finalizing & Metric Aggregation (95% - 100%)

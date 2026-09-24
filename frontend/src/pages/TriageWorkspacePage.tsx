@@ -5,6 +5,8 @@ import {
   useFindings,
   useSurface,
   useMatrix,
+  useAiStatus,
+  useExplainTop,
 } from '../api/hooks';
 import { Header } from '../components/common/Header';
 import { StatCard } from '../components/ui/StatCard';
@@ -16,6 +18,9 @@ import { CurlConsole } from '../components/triage/CurlConsole';
 import { DiffViewer } from '../components/triage/DiffViewer';
 import { MatrixGrid } from '../components/triage/MatrixGrid';
 import { SurfaceTable } from '../components/triage/SurfaceTable';
+import { AiAnalysisPanel } from '../components/triage/AiAnalysisPanel';
+import { AiSummaryPanel } from '../components/triage/AiSummaryPanel';
+import { AiConsentModal } from '../components/triage/AiConsentModal';
 import { FindingsCharts } from '../components/charts/FindingsCharts';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -43,6 +48,7 @@ import {
   Sparkles,
   ShieldCheck,
   RotateCcw,
+  RotateCw,
 } from 'lucide-react';
 
 export const TriageWorkspacePage: React.FC = () => {
@@ -60,7 +66,6 @@ export const TriageWorkspacePage: React.FC = () => {
   // Local state for shortcuts modal & secure toggle preview
   const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
   const [isSecurePreviewActive, setIsSecurePreviewActive] = useState(false);
-  const [isAiFixExpanded, setIsAiFixExpanded] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   // API Queries
@@ -72,6 +77,24 @@ export const TriageWorkspacePage: React.FC = () => {
   });
   const { data: surfaceData } = useSurface(id);
   const { data: matrixData } = useMatrix(id);
+  const { data: aiStatus } = useAiStatus();
+  const explainTopMutation = useExplainTop(id);
+  const [isAiConsentOpen, setIsAiConsentOpen] = useState(false);
+
+  const handleExplainTop = () => {
+    const hasConsent = sessionStorage.getItem('sentinel_ai_consent') === 'true';
+    if (!hasConsent) {
+      setIsAiConsentOpen(true);
+      return;
+    }
+    explainTopMutation.mutate({ n: 5 });
+  };
+
+  const handleConsentConfirm = () => {
+    sessionStorage.setItem('sentinel_ai_consent', 'true');
+    setIsAiConsentOpen(false);
+    explainTopMutation.mutate({ n: 5 });
+  };
 
   const findings = findingsData?.findings || [];
   const totalFindings = (scanData?.summary?.total_findings as number) ?? findings.length;
@@ -244,7 +267,7 @@ export const TriageWorkspacePage: React.FC = () => {
 
           {/* Action buttons: Tabs & Export */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center p-0.5 rounded-tactical bg-canvas-base border border-border-structural font-mono text-xs">
+            <div className="flex items-center p-0.5 rounded-tactical bg-canvas-base border border-border-structural font-mono text-xs max-w-full overflow-x-auto">
               <button
                 onClick={() => handleTabChange('findings')}
                 className={`px-2.5 py-1 rounded transition-colors flex items-center gap-1.5 ${
@@ -328,6 +351,38 @@ export const TriageWorkspacePage: React.FC = () => {
               )}
             </div>
 
+            {aiStatus?.enabled && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExplainTop}
+                  disabled={explainTopMutation.isPending || findings.length === 0}
+                  data-testid="explain-top-btn"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-mono text-xs font-semibold shadow-glow-primary transition-colors focus:ring-1 focus:ring-purple-400 focus:outline-none"
+                >
+                  {explainTopMutation.isPending ? (
+                    <>
+                      <RotateCw size={12} className="animate-spin" />
+                      <span>Explaining top 5...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={12} />
+                      <span>Explain top 5</span>
+                    </>
+                  )}
+                </button>
+
+                <span
+                  className="font-mono text-[11px] text-purple-300 bg-purple-500/10 px-2 py-1 rounded border border-purple-500/30"
+                  data-testid="ai-calls-indicator"
+                  title="AI calls used for this scan / Maximum allowed"
+                >
+                  AI calls: {((scanData?.summary as any)?.ai_calls_used ?? explainTopMutation.data?.calls_used ?? 0)} / {aiStatus.max_calls_per_scan}
+                </span>
+              </div>
+            )}
+
             <button
               onClick={() => setIsShortcutModalOpen(true)}
               aria-label="Keyboard shortcuts"
@@ -338,6 +393,12 @@ export const TriageWorkspacePage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* AI Executive Summary Panel */}
+        <AiSummaryPanel
+          scanId={id || ''}
+          existingSummary={(scanData?.summary as any)?.ai_summary}
+        />
 
         {/* ZONE 2: Tactical HUD Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -578,42 +639,8 @@ export const TriageWorkspacePage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Collapsed AI Suggested Fix Section */}
-                  <div className="border border-border-structural rounded-panel overflow-hidden bg-canvas-base">
-                    <button
-                      type="button"
-                      onClick={() => setIsAiFixExpanded(!isAiFixExpanded)}
-                      className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-canvas-elevated transition-colors font-mono text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={14} className="text-purple-400" />
-                        <span className="text-slate-300 font-semibold">
-                          AI-suggested code fix (verify before use)
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[10px]">
-                          Phase 10
-                        </span>
-                      </div>
-                      <ChevronDown
-                        size={14}
-                        className={`text-slate-400 transition-transform ${isAiFixExpanded ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-
-                    {isAiFixExpanded && (
-                      <div className="p-3.5 border-t border-border-structural font-mono text-xs text-slate-400 space-y-2">
-                        {selectedFinding.ai_analysis?.suggested_fix ? (
-                          <pre className="text-slate-200 whitespace-pre-wrap">
-                            {selectedFinding.ai_analysis.suggested_fix}
-                          </pre>
-                        ) : (
-                          <div className="italic text-slate-500">
-                            Available after AI analysis in Phase 10. Automated remediation code synthesis will be hooked up to LLM explanation engine.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  {/* AI Analysis & Remediation Panel */}
+                  <AiAnalysisPanel scanId={id || ''} finding={selectedFinding} />
 
                   {/* Secure Variant Toggle for Inspection Preview */}
                   <div className="pt-2 flex justify-end">
@@ -690,6 +717,13 @@ export const TriageWorkspacePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <AiConsentModal
+        isOpen={isAiConsentOpen}
+        providerName={aiStatus?.provider || 'AI Provider'}
+        onConfirm={handleConsentConfirm}
+        onCancel={() => setIsAiConsentOpen(false)}
+      />
     </div>
   );
 };

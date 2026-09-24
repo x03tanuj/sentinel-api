@@ -81,9 +81,9 @@ def get_scan_manager(request: Request) -> ScanManager:
 def verify_api_key(
     request: Request,
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    settings: Settings = Depends(get_settings),
 ) -> None:
     """Validate X-API-Key header if SENTINEL_API_KEY is configured."""
-    settings: Settings = getattr(request.app.state, "settings", None) or get_settings()
     if settings.SENTINEL_API_KEY is not None and settings.SENTINEL_API_KEY.get_secret_value().strip():
         expected = settings.SENTINEL_API_KEY.get_secret_value()
         if not x_api_key or not hmac.compare_digest(x_api_key, expected):
@@ -238,6 +238,13 @@ async def get_scan(
 
     notes_cnt = len(record.result.notes) if (record.result and record.result.notes) else 0
 
+    summary_dict = None
+    if record.result and record.result.summary:
+        summary_dict = dict(record.result.summary)
+        if record.result.ai_summary:
+            summary_dict["ai_summary"] = record.result.ai_summary
+        summary_dict["ai_calls_used"] = record.ai_calls_used
+
     return ScanDetailResponse(
         id=record.id,
         status=record.status,
@@ -246,7 +253,7 @@ async def get_scan(
         finished_at=record.finished_at,
         progress=record.progress,
         config_public=record.config_public,
-        summary=record.result.summary if record.result else None,
+        summary=summary_dict,
         error=record.error,
         notes_count=notes_cnt,
     )

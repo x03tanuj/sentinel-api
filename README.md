@@ -487,3 +487,90 @@ The SentinelAPI frontend dashboard was designed using Google Stitch MCP under th
 5. **Attack Surface:** [`frontend/design/stitch/05-attack-surface/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/05-attack-surface/) — Discovered OpenAPI route inventory with risk priority ranking.
 6. **Scan History:** [`frontend/design/stitch/06-scan-history/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/06-scan-history/) — Historical audit vault, severity distribution badges, and report exports.
 7. **States Sheet:** [`frontend/design/stitch/07-states-sheet/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/07-states-sheet/) — Loading skeletons, unreachable backend, execution failures, cancellations, and empty states.
+
+---
+
+## AI Analyst (Phase 10)
+
+SentinelAPI includes an optional, privacy-centric AI Analyst designed to explain vulnerabilities, synthesize business impact narratives, and recommend framework-specific code remediations.
+
+### Core Design Principles
+
+1. **The Scanner Alone Decides Vulnerabilities:** The deterministic vulnerability scanner executes all differential authorization tests and alone determines whether an issue exists, its severity rating, its confidence level, and its technical evidence. The LLM **never** creates, removes, or re-scores findings.
+2. **Finding Immutability:** Finding attributes (`severity`, `confidence`, `evidence`, `title`, `endpoint`, `method`) are byte-for-byte immutable before and after AI analysis. Model output cannot modify scanner findings.
+3. **Full Functionality with AI Disabled:** SentinelAPI functions 100% autonomously without an AI key or when `AI_ENABLED=false`. All reports, exports, and UI components display deterministic template explanations when AI is disabled.
+4. **Human Verification Warning:** All AI-synthesized outputs carry the mandatory label: `AI-generated analysis (verify before use)`.
+
+---
+
+### Strict Data Egress Guardrails
+
+Data privacy is a first-class architectural invariant. Outbound payloads are strictly constrained by `build_llm_payload()` and guarded by `assert_payload_safe()` before leaving the machine:
+
+| What May Leave the Machine | What NEVER Leaves the Machine |
+| :--- | :--- |
+| Security check name (e.g. `BOLA`) | Target hostnames, domain names, or IP addresses |
+| OWASP Category identifier (e.g. `API1:2023`) | Complete request URLs or query strings with real parameters |
+| HTTP Method (`GET`, `POST`, etc.) | Authentication headers, bearer tokens, or API keys |
+| Path **template** (e.g. `/orders/{id}`) | Real passwords, usernames, full names, or credentials |
+| Severity, confidence, and risk score breakdown | Request/response HTTP bodies (JSON, HTML, binary) |
+| Attacker persona **role** (e.g. `user`, `anonymous`) | Real object IDs from database records (e.g. `<object-id>`) |
+| Expected vs actual HTTP status codes | Masked or unmasked live customer data |
+| Changed and leaked **field names** & sensitivity tier | Raw cURL commands or network replay transcripts |
+| Reproduction ratio (e.g. `2 of 2`) | SSNs, credit card numbers, email addresses, or JWTs |
+| Scanner fix hint and template explanation | Target server headers, cookies, or software banners |
+| Selected framework hint (allowlist: `generic`, `fastapi`, `express`, etc.) | Any data matching `assert_payload_safe` patterns |
+
+Every outbound payload is validated against a pre-flight regex filter (`assert_payload_safe`). If any URL, IP, JWT, Bearer token, email, SSN, or credential-like string is detected, the outbound call is **immediately aborted**, logged safely without the payload, and a deterministic fallback is served.
+
+---
+
+### Supported Providers & Configuration
+
+SentinelAPI supports Groq, OpenRouter, and Google Gemini using current provider JSON mode standards:
+
+| Provider | Recommended Fast Model | Default Environment Variable |
+| :--- | :--- | :--- |
+| **Groq** | `llama-3.1-8b-instant` | `LLM_PROVIDER=groq` |
+| **OpenRouter** | `meta-llama/llama-3.1-8b-instruct:free` | `LLM_PROVIDER=openrouter` |
+| **Google Gemini** | `gemini-2.0-flash` | `LLM_PROVIDER=gemini` |
+
+#### Environment Variables (.env)
+
+```bash
+# Enable/disable AI analyst features (default: false)
+AI_ENABLED=true
+
+# Provider: groq | openrouter | gemini (default: groq)
+LLM_PROVIDER=groq
+
+# Fast recommended model per provider
+LLM_MODEL=llama-3.1-8b-instant
+
+# Secret API key (never logged, displayed, or persisted in records)
+LLM_API_KEY=gsk_...
+
+# Egress timeout and call controls
+AI_TIMEOUT_SECONDS=30
+AI_MAX_CALLS_PER_SCAN=15
+AI_MAX_OUTPUT_TOKENS=900
+AI_CONCURRENCY=2
+```
+
+---
+
+### Prompt Injection Defenses & Output Sanitization
+
+1. **Untrusted Evidence Boundary:** Evidence field names and path templates originate from inspected API specs and responses. All evidence is strictly encapsulated within `<finding_evidence>` tags with explicit defensive system instructions prohibiting instruction execution.
+2. **Schema Lockdown:** The Pydantic `AiAnalysis` model extracts only verified explanation and remediation fields (`plain_explanation`, `business_impact`, `attacker_scenario`, `remediation_steps`, `code_fix_example`, `code_language`, `verification_steps`). Unauthorized keys (including any attempted `severity` overrides) are dropped.
+3. **Output Sanitization:** `sanitize_analysis()` strips HTML tags, control characters, and external URLs. Dangerous shell pipe syntax (`| sh`, `| bash`, `rm -rf`, `eval()`) in code examples is neutralized.
+4. **Deterministic Fallback:** On network timeouts, invalid JSON, schema mismatches, or safety violations, SentinelAPI falls back to template analysis (`build_template_analysis()`) with a sanitized warning message.
+
+---
+
+### Cost & Quota Controls
+
+- **Cryptographic Fingerprint Cache:** Findings are fingerprinted using SHA-256 over finding check, method, path template, severity, sorted field names, and status codes. Repeated requests for identical findings return instantly from the scan cache without consuming API calls.
+- **Per-Scan Call Cap:** Strict budget capping via `AI_MAX_CALLS_PER_SCAN` (default: 15) prevents unbounded token usage. Subsequent calls return HTTP 429 with explanatory client messaging.
+- **Bounded Concurrency:** An `asyncio.Semaphore(AI_CONCURRENCY)` limits parallel external LLM requests.
+

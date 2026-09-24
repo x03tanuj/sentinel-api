@@ -99,13 +99,37 @@ class Settings(BaseSettings):
         default=500,
         description="Maximum test case generation budget allowed",
     )
+    AI_ENABLED: bool = Field(
+        default=False,
+        description="Enable the AI analyst layer (requires LLM_API_KEY to be set)",
+    )
     LLM_PROVIDER: str = Field(
         default="groq",
-        description="LLM provider name for finding explanation synthesis",
+        description="LLM provider: groq | openrouter | gemini",
     )
-    LLM_API_KEY: str = Field(
+    LLM_API_KEY: SecretStr | None = Field(
+        default=None,
+        description="API key for the LLM provider (never written to logs or snapshots)",
+    )
+    LLM_MODEL: str = Field(
         default="",
-        description="API key for LLM provider",
+        description="Model ID; empty = provider default (llama-3.1-8b-instant for groq, meta-llama/llama-3.1-8b-instruct:free for openrouter, gemini-2.0-flash for gemini)",
+    )
+    AI_TIMEOUT_SECONDS: int = Field(
+        default=30,
+        description="HTTP timeout in seconds for LLM provider calls",
+    )
+    AI_MAX_CALLS_PER_SCAN: int = Field(
+        default=15,
+        description="Maximum AI provider calls consumed per scan (per-scan call budget)",
+    )
+    AI_MAX_OUTPUT_TOKENS: int = Field(
+        default=900,
+        description="Maximum output tokens requested from the LLM per call",
+    )
+    AI_CONCURRENCY: int = Field(
+        default=2,
+        description="Maximum concurrent in-flight LLM requests (semaphore)",
     )
 
     model_config = SettingsConfigDict(
@@ -154,6 +178,14 @@ class Settings(BaseSettings):
     @classmethod
     def parse_api_key(cls, value: Any) -> Any:
         """Treat empty or whitespace-only API keys as None."""
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("LLM_API_KEY", mode="before")
+    @classmethod
+    def parse_llm_api_key(cls, value: Any) -> Any:
+        """Treat empty or whitespace-only LLM API keys as None."""
         if isinstance(value, str) and not value.strip():
             return None
         return value

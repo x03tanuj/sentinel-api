@@ -231,6 +231,8 @@ async def execute_scan(
     sample_body_specs: list[str] | None = None,
     checks_filter: str | None = None,
     json_out: str | None = None,
+    ai: bool = False,
+    framework: str = "generic",
 ) -> int:
     """Execute complete security scan pipeline with differential analysis and modular checks."""
     from app.engine.scanner import ScanConfig, run_scan
@@ -385,6 +387,40 @@ async def execute_scan(
         )
 
         console.print(f"\n[bold white]FINDINGS: {len(findings)}[/bold white]\n")
+
+        # AI analysis if requested (--ai)
+        if ai:
+            settings = get_settings()
+            if not (settings.AI_ENABLED and settings.LLM_API_KEY):
+                console.print(
+                    "[dim yellow]Note: AI analysis requested (--ai) but AI is not configured on this server. Skipping.[/dim yellow]\n"
+                )
+            else:
+                from app.ai.providers import get_provider
+                provider = get_provider(settings)
+                if provider is None:
+                    console.print("[dim yellow]Note: AI provider could not be initialized. Skipping.[/dim yellow]\n")
+                else:
+                    from app.ai.analyst import analyze_finding
+                    from app.models import Finding
+                    top_n = min(5, len(findings))
+                    console.print(f"[bold cyan]Generating AI explanations for top {top_n} findings ({framework})...[/bold cyan]")
+                    for idx, f_dict in enumerate(findings[:top_n], 1):
+                        try:
+                            f_model = Finding.model_validate(f_dict)
+                            analysis = await analyze_finding(f_model, framework, provider, settings)
+                            f_dict["ai_analysis"] = analysis.model_dump(mode="json")
+                            console.print(
+                                f"\n[bold green]AI Explanation for Finding #{idx} ({f_dict.get('title')}):[/bold green]"
+                            )
+                            console.print(f" • [bold]Summary:[/bold] {analysis.plain_explanation}")
+                            console.print(f" • [bold]Business Impact:[/bold] {analysis.business_impact}")
+                            if analysis.code_fix_example:
+                                console.print(
+                                    f" • [bold]Fix Example ({analysis.code_language}):[/bold]\n{analysis.code_fix_example}"
+                                )
+                        except Exception as ai_exc:
+                            console.print(f"[dim red]Failed to analyze finding #{idx}: {ai_exc}[/dim red]")
 
         # Write JSON output if requested
         if json_out:
@@ -635,6 +671,17 @@ def main() -> None:
         default=None,
         help="Optional path to export redacted findings JSON",
     )
+    scan_parser.add_argument(
+        "--ai",
+        action="store_true",
+        default=False,
+        help="Run AI analysis on top findings after scan (requires AI configured)",
+    )
+    scan_parser.add_argument(
+        "--framework",
+        default="generic",
+        help="Framework hint for AI analysis (default: generic)",
+    )
 
     # Subcommand: report
     report_parser = subparsers.add_parser(
@@ -668,6 +715,8 @@ def main() -> None:
                 sample_body_specs=args.sample_body,
                 checks_filter=args.checks,
                 json_out=args.json_out,
+                ai=args.ai,
+                framework=args.framework,
             )
         )
         sys.exit(exit_code)

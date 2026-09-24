@@ -40,7 +40,7 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
       </div>
       {showText && (
         <span className="font-mono text-xs text-slate-400">
-          {percent}% <span className="text-[10px] text-slate-500">({clamped.toFixed(2)})</span>
+          {percent}% <span className="text-[10px] text-slate-400">({clamped.toFixed(2)})</span>
         </span>
       )}
     </div>

@@ -10,6 +10,9 @@ import type {
   SurfaceResponse,
   ScanConfigInput,
   ScanDetailResponse,
+  AiStatus,
+  AiAnalysisData,
+  AiSummaryData,
 } from '../types';
 
 export function useScans(limit = 50) {
@@ -229,6 +232,103 @@ export function useDeleteScan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scans'] });
+    },
+  });
+}
+
+export function useAiStatus() {
+  return useQuery({
+    queryKey: ['ai-status'],
+    queryFn: async () => {
+      const { data, error, response } = await rawClient.GET('/ai/status');
+      if (error || !data) {
+        throw new ApiError(response.status, sanitizeErrorMessage(response.status, error));
+      }
+      return data as AiStatus;
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useExplainFinding(scanId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      findingId,
+      frameworkHint = 'generic',
+      forceRefresh = false,
+    }: {
+      findingId: string;
+      frameworkHint?: string;
+      forceRefresh?: boolean;
+    }) => {
+      if (!scanId) throw new Error('Scan ID required');
+      const { data, error, response } = await rawClient.POST(
+        '/scans/{scan_id}/findings/{finding_id}/explain',
+        {
+          params: { path: { scan_id: scanId, finding_id: findingId } },
+          body: { framework_hint: frameworkHint, force_refresh: forceRefresh },
+        }
+      );
+      if (error || !data) {
+        throw new ApiError(response.status, sanitizeErrorMessage(response.status, error));
+      }
+      return data as unknown as AiAnalysisData;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['findings', scanId] });
+      queryClient.invalidateQueries({ queryKey: ['finding', scanId, variables.findingId] });
+      queryClient.invalidateQueries({ queryKey: ['scan', scanId] });
+    },
+  });
+}
+
+export function useExplainTop(scanId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ n = 5 }: { n?: number } = {}) => {
+      if (!scanId) throw new Error('Scan ID required');
+      const { data, error, response } = await rawClient.POST(
+        '/scans/{scan_id}/explain-top',
+        {
+          params: { path: { scan_id: scanId }, query: { n } },
+        }
+      );
+      if (error || !data) {
+        throw new ApiError(response.status, sanitizeErrorMessage(response.status, error));
+      }
+      return data as unknown as {
+        analyses: AiAnalysisData[];
+        skipped_count: number;
+        calls_used: number;
+        calls_remaining: number;
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['findings', scanId] });
+      queryClient.invalidateQueries({ queryKey: ['scan', scanId] });
+    },
+  });
+}
+
+export function useAiSummary(scanId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!scanId) throw new Error('Scan ID required');
+      const { data, error, response } = await rawClient.POST(
+        '/scans/{scan_id}/ai-summary',
+        {
+          params: { path: { scan_id: scanId } },
+        }
+      );
+      if (error || !data) {
+        throw new ApiError(response.status, sanitizeErrorMessage(response.status, error));
+      }
+      return data as unknown as AiSummaryData;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scan', scanId] });
     },
   });
 }

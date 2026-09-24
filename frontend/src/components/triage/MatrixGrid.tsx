@@ -132,7 +132,7 @@ export const MatrixGrid: React.FC<MatrixGridProps> = ({
             className="p-2 border border-border-structural bg-canvas-base/60 text-slate-400 font-mono text-xs text-center"
           >
             <div className="font-medium text-slate-300">DENIED</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">{cell.actualStatus || 403}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">{cell.actualStatus || 403}</div>
           </td>
         );
     }

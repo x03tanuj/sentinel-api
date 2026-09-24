@@ -235,6 +235,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * AI feature detection
+         * @description Returns whether the AI analyst is configured. Never returns the LLM API key. Always available.
+         */
+        get: operations["get_ai_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scans/{scan_id}/findings/{finding_id}/explain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explain a finding with AI
+         * @description Generate an AI explanation for a specific finding. Returns 503 when AI is not configured, 409 if scan is not finished, 422 for invalid framework_hint, 429 when call cap is reached.
+         */
+        post: operations["explain_finding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scans/{scan_id}/explain-top": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explain the top-N findings
+         * @description Explain the top-N findings by severity then confidence. Skips already-analyzed findings. Stops at the call cap and reports skipped.
+         */
+        post: operations["explain_top_findings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scans/{scan_id}/ai-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate AI executive summary
+         * @description Generate an AI executive summary for a completed scan. Returns 503 if unconfigured, 409 if scan is not finished, 429 if cap reached.
+         */
+        post: operations["generate_ai_summary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -279,6 +359,90 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AiAnalysis
+         * @description Validated output schema for LLM-generated or template-based analysis.
+         */
+        AiAnalysis: {
+            /**
+             * Plain Explanation
+             * @default
+             */
+            plain_explanation: string;
+            /**
+             * Business Impact
+             * @default
+             */
+            business_impact: string;
+            /**
+             * Attacker Scenario
+             * @default
+             */
+            attacker_scenario: string;
+            /** Remediation Steps */
+            remediation_steps?: string[];
+            /**
+             * Code Fix Example
+             * @default
+             */
+            code_fix_example: string;
+            /**
+             * Code Language
+             * @default generic
+             */
+            code_language: string;
+            /** Verification Steps */
+            verification_steps?: string[];
+            /**
+             * Source
+             * @default template
+             */
+            source: string;
+            /** Model */
+            model?: string | null;
+            /**
+             * Prompt Version
+             * @default v1
+             */
+            prompt_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at?: string;
+            /** Warning */
+            warning?: string | null;
+        };
+        /**
+         * AiStatusResponse
+         * @description Response for GET /ai/status.
+         */
+        AiStatusResponse: {
+            /** Enabled */
+            enabled: boolean;
+            /** Provider */
+            provider?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Max Calls Per Scan */
+            max_calls_per_scan: number;
+        };
+        /**
+         * AiSummaryResponse
+         * @description Response for POST /scans/{id}/ai-summary.
+         */
+        AiSummaryResponse: {
+            /** Text */
+            text: string;
+            /** Source */
+            source: string;
+            /** Model */
+            model: string | null;
+            /** Generated At */
+            generated_at: string;
+            /** Calls Used */
+            calls_used: number;
+        };
         /** CancelResponse */
         CancelResponse: {
             /** Scan Id */
@@ -287,6 +451,38 @@ export interface components {
             cancelled: boolean;
             /** Status */
             status: string;
+        };
+        /**
+         * ExplainRequest
+         * @description Request body for POST /scans/{id}/findings/{fid}/explain.
+         */
+        ExplainRequest: {
+            /**
+             * Framework Hint
+             * @default generic
+             */
+            framework_hint: string;
+            /**
+             * Force Refresh
+             * @default false
+             */
+            force_refresh: boolean;
+        };
+        /**
+         * ExplainTopResponse
+         * @description Response for POST /scans/{id}/explain-top.
+         */
+        ExplainTopResponse: {
+            /** Analyses */
+            analyses: {
+                [key: string]: unknown;
+            }[];
+            /** Skipped Count */
+            skipped_count: number;
+            /** Calls Used */
+            calls_used: number;
+            /** Calls Remaining */
+            calls_remaining: number;
         };
         /** FindingsListResponse */
         FindingsListResponse: {
@@ -427,6 +623,12 @@ export interface components {
                     [key: string]: unknown;
                 };
             };
+            /**
+             * Use Ai Hints
+             * @description When true (and AI is configured), use LLM to suggest extra test coverage flags
+             * @default false
+             */
+            use_ai_hints: boolean;
         };
         /** ScanDetailResponse */
         ScanDetailResponse: {
@@ -947,6 +1149,145 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ai_status: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explain_finding: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                scan_id: string;
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ExplainRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiAnalysis"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explain_top_findings: {
+        parameters: {
+            query?: {
+                /** @description Number of findings to explain */
+                n?: number;
+                framework_hint?: string;
+            };
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                scan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplainTopResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_ai_summary: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                scan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiSummaryResponse"];
                 };
             };
             /** @description Validation Error */

@@ -180,3 +180,43 @@ Identified DESIGN-vs-API Gaps:
 3. Endpoint Priority Score in Surface API (GAP-03): `GET /scans/{id}/surface` returns `Endpoint` models without the computed risk rank attached. Proposed fix: add `priority_score: int` to `Endpoint` schema in `app/models.py`. (Needs backend change in Phase 9B/10).
 4. cURL Suite Export (GAP-04): UI offers "cURL Attack Suite" export. Assembled client-side from `finding.curl_poc` in Phase 9B.
 
+---
+
+### Phase 10 Completed: AI Analyst (Evidence-Only)
+
+Phase 10 implements an evidence-only AI analysis layer with rigorous data egress controls, prompt injection defenses, deterministic fallbacks, and full UI integration.
+
+#### Public Interfaces (`backend/app/ai/`)
+- `build_llm_payload(finding: Finding, framework_hint: str) -> dict`: Redacts all hosts, URLs, secrets, bodies, raw IDs, headers, tokens, and curl commands; packages only check, OWASP id, path template, method, severity, confidence, risk score components, attacker role, expected/actual status, changed/leaked field names, reproduction ratio, fix hint, template explanation, and framework hint.
+- `assert_payload_safe(serialized: str) -> None`: Pre-flight regex assertion scanning for JWTs, Bearer tokens, passwords, credentials, SSNs, credit cards, emails, URLs, and IP addresses. Aborts egress with `PayloadNotSafeError` on detection.
+- `analyze_finding(finding: Finding, framework_hint: str, provider: LLMProvider, settings: Settings) -> AiAnalysis`: Builds redacted payload, asserts safety, calls provider, validates against Pydantic schema with 1-shot retry on invalid JSON, sanitizes output, and falls back to deterministic template on any failure.
+- `summarize_scan(summary: dict, findings: list[Finding], provider: LLMProvider, settings: Settings) -> str`: Generates high-level executive summary from finding counts, check names, and path templates only.
+- `suggest_hints(endpoints: list[Endpoint], provider: LLMProvider, settings: Settings) -> AnalystHints`: Scan-time exploration hook; provides opt-in boundary test hints and likely object-level/privileged flags from sanitized endpoint metadata.
+- `apply_hints(endpoints: list[Endpoint], hints: AnalystHints) -> list[Endpoint]`: Safely overlays hint metadata onto endpoints without downgrading existing parser flags.
+- `get_provider(settings: Settings) -> LLMProvider | None`: Provider factory supporting Groq (`llama-3.1-8b-instant`), OpenRouter (`meta-llama/llama-3.1-8b-instruct:free`), and Google Gemini (`gemini-2.0-flash`).
+- `AiAnalysis(BaseModel)`: Output schema enforcing strict string length limits and prohibiting severity or confidence fields.
+
+#### Routes
+- `GET /ai/status`: Feature-detection status endpoint (`enabled`, `provider`, `model`, `max_calls_per_scan`). Never leaks keys.
+- `POST /scans/{id}/findings/{fid}/explain`: Generates or returns cached finding explanation (503 if unconfigured, 409 if incomplete, 422 if invalid framework, 429 if call cap reached).
+- `POST /scans/{id}/explain-top?n=5`: Batch-explains top findings by severity & confidence up to call cap.
+- `POST /scans/{id}/ai-summary`: Generates or returns executive scan summary.
+
+#### Config Flags (`backend/app/config.py`)
+- `AI_ENABLED` (bool, default `False`)
+- `LLM_PROVIDER` (`groq` | `openrouter` | `gemini`, default `groq`)
+- `LLM_API_KEY` (`SecretStr | None`, default `None`)
+- `LLM_MODEL` (str, default per provider)
+- `AI_TIMEOUT_SECONDS` (int, default 30)
+- `AI_MAX_CALLS_PER_SCAN` (int, default 15)
+- `AI_MAX_OUTPUT_TOKENS` (int, default 900)
+- `AI_CONCURRENCY` (int, default 2)
+
+#### Invariable Standing Rules:
+1. **The LLM never sees secrets, hosts, bodies or values.**
+2. **Findings are immutable except for attaching `ai_analysis`.**
+3. **All model output is sanitized and rendered strictly as text (no HTML/markdown injection).**
+4. **The entire product functions autonomously with AI disabled.**
+5. **AI hints are strictly opt-in (`use_ai_hints: true`), bounded by safety rules, and labeled with `hint_source: "llm"`.**
+
+

@@ -43,7 +43,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           {value}
         </span>
         {subtext && (
-          <span className="font-mono text-xs text-slate-500 truncate">
+          <span className="font-mono text-xs text-slate-400 truncate">
             {subtext}
           </span>
         )}

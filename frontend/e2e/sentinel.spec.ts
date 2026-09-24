@@ -89,6 +89,7 @@ test.describe('SentinelAPI End-to-End Suite', () => {
     await expect(page.locator('text=$TOKEN')).toBeVisible();
     await expect(page.locator('text=Bearer ey')).not.toBeVisible();
     await expect(page.locator('text=Suggested Remediation')).toBeVisible();
+    await expect(page.locator('text=AI analysis is not configured on this server')).toBeVisible();
 
     // Verify leaked field highlighting on data exposure finding
     const dataExpFinding = page
@@ -298,5 +299,137 @@ test.describe('SentinelAPI End-to-End Suite', () => {
       });
       expect(isOverflowing).toBe(false);
     }
+  });
+
+  test('7. AI Analyst Explain Flow, Consent Dialog, Badges, Severity Immutability & Axe Audit', async ({ page }) => {
+    // Assert network requests never contain secret keys or LLM API keys
+    page.on('request', (req) => {
+      const headers = req.headers();
+      for (const [, v] of Object.entries(headers)) {
+        expect(v).not.toContain('sk-');
+        expect(v).not.toContain('mock-test-key');
+        expect(v).not.toContain('LLM_API_KEY');
+      }
+      const postData = req.postData();
+      if (postData) {
+        expect(postData).not.toContain('sk-');
+        expect(postData).not.toContain('mock-test-key');
+      }
+    });
+
+    // If backend is running with AI unconfigured, provide route mocks for the UI flow
+    let aiConfigured = false;
+    try {
+      const statusRes = await fetch('http://127.0.0.1:8000/ai/status');
+      if (statusRes.ok) {
+        const body = await statusRes.json();
+        aiConfigured = body.enabled === true;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (!aiConfigured) {
+      await page.route('**/api/ai/status', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            enabled: true,
+            provider: 'groq',
+            model: 'llama-3.1-8b-instant',
+            max_calls_per_scan: 15,
+          }),
+        });
+      });
+
+      await page.route('**/api/scans/*/findings/*/explain', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            plain_explanation: 'Broken object-level authorization exposes orders without caller ownership checks.',
+            business_impact: 'Confidential order information exposed across tenant boundaries.',
+            attacker_scenario: 'Attacker iterates sequential order IDs to retrieve victim purchases.',
+            remediation_steps: [
+              'Enforce tenant boundary checks',
+              'Verify current user owns requested resource',
+              'Return 403 Forbidden on authorization failure',
+            ],
+            code_fix_example: 'if order.user_id != user.id:\n    raise HTTPException(403)',
+            code_language: 'python',
+            verification_steps: [
+              'Run SentinelAPI scan',
+              'Expect 403 Forbidden',
+            ],
+            source: 'llm',
+            model: 'llama-3.1-8b-instant',
+            prompt_version: 'v1',
+            generated_at: new Date().toISOString(),
+            warning: null,
+          }),
+        });
+      });
+    }
+
+    // Ensure we are on the results workspace of a completed scan with findings
+    let navigatedToScan = false;
+    if (createdScanId) {
+      await page.goto(`/scans/${createdScanId}`);
+      await page.waitForLoadState('networkidle');
+      if (await page.getByText('/orders/{id}', { exact: false }).first().isVisible({ timeout: 4000 }).catch(() => false)) {
+        navigatedToScan = true;
+      }
+    }
+
+    if (!navigatedToScan) {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      const triageLink = page.locator('tr:has-text("Crit") a:has-text("Open Triage")').first();
+      await expect(triageLink).toBeVisible({ timeout: 15_000 });
+      await triageLink.click();
+      await page.waitForLoadState('networkidle');
+    }
+
+    // Select BOLA finding
+    const bolaFinding = page.getByText('/orders/{id}', { exact: false }).first();
+    await expect(bolaFinding).toBeVisible({ timeout: 15_000 });
+    await bolaFinding.click();
+
+    // Verify initial severity chip is CRITICAL
+    const sevChip = page.locator('span[role="status"]').first();
+    await expect(sevChip).toHaveText(/CRITICAL/i);
+
+    // Click "Explain with AI"
+    const explainBtn = page.getByTestId('explain-ai-button');
+    await expect(explainBtn).toBeVisible({ timeout: 10_000 });
+    await explainBtn.click();
+
+    // Verify Consent Modal appears
+    await expect(page.getByRole('heading', { name: /AI Security & Data Egress Notice/i })).toBeVisible();
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'ai-consent-modal.png') });
+
+    // Accept consent
+    await page.click('button:has-text("Accept & Continue")');
+
+    // Verify analysis rendered as text
+    await expect(page.getByText('Plain Explanation')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('Broken object-level authorization')).toBeVisible();
+    await expect(page.getByText('AI-generated - verify before use')).toBeVisible();
+    await expect(page.getByText('Remediation Steps')).toBeVisible();
+    await expect(page.getByText('Code Fix Example')).toBeVisible();
+    await expect(page.getByText('Verification Steps')).toBeVisible();
+
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'ai-analysis-panel.png') });
+
+    // Assert severity chip remains strictly CRITICAL (immutable!)
+    await expect(sevChip).toHaveText(/CRITICAL/i);
+
+    // Axe audit on the inspector with AI panel open
+    const results = await new AxeBuilder({ page }).analyze();
+    const severeViolations = results.violations.filter(
+      (v) => v.impact === 'serious' || v.impact === 'critical'
+    );
+    expect(severeViolations).toEqual([]);
   });
 });

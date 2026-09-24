@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useCreateScan } from '../api/hooks';
+import { useCreateScan, useAiStatus } from '../api/hooks';
 import { Header } from '../components/common/Header';
 import { ApiError } from '../api/client';
 import {
@@ -26,6 +26,8 @@ const STORAGE_KEY_NON_SECRET = 'sentinelapi_new_scan_config';
 export const NewScanPage: React.FC = () => {
   const navigate = useNavigate();
   const createScanMutation = useCreateScan();
+  const { data: aiStatus } = useAiStatus();
+  const [useAiHints, setUseAiHints] = useState(false);
 
   // Mode: 'url' | 'json'
   const [specMode, setSpecMode] = useState<'url' | 'json'>('url');
@@ -271,6 +273,7 @@ export const NewScanPage: React.FC = () => {
         .map(([name]) => name),
       test_case_budget: testCaseBudget,
       max_requests: maxRequests,
+      use_ai_hints: useAiHints,
       sample_bodies: sampleBodiesPayload,
     };
 
@@ -654,6 +657,51 @@ export const NewScanPage: React.FC = () => {
                   placeholder='{"item": "Sample Item", "amount": 99.99}'
                   className="w-full px-3 py-1.5 rounded-tactical bg-canvas-base border border-border-structural text-slate-100 font-mono text-xs focus:outline-none focus:border-brand"
                 />
+              </div>
+
+              {/* AI Test Hinting (Task 5) */}
+              <div className="md:col-span-2 pt-3 border-t border-border-subdued">
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-tactical border transition-colors ${
+                    !aiStatus?.enabled
+                      ? 'bg-canvas-base border-border-structural opacity-60 cursor-not-allowed'
+                      : useAiHints
+                      ? 'bg-canvas-elevated border-purple-500/50 text-slate-200 cursor-pointer'
+                      : 'bg-canvas-base border-border-structural text-slate-400 cursor-pointer'
+                  }`}
+                  title={
+                    !aiStatus?.enabled
+                      ? 'AI analysis is not configured on this server (requires AI_ENABLED=true and LLM_API_KEY)'
+                      : 'Ask the LLM to inspect endpoint metadata and suggest extra boundary test cases'
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    id="use-ai-hints-checkbox"
+                    disabled={!aiStatus?.enabled}
+                    checked={useAiHints && !!aiStatus?.enabled}
+                    onChange={(e) => setUseAiHints(e.target.checked)}
+                    className="mt-0.5 accent-purple-500"
+                  />
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-slate-200">
+                        Use AI to suggest extra tests (experimental)
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[10px] font-mono">
+                        AI
+                      </span>
+                    </div>
+                    <span className="font-sans text-[11px] text-slate-400 block">
+                      Inspects endpoint path templates and metadata to add targeted boundary tests for BOLA and privileged endpoints.
+                      {!aiStatus?.enabled && (
+                        <span className="text-amber-400 block pt-0.5">
+                          (Disabled: AI is not configured on this server)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </label>
               </div>
             </div>
           </div>

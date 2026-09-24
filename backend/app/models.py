@@ -43,6 +43,8 @@ class Endpoint(BaseModel):
     is_object_level: bool = Field(default=False, description="Indicates if endpoint acts on specific object ID")
     is_privileged: bool = Field(default=False, description="Indicates if endpoint requires administrative role")
     tags: list[str] = Field(default_factory=list, description="Categorical tags from specification")
+    summary: str = Field(default="", description="Short summary or description from specification")
+    hint_source: str | None = Field(default=None, description="If 'llm', this endpoint's flags were augmented by AI hints")
 
 
 class Identity(BaseModel):
@@ -146,6 +148,11 @@ class Finding(BaseModel):
         if not (0.0 <= v <= 1.0):
             raise ValueError(f"Confidence score must be between 0.0 and 1.0, got {v}")
         return v
+
+    ai_analysis: dict[str, Any] | None = Field(
+        default=None,
+        description="AI-generated analysis attached after scan (never changes severity/confidence)",
+    )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert finding model to a serialized dictionary representation."""
