@@ -22,6 +22,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9000:9000"
+    environment:
+      - SECURE=${SECURE:-false}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-demo-only-32bytes-long!!}
     networks:
       - sentinel_net
     healthcheck:
