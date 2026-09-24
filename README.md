@@ -162,3 +162,83 @@ Sample output:
 └──────────┴───────────────┴─────────┴────────┴─────────────────┘
 ```
 
+---
+
+## Test Planning & Test Generation Engine
+
+SentinelAPI converts OpenAPI attack surfaces and authenticated identities into a concrete, budgeted test suite. The scanner uses real API discovery to map ownership and build an authorization matrix before generating test cases.
+
+### Discovery & Ground-Truth Authorization Matrix
+
+1. **Legitimate Discovery**: Authenticated collection GET endpoints (`/orders`, `/users/me`) are queried per persona to discover legitimately owned objects without guessing identifiers.
+2. **Authorization Matrix**: Compares every discovered object against every test persona to determine expected outcomes (`ALLOW` for owner or admin; `DENY` for unauthorized peers).
+
+### Test Case Categories
+
+The test generator produces prioritized cases across six distinct categories:
+- **`CROSS_USER` (BOLA/IDOR)**: High-priority probes attempting to access or modify objects belonging to a different persona.
+- **`PRIVILEGED_ENDPOINT` (BFLA)**: Administrative routes probed using regular non-admin credentials.
+- **`ADJACENT_ID`**: Probes numeric IDs adjacent to owned objects (`id - 1`, `id + 1`) to detect authorization bypass via sequential enumeration.
+- **`BOUNDARY`**: Extreme and invalid values (`0`, `-1`, `999999999`, null UUID) verifying proper resource lookup denial.
+- **`ANONYMOUS`**: Protected endpoints probed without credentials.
+- **`INVALID_TYPE`**: Malformed parameters (`abc`, `1;drop`, `' OR '1'='1`) testing robustness and parameter validation.
+
+### CLI Plan Command
+
+```bash
+cd backend
+python -m app.cli plan \
+  --spec http://localhost:9000/openapi.json \
+  --base-url http://localhost:9000 \
+  --identity userA,user,userA,passA123 \
+  --identity userB,user,userB,passB123 \
+  --identity admin,admin,admin,admin123 \
+  --budget 150
+```
+
+Sample output:
+```text
+    SentinelAPI Object Authorization Matrix     
+┏━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃ RESOURCE:ID ┃ OWNER  ┃ userA ┃ userB ┃ admin ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ order:101   │ userA  │  own  │ deny  │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ order:102   │ userA  │  own  │ deny  │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ order:103   │ userA  │  own  │ deny  │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ order:104   │ userB  │ deny  │  own  │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ order:105   │ userB  │ deny  │  own  │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ order:106   │ admin  │ deny  │ deny  │  own  │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ user:1      │ shared │ allow │ allow │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ user:2      │ shared │ allow │ allow │ admin │
+├─────────────┼────────┼───────┼───────┼───────┤
+│ user:3      │ shared │ allow │ allow │ admin │
+└─────────────┴────────┴───────┴───────┴───────┘
+
+          SentinelAPI Test Generation Plan           
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ CATEGORY            ┃ GENERATED ┃ KEPT (BUDGETED) ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ CROSS_USER          │    21     │       21        │
+├─────────────────────┼───────────┼─────────────────┤
+│ ADJACENT_ID         │    48     │       48        │
+├─────────────────────┼───────────┼─────────────────┤
+│ BOUNDARY            │    20     │       20        │
+├─────────────────────┼───────────┼─────────────────┤
+│ INVALID_TYPE        │    20     │       20        │
+├─────────────────────┼───────────┼─────────────────┤
+│ ANONYMOUS           │     9     │        9        │
+├─────────────────────┼───────────┼─────────────────┤
+│ PRIVILEGED_ENDPOINT │     2     │        2        │
+├─────────────────────┼───────────┼─────────────────┤
+│ TOTAL               │    120    │       120       │
+└─────────────────────┴───────────┴─────────────────┘
+Plan Budget Allocation: Generated: 120 | Capped to Budget: 120 / 150
+```
+

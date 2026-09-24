@@ -69,3 +69,16 @@ Public classes and functions:
 Core Rule:
 All scanner traffic MUST go through `Executor.execute`; raw ResponseRecords stay in memory; anything user-facing must be redacted or masked.
 
+## Phase 5 completed
+Implemented resource discovery, ground-truth authorization matrix construction, and prioritized, budget-capped test case generation.
+
+Public classes and functions:
+- `discover_ownership(endpoints, identities, executor, base_url="http://localhost:9000") -> dict[str, dict[str, list[OwnedObject]]]`: Queries legitimate collection GET and profile endpoints (/users/me) per identity without guessing IDs, learning owned resource objects up to `DISCOVERY_MAX_REQUESTS_PER_IDENTITY`.
+- `discover_via_creation(endpoints, identity, executor, sample_bodies, base_url="http://localhost:9000") -> list[OwnedObject]`: Opt-in object creation via POST endpoints for test setups, tracking created objects for subsequent testing and cleanup.
+- `build_matrix(owned, identities) -> list[MatrixCell]`: Constructs an authorization matrix mapping every known (resource, object_id) to each identity with ground-truth expected outcomes (`ALLOW` for owner or admin, `DENY` otherwise).
+- `render_matrix(cells, identities) -> str`: Visualizes the authorization matrix as a formatted Rich table (own/admin/deny per persona).
+- `generate_all(endpoints, identities, owned, matrix_cells, budget=150) -> GenerationResult`: Prioritizes, deduplicates, and caps test cases across six categories (CROSS_USER, PRIVILEGED_ENDPOINT, ADJACENT_ID, BOUNDARY, ANONYMOUS, INVALID_TYPE), guaranteeing CROSS_USER and PRIVILEGED_ENDPOINT cases are preserved before trimming.
+
+Core Rule:
+`generate_all` is the single entry point Phase 6 must call to get TestCases; it already respects the request budget.
+

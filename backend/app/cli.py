@@ -8,8 +8,11 @@ from pydantic import SecretStr
 from rich.console import Console
 from rich.table import Table
 
+from app.engine.auth_matrix import build_matrix, render_matrix
+from app.engine.discovery import discover_ownership
 from app.engine.http_executor import Executor
 from app.engine.identity import IdentityConfig, IdentityManager
+from app.engine.test_generator import TestCategory, generate_all
 from app.parser.describe import describe_surface, summarize
 from app.parser.openapi_loader import SpecLoadError, SpecValidationError, load_spec, resolve_and_validate
 from app.parser.risk_prioritizer import prioritize
@@ -129,6 +132,90 @@ async def execute_whoami(base_url: str, identity_specs: list[str], me_path: str 
         return 1
 
 
+async def execute_plan(
+    spec_source: str,
+    base_url: str,
+    identity_specs: list[str],
+    budget: int = 150,
+) -> int:
+    """Execute complete test planning pipeline: spec load -> discovery -> matrix -> test case generation."""
+    console = Console()
+    try:
+        # 1. Parse and build attack surface
+        raw_spec = await load_spec(spec_source)
+        resolved_spec = resolve_and_validate(raw_spec)
+        endpoints = build_attack_surface(resolved_spec)
+
+        async with Executor() as executor:
+            mgr = IdentityManager(base_url=base_url, executor=executor)
+            configs: list[IdentityConfig] = []
+            for spec in identity_specs:
+                parts = [p.strip() for p in spec.split(",")]
+                if len(parts) < 4:
+                    console.print(
+                        f"[bold red]Invalid identity format:[/bold red] '{spec}'. Expected: name,role,username,password",
+                        file=sys.stderr,
+                    )
+                    return 1
+                configs.append(
+                    IdentityConfig(
+                        name=parts[0],
+                        role=parts[1],
+                        username=parts[2],
+                        password=SecretStr(parts[3]),
+                    )
+                )
+
+            # 2. Authenticate personas
+            identities = await mgr.login_all(configs)
+
+            # 3. Discover legitimate object ownership
+            owned = await discover_ownership(endpoints, identities, executor, base_url=base_url)
+
+            # 4. Construct authorization matrix
+            matrix_cells = build_matrix(owned, identities)
+
+            # 5. Generate prioritized test cases
+            res = generate_all(endpoints, identities, owned, matrix_cells, budget=budget)
+            cases, stats = res.cases, res.stats
+
+            # 6. Render authorization matrix
+            matrix_table_str = render_matrix(matrix_cells, identities)
+            console.print(matrix_table_str)
+
+            # 7. Render category summary table
+            summary_table = Table(
+                title="SentinelAPI Test Generation Plan",
+                show_lines=True,
+                header_style="bold cyan",
+            )
+            summary_table.add_column("CATEGORY", style="bold white", justify="left")
+            summary_table.add_column("GENERATED", style="yellow", justify="center")
+            summary_table.add_column("KEPT (BUDGETED)", style="green", justify="center")
+
+            for cat in TestCategory:
+                gen_cnt = stats["generated"].get(cat.value, 0)
+                kept_cnt = stats["kept"].get(cat.value, 0)
+                summary_table.add_row(cat.value, str(gen_cnt), str(kept_cnt))
+
+            summary_table.add_row(
+                "[bold]TOTAL[/bold]",
+                f"[bold yellow]{stats['total_generated']}[/bold yellow]",
+                f"[bold green]{stats['total_kept']}[/bold green]",
+            )
+            console.print(summary_table)
+
+            console.print(
+                f"[bold cyan]Plan Budget Allocation:[/bold cyan] "
+                f"Generated: [bold yellow]{stats['total_generated']}[/bold yellow] | "
+                f"Capped to Budget: [bold green]{stats['total_kept']}[/bold green] / {budget}\n"
+            )
+            return 0
+    except Exception as exc:
+        console.print(f"[bold red]Plan Execution Error:[/bold red] {exc}", file=sys.stderr)
+        return 1
+
+
 def main() -> None:
     """Entry point for CLI commands."""
     parser = argparse.ArgumentParser(
@@ -170,6 +257,34 @@ def main() -> None:
         help="Endpoint path to probe identity profile (default: /users/me)",
     )
 
+    # Subcommand: plan
+    plan_parser = subparsers.add_parser(
+        "plan",
+        help="Execute discovery, build authorization matrix, and generate budgeted test plan",
+    )
+    plan_parser.add_argument(
+        "--spec",
+        required=True,
+        help="Local file path or allow-listed URL to OpenAPI specification",
+    )
+    plan_parser.add_argument(
+        "--base-url",
+        required=True,
+        help="Target base URL (e.g. http://localhost:9000)",
+    )
+    plan_parser.add_argument(
+        "--identity",
+        action="append",
+        required=True,
+        help="Identity in format: name,role,username,password (repeatable)",
+    )
+    plan_parser.add_argument(
+        "--budget",
+        type=int,
+        default=150,
+        help="Maximum test case execution budget (default: 150)",
+    )
+
     args = parser.parse_args()
 
     if args.command == "surface":
@@ -177,6 +292,9 @@ def main() -> None:
         sys.exit(exit_code)
     elif args.command == "whoami":
         exit_code = asyncio.run(execute_whoami(args.base_url, args.identity, args.me_path))
+        sys.exit(exit_code)
+    elif args.command == "plan":
+        exit_code = asyncio.run(execute_plan(args.spec, args.base_url, args.identity, args.budget))
         sys.exit(exit_code)
 
 

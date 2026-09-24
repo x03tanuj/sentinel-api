@@ -43,6 +43,14 @@ class Settings(BaseSettings):
         default=2_000_000,
         description="Maximum response size in bytes before stream truncation",
     )
+    DISCOVERY_MAX_REQUESTS_PER_IDENTITY: int = Field(
+        default=30,
+        description="Maximum discovery requests executed per identity",
+    )
+    TEST_CASE_BUDGET: int = Field(
+        default=150,
+        description="Default budget cap for generated test cases",
+    )
     LLM_PROVIDER: str = Field(
         default="groq",
         description="LLM provider name for finding explanation synthesis",
