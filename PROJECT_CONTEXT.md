@@ -50,3 +50,22 @@ Public API functions:
 - `prioritize(endpoints: list[Endpoint]) -> list[Endpoint]`: Sorts endpoints in descending order of risk score (state-changing object writes and privileged routes first, public unprivileged routes and utility routes last).
 - `describe_surface(endpoints: list[Endpoint]) -> str`: Renders a formatted Rich table displaying endpoints, auth requirements, object/privileged flags, inferred resources, and scores.
 
+## Phase 4 completed
+Implemented identity management, authentication orchestration, and the guarded HTTP execution engine.
+
+Public classes and functions:
+- `Executor.execute(method, url, identity=None, params=None, json_body=None, extra_headers=None) -> tuple[RequestRecord, ResponseRecord]`: Safely dispatches rate-limited HTTP probe requests through a token-bucket rate limiter, scope guard (`assert_in_scope`), request budget cap (`MAX_REQUESTS_PER_SCAN`), and streaming size truncation (`MAX_RESPONSE_BYTES`). Returns redacted RequestRecord and in-memory ResponseRecord.
+- `build_url(base_url: str, path_template: str, path_params=None, query=None) -> str`: Safely constructs complete URLs with percent-encoded path params (`safe=""`) to prevent path traversal.
+- `generate_curl(request: RequestRecord) -> str`: Generates shell-safe, copy-pasteable curl commands using `$TOKEN` placeholders for bearer credentials.
+- `IdentityManager(base_url, executor)`: In-memory identity registry managing test personas.
+  - `login(cfg: IdentityConfig) -> Identity`: Authenticates persona against target API and extracts user_id/role from JWT without signature verification.
+  - `login_all(configs: list[IdentityConfig]) -> list[Identity]`: Sequentially authenticates personas and raises aggregate `LoginFailedError` on any failure.
+  - `get(name: str) -> Identity`: Resolves registered identities or `anonymous`.
+- `redact_headers(headers: Mapping) -> dict`: Case-insensitively scrubs sensitive headers (`Authorization`, `Cookie`, `X-Api-Key`, etc.).
+- `redact_body(body: Any) -> Any`: Recursively scrubs fields matching sensitive keys (`password`, `token`, `secret`, `api_key`).
+- `redact_response(resp: ResponseRecord) -> ResponseRecord`: Returns a copy with scrubbed headers and body.
+- `mask_value(v: str) -> str`: Preserves first 2 and last 2 characters (e.g. `11*******33`) for evidence reporting.
+
+Core Rule:
+All scanner traffic MUST go through `Executor.execute`; raw ResponseRecords stay in memory; anything user-facing must be redacted or masked.
+

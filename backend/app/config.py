@@ -13,10 +13,7 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class ScopeViolationError(Exception):
-    """Raised when an operation or URL violates the configured target scope."""
-
-    pass
+from app.engine.errors import ScopeViolationError, SentinelError
 
 
 class Settings(BaseSettings):
@@ -41,6 +38,10 @@ class Settings(BaseSettings):
     MAX_REQUESTS_PER_SCAN: int = Field(
         default=1000,
         description="Global hard cap on total HTTP requests executed per scan",
+    )
+    MAX_RESPONSE_BYTES: int = Field(
+        default=2_000_000,
+        description="Maximum response size in bytes before stream truncation",
     )
     LLM_PROVIDER: str = Field(
         default="groq",
