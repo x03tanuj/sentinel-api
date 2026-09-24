@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI Discovered Attack Surface</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Container Queries & Forms -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-background": "#dfe2f2",
+            "on-primary-fixed-variant": "#004c69",
+            "surface-tint": "#7bd0ff",
+            "on-primary-fixed": "#001e2c",
+            "secondary-fixed": "#6ffbbe",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "primary-fixed-dim": "#7bd0ff",
+            "outline-variant": "#3e484f",
+            "surface-container-high": "#262a36",
+            "outline": "#87929a",
+            "primary": "#8ed5ff",
+            "on-primary-container": "#004965",
+            "on-primary": "#00354a",
+            "secondary-fixed-dim": "#4edea3",
+            "on-error-container": "#ffdad6",
+            "tertiary-container": "#f59e0b",
+            "on-surface-variant": "#bdc8d1",
+            "surface-variant": "#313441",
+            "on-secondary": "#003824",
+            "on-secondary-container": "#00311f",
+            "surface-dim": "#0f131e",
+            "on-tertiary-fixed-variant": "#653e00",
+            "tertiary-fixed-dim": "#ffb95f",
+            "background": "#0f131e",
+            "error-container": "#93000a",
+            "surface-container-lowest": "#0a0e19",
+            "primary-container": "#38bdf8",
+            "secondary-container": "#00a572",
+            "surface-container-low": "#171b27",
+            "surface-container-highest": "#313441",
+            "inverse-surface": "#dfe2f2",
+            "inverse-on-surface": "#2c303c",
+            "surface": "#0f131e",
+            "on-tertiary": "#472a00",
+            "secondary": "#4edea3",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container": "#1b1f2b",
+            "on-tertiary-container": "#613b00",
+            "primary-fixed": "#c4e7ff",
+            "on-secondary-fixed-variant": "#005236",
+            "inverse-primary": "#00668a",
+            "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed": "#002113",
+            "tertiary": "#ffc174",
+            "surface-bright": "#353945",
+            "on-surface": "#dfe2f2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "gutter": "0.75rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "title-md": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"],
+            "headline-xl-mobile": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-xl": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    
+    @keyframes tacticalPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.92); }
+    }
+    .pulse-glow {
+      animation: tacticalPulse 2.2s infinite ease-in-out;
+    }
+
+    /* Custom tactical cyber grid background overlay */
+    .cyber-grid-canvas {
+      background-image: 
+        linear-gradient(to right, rgba(35, 45, 66, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(35, 45, 66, 0.25) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* Cyber scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0e19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232d42;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased font-body-md min-h-screen flex flex-col selection:bg-primary-container selection:text-surface-container-lowest">
+<!-- TopNavBar (Shared Component Blueprint Anchor) -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest border-b border-outline-variant shadow-sm z-50 sticky top-0">
+<!-- Left Section: Brand Logo & Navigation Links -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<!-- Cyan Tactical Shield Icon -->
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant shadow-[0_0_10px_rgba(56,189,248,0.2)]">
+<span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex items-baseline gap-1.5">
+<span class="font-title-md text-title-md text-primary tracking-tight font-semibold">SentinelAPI</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container border border-outline-variant text-on-surface-variant">v2.4</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-5 ml-2">
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#dashboard">Dashboard</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#scans">Scans</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#authorization-matrix">Authorization Matrix</a>
+<!-- Active Tab: Attack Surface -->
+<a class="text-primary border-b-2 border-primary font-title-md text-title-md pb-1 flex items-center gap-1.5" href="#attack-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-primary pulse-glow"></span>
+          Attack Surface
+        </a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#audit-log">Audit Log</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#settings">Settings</a>
+</nav>
+</div>
+<!-- Center/Context Tactical Pills -->
+<div class="hidden xl:flex items-center gap-3">
+<!-- Target Context Pill -->
+<div class="flex items-center gap-2 px-3 py-1 rounded bg-surface-container-low border border-outline-variant font-code-sm text-code-sm">
+<span class="text-secondary pulse-glow text-xs">●</span>
+<span class="text-on-surface-variant">Target:</span>
+<span class="text-on-surface font-semibold">http://target_api:9000</span>
+<span class="text-outline text-[10px]">(spec: openapi.json)</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-container/20 text-secondary font-label-sm text-[9px] border border-secondary/30">READY</span>
+</div>
+<!-- Scope Guard Status Badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-outline-variant font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-primary" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span>Scope Guard: <span class="text-secondary font-semibold">Active</span></span>
+<span class="text-outline text-[10px] font-code-sm">(target_api:9000 allow-listed)</span>
+</div>
+</div>
+<!-- Right Trailing Actions & Profile -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 border-r border-outline-variant pr-3">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Help &amp; Docs">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Engine Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<!-- User Profile Avatar -->
+<div class="flex items-center gap-2 pl-1 cursor-pointer">
+<div class="w-7 h-7 rounded border border-outline-variant overflow-hidden bg-surface-container-high flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A futuristic cybersecurity threat analyst portrait in a dark telemetry command center, with sharp cyan screen reflections and high-tech visor instrumentation. Photorealistic cinematic composition, dramatic tactical contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlh8ROTXkmRIJCIpfrsNPkRlPSOoHvNbep5SOmVFjZPlrE5AXXdmH9Am5ayQW6eqE3BcIsL50NOc_rqI9oAcLPHbilxM2-TC3KIzvvOEIgf0dMinoHbOIPUUsvsIiQ6WRJ__wlrJO6-gAYm8OUUGuK-Ai45mO0GsSt677P_l-aGhXNZsdfp4-mD72s0lD4lnMeztxUHdD-TK11xgghoVHhTLzbtF25icT6u33mXnBQ3Hk4DV0X0U5M1Jg1G5cGufTBWfD74IuEmRm5"/>
+</div>
+<div class="hidden 2xl:flex flex-col text-left">
+<span class="font-title-md text-xs leading-none text-on-surface font-medium">SecOps Team A</span>
+<span class="font-label-sm text-[9px] text-primary leading-tight">LEAD ANALYST</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Workstation Canvas -->
+<main class="flex-1 cyber-grid-canvas px-space-lg py-4 flex flex-col gap-4 max-w-[1720px] w-full mx-auto">
+<!-- 2. Header & Metrics Bar -->
+<section class="flex flex-col gap-3">
+<!-- Breadcrumb & Tactical Status -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-outline">
+<span class="hover:text-primary transition-colors cursor-pointer">SENTINEL</span>
+<span>/</span>
+<span class="hover:text-primary transition-colors cursor-pointer">SURFACE MAPPING</span>
+<span>/</span>
+<span class="text-primary font-semibold">INVENTORY &amp; RISK</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary pulse-glow"></span>
+<span>TELEMETRY STREAM: CONNECTED</span>
+</div>
+</div>
+<!-- Title & Primary Control CTAs -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-3">
+<span>Discovered Attack Surface</span>
+<span class="font-label-sm text-label-sm tracking-widest px-2 py-0.5 rounded bg-primary-container/10 border border-primary-container/30 text-primary uppercase">
+              LIVE MAPPING ACTIVE
+            </span>
+</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Prioritized endpoint inventory, auth dependencies, and risk-weight mapping.
+          </p>
+</div>
+<div class="flex items-center gap-2.5">
+<!-- Secondary Action: Rescan Target Surface -->
+<button class="h-8 px-3.5 rounded bg-transparent border border-outline-variant text-on-surface hover:bg-surface-container hover:border-primary text-body-sm font-medium flex items-center gap-2 transition-all duration-150">
+<span class="material-symbols-outlined text-sm text-primary">sync</span>
+<span>Rescan Target Surface</span>
+</button>
+<!-- Secondary Action: Export Matrix -->
+<button class="h-8 px-3.5 rounded bg-transparent border border-outline-variant text-on-surface hover:bg-surface-container hover:border-primary text-body-sm font-medium flex items-center gap-2 transition-all duration-150">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">download</span>
+<span>Export Matrix</span>
+</button>
+</div>
+</div>
+<!-- Quick Metric Summary Chips/Cards Row (HUD Gauges) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-1">
+<!-- Metric 1: Total Endpoints -->
+<div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-outline">TOTAL ENDPOINTS</span>
+<span class="material-symbols-outlined text-primary text-sm">hub</span>
+</div>
+<div class="mt-1">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">12</span>
+<div class="font-code-sm text-[10px] text-on-surface-variant mt-0.5 flex items-center gap-1">
+<span class="text-secondary">●</span> 100% OpenAPI 3.1 parsed
+            </div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/20"></div>
+</div>
+<!-- Metric 2: Auth Required -->
+<div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-outline">AUTH REQUIRED</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="mt-1">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">8</span>
+<div class="font-code-sm text-[10px] text-on-surface-variant mt-0.5">
+              Strict token gating active
+            </div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/40"></div>
+</div>
+<!-- Metric 3: Object-Level -->
+<div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-outline">OBJECT-LEVEL TARGETS</span>
+<span class="material-symbols-outlined text-primary text-sm">filter_center_focus</span>
+</div>
+<div class="mt-1">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">5</span>
+<div class="font-code-sm text-[10px] text-on-surface-variant mt-0.5">
+              Target ID parameter bound
+            </div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/30"></div>
+</div>
+<!-- Metric 4: Privileged Admin -->
+<div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant flex flex-col justify-between relative overflow-hidden group hover:border-tertiary-container/40 transition-colors">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-outline">PRIVILEGED ADMIN</span>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<div class="mt-1">
+<span class="font-headline-lg text-headline-lg font-bold text-tertiary">2</span>
+<div class="font-code-sm text-[10px] text-on-surface-variant mt-0.5">
+              Elevated role boundaries
+            </div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-tertiary/40"></div>
+</div>
+<!-- Metric 5: Highest Priority Risk -->
+<div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant flex flex-col justify-between relative overflow-hidden col-span-2 md:col-span-1 shadow-[0_0_15px_rgba(239,68,68,0.06)]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-error">MAX RISK PRIORITY</span>
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+</div>
+<div class="mt-1 flex items-baseline justify-between">
+<div class="font-headline-lg text-headline-lg font-bold text-error">85 <span class="text-xs font-normal text-outline">/ 100</span></div>
+<span class="font-label-sm text-[9px] px-1.5 py-0.5 rounded bg-error-container/30 text-error border border-error/40 font-semibold tracking-wider">
+              HIGH RISK TARGET
+            </span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-error"></div>
+</div>
+</div>
+</section>
+<!-- 3. Tactical Filter Controls Bar -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 shadow-sm">
+<div class="flex flex-1 items-center gap-3">
+<!-- Monospace Search Input -->
+<div class="relative flex-1 max-w-lg">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-base">search</span>
+<input class="w-full h-8 pl-9 pr-3 rounded bg-surface border border-outline-variant text-on-surface placeholder:text-outline font-code-sm text-code-sm focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Search endpoint path or resource (e.g. /orders)..." type="text"/>
+</div>
+<!-- Method Filter Chips -->
+<div class="hidden sm:flex items-center gap-1.5 border-l border-outline-variant pl-3">
+<!-- All Methods (Active Cyan Pill) -->
+<button class="h-7 px-2.5 rounded bg-primary text-surface-container-lowest font-label-sm text-label-sm font-semibold flex items-center gap-1 shadow-[0_0_8px_rgba(56,189,248,0.3)]">
+            All Methods
+          </button>
+<!-- GET -->
+<button class="h-7 px-2 rounded bg-surface-container border border-outline-variant text-primary hover:border-primary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span>GET</span>
+<span class="px-1 rounded bg-surface-container-high text-[9px] font-bold text-on-surface">5</span>
+</button>
+<!-- POST -->
+<button class="h-7 px-2 rounded bg-surface-container border border-outline-variant text-secondary hover:border-secondary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span>POST</span>
+<span class="px-1 rounded bg-surface-container-high text-[9px] font-bold text-on-surface">3</span>
+</button>
+<!-- PUT -->
+<button class="h-7 px-2 rounded bg-surface-container border border-outline-variant text-tertiary hover:border-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span>PUT</span>
+<span class="px-1 rounded bg-surface-container-high text-[9px] font-bold text-on-surface">2</span>
+</button>
+<!-- DELETE -->
+<button class="h-7 px-2 rounded bg-surface-container border border-outline-variant text-error hover:border-error font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span>DELETE</span>
+<span class="px-1 rounded bg-surface-container-high text-[9px] font-bold text-on-surface">2</span>
+</button>
+</div>
+</div>
+<!-- Toggle Filters & Resource Dropdown Selector -->
+<div class="flex items-center flex-wrap gap-2">
+<!-- Toggle: Auth Required (Active) -->
+<button class="h-7 px-2.5 rounded bg-surface-container border border-primary text-primary font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="text-xs">✔</span>
+<span>Auth Required</span>
+</button>
+<!-- Toggle: Object-Level Only -->
+<button class="h-7 px-2.5 rounded bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface hover:border-primary font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Object-Level Only</span>
+</button>
+<!-- Toggle: Privileged Only -->
+<button class="h-7 px-2.5 rounded bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface hover:border-tertiary font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="text-tertiary text-xs">★</span>
+<span>Privileged Only</span>
+</button>
+<!-- Resource Dropdown selector -->
+<div class="relative">
+<button class="h-7 px-3 rounded bg-surface-container border border-outline-variant text-on-surface hover:border-outline font-code-sm text-code-sm flex items-center gap-2 transition-colors">
+<span class="text-on-surface-variant">Resource:</span>
+<span class="font-medium text-primary">All Resources (orders, users, reports, auth)</span>
+<span class="material-symbols-outlined text-xs text-outline">arrow_drop_down</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 4. Attack Surface Sortable Table -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-sm flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<!-- Column Headers -->
+<thead>
+<tr class="h-8 bg-surface-container-low border-b border-outline-variant font-label-sm text-label-sm text-outline select-none">
+<th class="w-[100px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>METHOD</span>
+<span class="material-symbols-outlined text-[10px]">unfold_more</span>
+</div>
+</th>
+<th class="w-[360px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>ENDPOINT PATH</span>
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span>
+</div>
+</th>
+<th class="w-[160px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>AUTH REQUIREMENT</span>
+<span class="material-symbols-outlined text-[10px]">unfold_more</span>
+</div>
+</th>
+<th class="w-[140px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>OBJECT-LEVEL</span>
+<span class="material-symbols-outlined text-[10px]">unfold_more</span>
+</div>
+</th>
+<th class="w-[140px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>PRIVILEGED</span>
+<span class="material-symbols-outlined text-[10px]">unfold_more</span>
+</div>
+</th>
+<th class="w-[130px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>RESOURCE</span>
+<span class="material-symbols-outlined text-[10px]">unfold_more</span>
+</div>
+</th>
+<th class="w-[220px] px-3 font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+<span>RISK PRIORITY</span>
+<span class="material-symbols-outlined text-[10px]">arrow_downward</span>
+</div>
+</th>
+<th class="w-[80px] px-3 text-right font-semibold uppercase tracking-wider">
+<span>ACTION</span>
+</th>
+</tr>
+</thead>
+<!-- Table Rows (8 Specific Endpoints) -->
+<tbody class="divide-y divide-outline-variant/40 font-body-sm">
+<!-- Row 1: DELETE /orders/{id} -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-error-container/20 border border-error/40 text-error font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  DELETE
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface-variant font-mono">/orders/</span><span class="text-primary font-semibold bg-primary-container/10 px-1 rounded">{id}</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-primary/30 text-primary font-label-sm text-[10px] inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Object-Level
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  orders
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-error font-semibold">85 / 100</span>
+<span class="text-error font-label-sm text-[9px] uppercase font-bold tracking-wider">High Risk</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-tertiary via-error to-error rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 2: PUT /orders/{id} -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-tertiary-container/20 border border-tertiary/40 text-tertiary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  PUT
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface-variant font-mono">/orders/</span><span class="text-primary font-semibold bg-primary-container/10 px-1 rounded">{id}</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-primary/30 text-primary font-label-sm text-[10px] inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Object-Level
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  orders
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-tertiary font-semibold">80 / 100</span>
+<span class="text-error font-label-sm text-[9px] uppercase font-bold tracking-wider">High Risk</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-tertiary to-error rounded-full" style="width: 80%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 3: GET /orders/{id} -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/20 border border-primary/40 text-primary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  GET
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface-variant font-mono">/orders/</span><span class="text-primary font-semibold bg-primary-container/10 px-1 rounded">{id}</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-primary/30 text-primary font-label-sm text-[10px] inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Object-Level
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  orders
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-tertiary font-semibold">75 / 100</span>
+<span class="text-tertiary font-label-sm text-[9px] uppercase font-bold tracking-wider">High Risk</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 75%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 4: POST /orders -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-secondary-container/20 border border-secondary/40 text-secondary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  POST
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface font-mono">/orders</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  orders
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-on-surface-variant font-semibold">70 / 100</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-tertiary rounded-full" style="width: 70%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 5: GET /admin/users -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/20 border border-primary/40 text-primary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  GET
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface font-mono">/admin/users</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-tertiary-container/20 border border-tertiary/40 text-tertiary font-label-sm text-[10px] inline-flex items-center gap-1 font-semibold">
+                  ★ Admin Role
+                </span>
+</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  admin
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-tertiary font-semibold">78 / 100</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-tertiary to-error rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 6: GET /users/{id} -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/20 border border-primary/40 text-primary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  GET
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface-variant font-mono">/users/</span><span class="text-primary font-semibold bg-primary-container/10 px-1 rounded">{id}</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-primary/30 text-primary font-label-sm text-[10px] inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Object-Level
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  users
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-on-surface-variant font-semibold">65 / 100</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 65%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 7: GET /reports/summary -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/20 border border-primary/40 text-primary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  GET
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface font-mono">/reports/summary</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary/30 text-primary font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔒</span> Bearer JWT
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-tertiary-container/20 border border-tertiary/40 text-tertiary font-label-sm text-[10px] inline-flex items-center gap-1 font-semibold">
+                  ★ Admin Role
+                </span>
+</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  reports
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-on-surface-variant font-semibold">60 / 100</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+<!-- Row 8: POST /auth/login -->
+<tr class="h-10 hover:bg-surface-container/60 transition-colors group">
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-secondary-container/20 border border-secondary/40 text-secondary font-label-sm text-[10px] font-bold tracking-wider inline-block">
+                  POST
+                </span>
+</td>
+<td class="px-3 font-code-md text-code-md text-on-surface">
+<span class="text-on-surface font-mono">/auth/login</span>
+</td>
+<td class="px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high border border-outline-variant text-outline font-code-sm text-[11px] inline-flex items-center gap-1">
+<span>🔓</span> Public (None)
+                </span>
+</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3 text-outline font-mono">—</td>
+<td class="px-3">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60">
+                  auth
+                </span>
+</td>
+<td class="px-3">
+<div class="flex flex-col gap-1 w-full max-w-[190px]">
+<div class="flex justify-between items-center font-code-sm text-[11px]">
+<span class="text-secondary font-semibold">20 / 100</span>
+<span class="text-secondary font-label-sm text-[9px] uppercase font-bold tracking-wider">Low</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary/80 rounded-full" style="width: 20%"></div>
+</div>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-7 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant hover:border-primary text-primary font-label-sm text-label-sm transition-colors">
+                  Audit
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 5. Bottom Bar & Quick Actions -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3 shadow-sm">
+<!-- Left: Status Counter & Selection -->
+<div class="flex items-center gap-3 text-body-sm text-on-surface-variant font-code-sm">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Showing <strong class="text-on-surface">8</strong> of <strong class="text-on-surface">12</strong> endpoints (filtered)</span>
+</span>
+<span class="text-outline">|</span>
+<span class="text-outline text-xs">8 selected for batch verification</span>
+</div>
+<!-- Right CTAs -->
+<div class="flex items-center gap-3">
+<!-- Export OpenAPI Surface (JSON) -->
+<button class="h-8 px-3 rounded bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-title-md text-xs font-medium flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm text-primary">download</span>
+<span>Export OpenAPI Surface (JSON)</span>
+</button>
+<!-- Primary Vibrant Cyan Button -->
+<button class="h-8 px-4 rounded bg-primary-container text-surface-container-lowest font-title-md text-xs font-bold flex items-center gap-2 hover:bg-[#7dd3fc] hover:shadow-[0_0_12px_rgba(56,189,248,0.5)] active:scale-95 transition-all">
+<span>▶</span>
+<span>Audit Selected Endpoints</span>
+</button>
+</div>
+</section>
+<!-- Telemetry Footnote Line -->
+<footer class="flex items-center justify-between px-1 py-1 font-code-sm text-[11px] text-outline">
+<div class="flex items-center gap-2">
+<span class="text-secondary pulse-glow">●</span>
+<span>Engine Status: Synchronized with target_api:9000</span>
+<span>•</span>
+<span>Fuzzing Workers: 4 ready</span>
+<span>•</span>
+<span>Zero-trust matrix synced</span>
+</div>
+<div class="hidden sm:block text-outline">
+        SentinelAPI Core v2.4.1 (Build 4410-STABLE)
+      </div>
+</footer>
+</main>
+</body></html>

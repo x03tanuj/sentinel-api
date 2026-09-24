@@ -468,6 +468,22 @@ curl http://localhost:8000/scans/<scan_id>/report.md -o report.md
 curl http://localhost:8000/scans/<scan_id>/report.json -o report.json
 ```
 
+---
 
+## Design System & Dashboard UI (Phase 9A)
 
+The SentinelAPI frontend dashboard was designed using Google Stitch MCP under the **Tactical Cyber Reconnaissance** visual system. All design artifacts, tokens, and specifications reside in `frontend/design/`:
 
+- **Design Philosophy & Visual Brief:** [`frontend/design/BRIEF_USER.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/BRIEF_USER.md)
+- **Tokens & Tailwind Theme:** [`frontend/design/DESIGN_SYSTEM.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/DESIGN_SYSTEM.md)
+- **Screen-to-API Mappings & Forensics:** [`frontend/design/SCREENS.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/SCREENS.md)
+- **Stitch Project Registry:** [`frontend/design/stitch/PROJECT.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/PROJECT.md) (Project ID `16595067987113609613`)
+
+### Screen Artifacts:
+1. **Results Triage Workspace:** [`frontend/design/stitch/01-results-triage-workspace/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/01-results-triage-workspace/) — Main command center with metric HUDs, filterable finding explorer, dual-identity differential inspector, and cURL reproducer console.
+2. **New Scan Configuration:** [`frontend/design/stitch/02-new-scan/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/02-new-scan/) — Modal for multi-persona auth setup, check toggles, budget slider, and scope guard gating.
+3. **Live Scan Progress:** [`frontend/design/stitch/03-live-scan-progress/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/03-live-scan-progress/) — 8-stage stepper, live progress telemetry, and streaming monospace event log.
+4. **Authorization Matrix:** [`frontend/design/stitch/04-authorization-matrix/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/04-authorization-matrix/) — Heatmap of object ownership vs runtime access boundaries across all test identities.
+5. **Attack Surface:** [`frontend/design/stitch/05-attack-surface/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/05-attack-surface/) — Discovered OpenAPI route inventory with risk priority ranking.
+6. **Scan History:** [`frontend/design/stitch/06-scan-history/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/06-scan-history/) — Historical audit vault, severity distribution badges, and report exports.
+7. **States Sheet:** [`frontend/design/stitch/07-states-sheet/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/07-states-sheet/) — Loading skeletons, unreachable backend, execution failures, cancellations, and empty states.

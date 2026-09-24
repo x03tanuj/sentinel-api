@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI - New Scan Configuration Dialog</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#4edea3",
+            "on-primary": "#00354a",
+            "inverse-on-surface": "#2c303c",
+            "outline-variant": "#3e484f",
+            "on-error-container": "#ffdad6",
+            "surface-variant": "#313441",
+            "on-secondary-fixed": "#002113",
+            "on-primary-fixed-variant": "#004c69",
+            "outline": "#87929a",
+            "tertiary": "#ffc174",
+            "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed-variant": "#005236",
+            "on-primary-container": "#004965",
+            "primary": "#8ed5ff",
+            "error": "#ffb4ab",
+            "on-tertiary-container": "#613b00",
+            "surface-container-lowest": "#0a0e19",
+            "secondary-fixed": "#6ffbbe",
+            "surface-container-highest": "#313441",
+            "tertiary-fixed-dim": "#ffb95f",
+            "on-secondary": "#003824",
+            "background": "#0f131e",
+            "error-container": "#93000a",
+            "primary-container": "#38bdf8",
+            "on-primary-fixed": "#001e2c",
+            "tertiary-container": "#f59e0b",
+            "secondary-container": "#00a572",
+            "inverse-surface": "#dfe2f2",
+            "surface-container-low": "#171b27",
+            "on-tertiary": "#472a00",
+            "surface-tint": "#7bd0ff",
+            "on-secondary-container": "#00311f",
+            "surface-dim": "#0f131e",
+            "on-background": "#dfe2f2",
+            "surface-bright": "#353945",
+            "on-surface-variant": "#bdc8d1",
+            "secondary-fixed-dim": "#4edea3",
+            "primary-fixed": "#c4e7ff",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container-high": "#262a36",
+            "surface-container": "#1b1f2b",
+            "on-error": "#690005",
+            "on-tertiary-fixed-variant": "#653e00",
+            "inverse-primary": "#00668a",
+            "surface": "#0f131e",
+            "primary-fixed-dim": "#7bd0ff",
+            "on-surface": "#dfe2f2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "gutter": "0.75rem",
+            "space-xl": "1.5rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "title-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "headline-xl-mobile": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .tactical-glow {
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+    }
+    .tactical-modal-glow {
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2), 0 20px 40px -10px rgba(0, 0, 0, 0.85);
+    }
+    .pulse-dot {
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0e19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232d42;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3e484f;
+    }
+  </style>
+</head>
+<body class="bg-[#06080F] text-on-surface antialiased min-h-screen flex flex-col font-body-md select-none overflow-x-hidden">
+<!-- ================= TOP NAVIGATION BAR (Shared Component) ================= -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest border-b border-outline-variant shadow-sm z-50 sticky top-0">
+<div class="flex items-center gap-space-md">
+<!-- Brand & Shield -->
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="shield">shield</span>
+<span class="font-title-md text-title-md text-primary tracking-tight font-semibold">SentinelAPI</span>
+</div>
+<!-- Scope Indicator Chips -->
+<div class="hidden lg:flex items-center gap-space-xs ml-space-sm pl-space-sm border-l border-outline-variant">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container border border-[#232D42]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary pulse-dot"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Target:</span>
+<span class="font-code-sm text-code-sm text-primary tracking-tight">http://target_api:9000</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low border border-secondary/40 text-secondary">
+<span class="material-symbols-outlined text-[13px]" data-icon="lock">lock</span>
+<span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold">Scope Guard: ENFORCED</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-space-lg">
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<!-- Scans tab actively selected -->
+<a class="text-primary border-b-2 border-primary font-title-md text-title-md pb-1 flex items-center gap-1" href="#">
+<span>Scans</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container inline-block"></span>
+</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Findings</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+<!-- Trailing Actions & Avatar -->
+<div class="flex items-center gap-space-sm">
+<button class="hidden sm:inline-flex items-center gap-1 px-space-sm py-1 rounded bg-transparent border border-outline-variant text-on-surface font-title-md text-body-sm hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="file_download">file_download</span>
+<span>Export</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded bg-primary-container text-on-primary font-title-md text-body-sm font-semibold hover:bg-[#7dd3fc] tactical-glow transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="play_arrow">play_arrow</span>
+<span>Run Scan</span>
+</button>
+<div class="flex items-center gap-1 border-l border-outline-variant pl-space-sm ml-1 text-on-surface-variant">
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Help">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+</button>
+</div>
+<img class="w-7 h-7 rounded-full border border-outline-variant object-cover ml-1" data-alt="A tactical cybersecurity analyst profile portrait depicted with high-contrast low-key studio lighting, featuring deep slate blue shadows, faint cyan rim lighting, and a sharp professional expression suited for a mission-critical SecOps operating center." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8y0mnDK75IVFuTYN-ascwD8_9zFR9QKI1Z18uROIdtmEkqRdWNEA-M8Dc-zMELIW5NXm2oO5z_GtcRzYvgryCx6ZWYRpsVd730XGd37qv2y1vkwwBrjkkh4g4O24I__kcYSXJR3OA6Ab9ev92DbsTlCyrdch0pU9Z7vDHzU8M-ngepfrlNLB5Rc2RL3d-UomZeeOQEJaZHJsWHCxJnLPBZ2VNJLuy-kEjfvyCnPZ9NOLqIpUIb0JDeTGiMhQuMPE33CH1f9mLzmJL"/>
+</div>
+</header>
+<!-- ================= MODAL BACKDROP & DIALOG CANVAS ================= -->
+<main class="flex-1 flex items-center justify-center p-space-md sm:p-space-lg relative overflow-y-auto">
+<!-- Background Dim / Grid Atmosphere -->
+<div class="fixed inset-0 bg-[#06080F]/85 backdrop-blur-[2px] z-10 pointer-events-none"></div>
+<!-- ================= MODAL DIALOG CONTAINER ================= -->
+<div class="relative z-20 w-full max-w-4xl bg-[#0D111C] border border-[#232D42] rounded-lg tactical-modal-glow flex flex-col shadow-2xl my-auto">
+<!-- Tactical Corner Accents -->
+<div class="absolute -top-[1px] -left-[1px] w-3 h-3 border-t-2 border-l-2 border-primary-container pointer-events-none"></div>
+<div class="absolute -top-[1px] -right-[1px] w-3 h-3 border-t-2 border-r-2 border-primary-container pointer-events-none"></div>
+<div class="absolute -bottom-[1px] -left-[1px] w-3 h-3 border-b-2 border-l-2 border-primary-container pointer-events-none"></div>
+<div class="absolute -bottom-[1px] -right-[1px] w-3 h-3 border-b-2 border-r-2 border-primary-container pointer-events-none"></div>
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-space-lg py-space-md border-b border-[#232D42] bg-[#0A0E19]">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-[#151B2B] border border-primary-container/40 flex items-center justify-center text-primary-container shadow-[0_0_10px_rgba(56,189,248,0.2)]">
+<span class="material-symbols-outlined text-[20px]" data-icon="security">security</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight flex items-center gap-2">
+              Configure &amp; Launch Security Audit
+              <span class="text-[10px] font-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-primary border border-primary/20">V2.4</span>
+</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Set target schema, multi-persona authorization matrix, test suites, and execution limits</p>
+</div>
+</div>
+<button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-[#151B2B] border border-transparent hover:border-[#232D42] transition-colors" title="Close dialog">
+<span class="material-symbols-outlined text-[18px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Scope-Guard Banner -->
+<div class="mx-space-lg mt-space-md px-space-md py-2.5 rounded bg-[#151B2B] border-l-4 border-l-tertiary-container border-y border-r border-[#232D42] flex items-center justify-between gap-space-sm shadow-inner">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-tertiary-container text-[18px]" data-icon="lock">lock</span>
+<p class="font-code-sm text-code-sm text-on-surface leading-tight">
+<span class="text-tertiary-container font-semibold tracking-wide uppercase mr-1">Scope Guard Active:</span>
+            Only allow-listed targets (<span class="text-primary underline">http://target_api:9000</span>) can be audited. External/unauthorized targets are rejected by kernel policy.
+          </p>
+</div>
+<span class="font-label-sm text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-tertiary-container/10 border border-tertiary-container/30 text-tertiary">KERNEL ENFORCED</span>
+</div>
+<!-- Modal Body (Scrollable Content) -->
+<div class="p-space-lg space-y-space-lg max-h-[calc(86vh-170px)] overflow-y-auto">
+<!-- ================= SECTION 1: Target Specification ================= -->
+<section class="space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">01 // TARGET SPECIFICATION</span>
+</div>
+<!-- Segmented Tabs -->
+<div class="inline-flex p-0.5 rounded bg-[#06080F] border border-[#232D42]">
+<button class="px-space-sm py-0.5 rounded font-label-sm text-label-sm bg-primary-container text-on-primary font-semibold shadow-sm transition-all">
+                OpenAPI Spec URL
+              </button>
+<button class="px-space-sm py-0.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors">
+                Paste OpenAPI JSON
+              </button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Target Spec URL -->
+<div class="bg-[#151B2B] p-space-sm rounded border border-[#232D42] space-y-1">
+<div class="flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span>TARGET SPEC URL</span>
+<span class="text-secondary flex items-center gap-1 font-label-sm text-[10px]">
+<span class="material-symbols-outlined text-[13px]" data-icon="check_circle">check_circle</span>
+                  200 OK - Valid OpenAPI 3.1 schema
+                </span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-[#06080F] border border-[#232D42] rounded px-2.5 py-1.5 text-on-surface font-code-sm text-code-sm focus:border-primary-container focus:ring-0 focus:outline-none" readonly="" type="text" value="http://target_api:9000/openapi.json"/>
+</div>
+</div>
+<!-- Base Target URL -->
+<div class="bg-[#151B2B] p-space-sm rounded border border-[#232D42] space-y-1">
+<div class="flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<span>BASE TARGET URL</span>
+<span class="text-primary flex items-center gap-1 font-label-sm text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Reachable (14ms)
+                </span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-[#06080F] border border-[#232D42] rounded px-2.5 py-1.5 text-on-surface font-code-sm text-code-sm focus:border-primary-container focus:ring-0 focus:outline-none" readonly="" type="text" value="http://target_api:9000"/>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 2: Multi-Tenant & Persona Auth Matrix ================= -->
+<section class="space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">02 // MULTI-TENANT &amp; PERSONA AUTH MATRIX</span>
+</div>
+<span class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="info">info</span>
+              Passwords are never stored on disk or logged; enter credentials per scan session.
+            </span>
+</div>
+<!-- Table Container -->
+<div class="border border-[#232D42] rounded bg-[#0A0E19] overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-[#232D42] bg-[#0D111C] font-label-sm text-label-sm text-outline">
+<th class="py-2 px-space-md uppercase font-semibold">Name</th>
+<th class="py-2 px-space-md uppercase font-semibold">Role</th>
+<th class="py-2 px-space-md uppercase font-semibold">Username / Subject</th>
+<th class="py-2 px-space-md uppercase font-semibold">Password</th>
+<th class="py-2 px-space-sm text-right uppercase font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#151B2B] font-code-sm text-code-sm">
+<!-- Row 1: userA -->
+<tr class="hover:bg-[#151B2B]/60 transition-colors">
+<td class="py-2 px-space-md text-on-surface font-medium">userA</td>
+<td class="py-2 px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-[10px] bg-primary/10 text-primary border border-primary/30 uppercase">User</span>
+</td>
+<td class="py-2 px-space-md text-on-surface-variant">user_a</td>
+<td class="py-2 px-space-md">
+<input class="bg-[#06080F] border border-[#232D42] rounded px-2 py-1 text-on-surface font-code-sm text-code-sm w-36 tracking-widest" readonly="" type="password" value="secretuserA123"/>
+</td>
+<td class="py-2 px-space-sm text-right">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-[#151B2B] transition-colors" title="Delete persona">
+<span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: userB (ERROR STATE) -->
+<tr class="bg-[#EF4444]/5 hover:bg-[#EF4444]/10 transition-colors">
+<td class="py-2 px-space-md text-on-surface font-medium">userB</td>
+<td class="py-2 px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-[10px] bg-primary/10 text-primary border border-primary/30 uppercase">User</span>
+</td>
+<td class="py-2 px-space-md text-on-surface-variant">user_b</td>
+<td class="py-2 px-space-md">
+<div class="relative">
+<input class="bg-[#06080F] border-2 border-[#EF4444] rounded px-2 py-1 text-on-surface font-code-sm text-code-sm w-36 focus:outline-none shadow-[0_0_8px_rgba(239,68,68,0.25)]" placeholder="••••••••••" type="password" value=""/>
+</div>
+</td>
+<td class="py-2 px-space-sm text-right">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-[#151B2B] transition-colors" title="Delete persona">
+<span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 Error Alert Subrow -->
+<tr class="bg-[#EF4444]/10">
+<td class="px-space-md py-1.5 border-t border-[#EF4444]/30" colspan="5">
+<div class="flex items-center gap-1.5 text-error font-code-sm text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="warning">warning</span>
+<span>Identity 'userB': Password field is required for authentication.</span>
+</div>
+</td>
+</tr>
+<!-- Row 3: admin -->
+<tr class="hover:bg-[#151B2B]/60 transition-colors">
+<td class="py-2 px-space-md text-on-surface font-medium">admin</td>
+<td class="py-2 px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-[10px] bg-tertiary-container/15 text-tertiary border border-tertiary/30 uppercase">Admin</span>
+</td>
+<td class="py-2 px-space-md text-on-surface-variant">admin_user</td>
+<td class="py-2 px-space-md">
+<input class="bg-[#06080F] border border-[#232D42] rounded px-2 py-1 text-on-surface font-code-sm text-code-sm w-36 tracking-widest" readonly="" type="password" value="adm!nPassw0rd99"/>
+</td>
+<td class="py-2 px-space-sm text-right">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-[#151B2B] transition-colors" title="Delete persona">
+<span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Add Identity Action Bar -->
+<div class="p-2 border-t border-[#232D42] bg-[#0D111C] flex justify-between items-center">
+<span class="font-label-sm text-[11px] text-outline">3 identities registered for authorization boundary tests</span>
+<button class="px-2.5 py-1 rounded bg-[#151B2B] hover:bg-[#1b2236] border border-[#232D42] hover:border-primary-container text-on-surface font-title-md text-body-sm flex items-center gap-1 transition-all">
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="add">add</span>
+<span>Add Identity</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 3: Check Suite Selection ================= -->
+<section class="space-y-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">03 // CHECK SUITE SELECTION</span>
+<span class="font-label-sm text-[11px] text-secondary">6 of 6 suites active</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-sm">
+<!-- Card 1: BOLA -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">BOLA</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">Broken Object Level Authorization - tests unauthorized cross-user object access</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+<!-- Card 2: Function-Level Auth -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Function-Level Auth</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">BFLA - tests unauthorized access to administrative and privileged routes</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+<!-- Card 3: Data Exposure -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Data Exposure</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">Detects PII, credentials, and excessive object attributes returned</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+<!-- Card 4: Rate Limiting -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Rate Limiting</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">Validates burst rate protection and 429 throttling headers</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+<!-- Card 5: Unauthenticated Access -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Unauthenticated Access</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">Probes routes without bearer credentials</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+<!-- Card 6: Input Handling -->
+<div class="p-space-sm rounded bg-[#151B2B] border border-primary-container/40 flex flex-col justify-between hover:border-primary-container transition-colors shadow-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Input Handling</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">Fuzzes boundary values and type coercion on parameters</p>
+</div>
+<div class="w-8 h-4 rounded-full bg-primary-container p-0.5 cursor-pointer flex justify-end items-center flex-shrink-0">
+<div class="w-3 h-3 rounded-full bg-[#06080F]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= SECTION 4: Budget & Execution Constraints ================= -->
+<section class="space-y-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">04 // BUDGET &amp; EXECUTION CONSTRAINTS</span>
+<span class="font-label-sm text-[11px] text-outline">ESTIMATED RUNTIME: ~2m 15s</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Slider Control Card -->
+<div class="bg-[#151B2B] p-space-sm rounded border border-[#232D42] space-y-2">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Test-Case Budget</span>
+<span class="px-2 py-0.5 rounded font-label-sm text-[11px] bg-primary-container/20 text-primary border border-primary-container/40 font-semibold">150 cases</span>
+</div>
+<!-- Custom Visual Range Slider -->
+<div class="pt-1 pb-1">
+<div class="relative w-full h-2 bg-[#06080F] rounded-full overflow-hidden border border-[#232D42]">
+<div class="absolute left-0 top-0 bottom-0 bg-primary-container w-[30%] shadow-[0_0_10px_#38bdf8]"></div>
+</div>
+<div class="flex justify-between text-[10px] font-code-sm text-outline mt-1.5">
+<span>10 (Min)</span>
+<span class="text-primary font-semibold">150 Target</span>
+<span>500 (Max)</span>
+</div>
+</div>
+</div>
+<!-- Request Budget Indicator Card -->
+<div class="bg-[#151B2B] p-space-sm rounded border border-[#232D42] flex flex-col justify-between">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Request Ceiling</span>
+<span class="px-2 py-0.5 rounded font-label-sm text-[11px] bg-surface-container-high text-on-surface border border-outline-variant font-medium">300 requests max</span>
+</div>
+<div class="space-y-1 mt-2">
+<div class="flex justify-between text-[11px] font-body-sm text-on-surface-variant">
+<span>Concurrency Cap</span>
+<span class="font-code-sm text-on-surface">5 threads</span>
+</div>
+<div class="w-full bg-[#06080F] h-1.5 rounded-full overflow-hidden border border-[#232D42]">
+<div class="bg-secondary h-full w-[45%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Collapsible Accordion: Custom Sample Bodies -->
+<div class="border border-[#232D42] rounded bg-[#0A0E19] overflow-hidden">
+<button class="w-full px-space-md py-2 text-left flex items-center justify-between text-on-surface-variant hover:text-on-surface hover:bg-[#151B2B]/40 transition-colors font-code-sm text-code-sm">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="tune">tune</span>
+<span class="font-semibold text-on-surface">[+] Custom Sample Bodies (JSON)</span>
+<span class="text-[11px] text-outline font-normal">— 3 preset overrides loaded for user and tenant payloads</span>
+</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= MANDATORY AUTHORIZATION GATING & FOOTER ================= -->
+<div class="p-space-lg border-t border-[#232D42] bg-[#0A0E19] space-y-space-md">
+<!-- Mandatory Checkbox -->
+<label class="flex items-start gap-space-sm cursor-pointer p-2 rounded hover:bg-[#151B2B]/50 transition-colors">
+<input checked="" class="mt-0.5 rounded-[2px] border-[#232D42] bg-[#06080F] text-primary-container focus:ring-0 focus:ring-offset-0 focus:outline-none w-4 h-4 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface font-medium select-none">
+            I confirm that I am authorized to conduct security assessments against this target host.
+          </span>
+</label>
+<!-- Footer Actions Bar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-2 border-t border-[#151B2B]">
+<!-- Target Recap -->
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Target: <span class="text-primary font-medium">http://target_api:9000</span></span>
+<span class="text-outline">|</span>
+<span>Sandbox: <span class="text-on-surface font-medium">Isolated V2</span></span>
+</div>
+<!-- Buttons -->
+<div class="flex items-center gap-space-sm self-end sm:self-auto">
+<button class="px-space-md py-1.5 rounded border border-[#232D42] bg-transparent text-on-surface hover:bg-[#151B2B] hover:border-outline transition-colors font-title-md text-body-sm active:scale-95 duration-150">
+              Cancel
+            </button>
+<button class="px-space-xl py-1.5 rounded bg-primary-container text-on-primary font-title-md text-body-sm font-semibold hover:bg-[#7dd3fc] tactical-glow transition-all flex items-center gap-1.5 active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="play_arrow">play_arrow</span>
+<span>Launch Scan</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

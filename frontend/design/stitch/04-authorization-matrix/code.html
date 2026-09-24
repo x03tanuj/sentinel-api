@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI - Authorization Matrix</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container": "#1b1f2b",
+            "on-surface-variant": "#bdc8d1",
+            "outline": "#87929a",
+            "inverse-on-surface": "#2c303c",
+            "surface-tint": "#7bd0ff",
+            "on-tertiary-container": "#613b00",
+            "on-secondary": "#003824",
+            "primary-fixed": "#c4e7ff",
+            "surface-container-high": "#262a36",
+            "secondary-container": "#00a572",
+            "primary-fixed-dim": "#7bd0ff",
+            "surface-bright": "#353945",
+            "primary": "#8ed5ff",
+            "surface-container-low": "#171b27",
+            "inverse-surface": "#dfe2f2",
+            "inverse-primary": "#00668a",
+            "error-container": "#93000a",
+            "surface": "#0f131e",
+            "on-surface": "#dfe2f2",
+            "surface-container-highest": "#313441",
+            "secondary": "#4edea3",
+            "secondary-fixed": "#6ffbbe",
+            "on-secondary-fixed-variant": "#005236",
+            "on-secondary-container": "#00311f",
+            "outline-variant": "#3e484f",
+            "surface-dim": "#0f131e",
+            "on-tertiary-fixed": "#2a1700",
+            "on-primary-fixed": "#001e2c",
+            "surface-container-lowest": "#0a0e19",
+            "on-tertiary": "#472a00",
+            "error": "#ffb4ab",
+            "tertiary": "#ffc174",
+            "primary-container": "#38bdf8",
+            "on-primary-container": "#004965",
+            "on-primary": "#00354a",
+            "on-error": "#690005",
+            "background": "#0f131e",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-variant": "#313441",
+            "tertiary-container": "#f59e0b",
+            "on-primary-fixed-variant": "#004c69",
+            "on-secondary-fixed": "#002113",
+            "secondary-fixed-dim": "#4edea3",
+            "on-error-container": "#ffdad6",
+            "on-background": "#dfe2f2",
+            "tertiary-fixed": "#ffddb8",
+            "on-tertiary-fixed-variant": "#653e00"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "0.75rem",
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-xl-mobile": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "title-md": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes pulse-critical {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)); }
+      50% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.2)); }
+    }
+    .animate-pulse-critical {
+      animation: pulse-critical 2s infinite ease-in-out;
+    }
+    .tactical-grid-bg {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(35, 45, 66, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(35, 45, 66, 0.25) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface min-h-screen flex flex-col font-body-sm select-none antialiased">
+<!-- 1. Top Navigation Bar (Shared Components Anchor execution) -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest border-b border-outline-variant shadow-sm z-50 sticky top-0">
+<div class="flex items-center gap-space-lg">
+<!-- Brand & Version -->
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center border border-primary-container text-primary-container">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div class="flex items-baseline gap-1.5">
+<span class="font-title-md text-title-md text-primary tracking-tight font-semibold">SentinelAPI</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-primary border border-outline-variant font-code-sm">v2.4</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden xl:flex items-center gap-6 ml-4">
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Scans</a>
+<a class="text-primary border-b-2 border-primary font-title-md text-title-md pb-1 flex items-center gap-1.5" href="#">
+<span>Authorization Matrix</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container shadow-[0_0_8px_#38bdf8]"></span>
+</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Findings</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+</div>
+<!-- Telemetry Indicators & Right Actions -->
+<div class="flex items-center gap-space-md">
+<!-- Target Pill -->
+<div class="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded bg-surface-container border border-outline-variant text-on-surface font-code-sm">
+<span class="text-outline">Target:</span>
+<span class="text-primary font-medium">http://target_api:9000</span>
+<span class="text-outline text-label-sm">(spec: openapi.json)</span>
+</div>
+<!-- Status Indicator -->
+<div class="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-container border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_6px_#4edea3]"></span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">READY</span>
+</div>
+<!-- Scope Guard -->
+<div class="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-surface-container border border-outline-variant text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-secondary text-sm">lock_open_right</span>
+<span>Scope Guard: <span class="text-secondary font-medium">Active (target_api:9000 allow-listed)</span></span>
+</div>
+<!-- Trailing Action Buttons -->
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant">
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Help &amp; Docs">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Engine Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<!-- Analyst Avatar -->
+<div class="flex items-center gap-2 ml-1 pl-2 border-l border-outline-variant">
+<div class="w-7 h-7 rounded bg-surface-container border border-primary-container/40 flex items-center justify-center text-primary font-code-sm font-bold">
+            AX
+          </div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Canvas Container -->
+<main class="flex-1 tactical-grid-bg p-space-lg flex flex-col gap-space-md max-w-[1780px] w-full mx-auto">
+<!-- 2. Header & Controls Bar -->
+<section class="flex flex-col gap-space-sm bg-surface-container-low border border-outline-variant p-space-md rounded-lg shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-primary tracking-widest uppercase">
+<span>SENTINEL</span>
+<span class="text-outline">/</span>
+<span>RUNTIME ACCESS CONTROL AUDIT</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface font-code-sm border border-outline-variant text-[10px]">LIVE RECON</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight mt-0.5">
+            Ground-Truth Authorization Matrix
+          </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Cross-identity object permissions vs proven runtime access boundaries
+          </p>
+</div>
+<!-- Action Controls Group -->
+<div class="flex flex-wrap items-center gap-2.5">
+<!-- Resource Filter Dropdown -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-lowest border border-outline-variant text-on-surface font-code-sm text-body-sm rounded px-3 py-1.5 pr-8 focus:outline-none focus:border-primary-container transition-colors cursor-pointer">
+<option>All Resources (7 objects)</option>
+<option>Resource: orders (3 entities)</option>
+<option>Resource: users (2 entities)</option>
+<option>Resource: reports (1 entity)</option>
+<option>Resource: admin (1 entity)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-base">expand_more</span>
+</div>
+<!-- Quick Search -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2.5 text-outline text-base">search</span>
+<input class="bg-surface-container-lowest border border-outline-variant text-on-surface placeholder:text-outline font-code-sm text-body-sm rounded pl-8 pr-3 py-1.5 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container w-64" placeholder="Filter resource or object ID..." type="text"/>
+</div>
+<!-- Secondary Actions -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container border border-outline-variant text-on-surface hover:border-primary-container hover:text-primary transition-all font-title-md text-title-md">
+<span class="material-symbols-outlined text-base">refresh</span>
+<span>Refresh Probes</span>
+</button>
+</div>
+</div>
+<!-- Identity Legend Cluster -->
+<div class="pt-2 border-t border-outline-variant/50 flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">tune</span>
+<span>PERSONA AUDIT LEGEND:</span>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<!-- OWNS -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#032b43]/40 border border-[#38bdf8]/60 text-primary font-code-sm text-body-sm">
+<span class="material-symbols-outlined text-sm text-[#38bdf8]">vpn_key</span>
+<span class="font-bold tracking-wider">OWNS:</span>
+<span class="text-on-surface-variant font-normal">Legitimate object owner</span>
+</div>
+<!-- ALLOWED (ROLE) -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#022c1d]/50 border border-[#10b981]/50 text-secondary font-code-sm text-body-sm">
+<span class="material-symbols-outlined text-sm text-secondary">check_circle</span>
+<span class="font-bold tracking-wider">ALLOWED (ROLE):</span>
+<span class="text-on-surface-variant font-normal">Permitted by RBAC role</span>
+</div>
+<!-- DENIED (EXPECTED) -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high/60 border border-outline-variant text-on-surface-variant font-code-sm text-body-sm">
+<span class="material-symbols-outlined text-sm text-outline">lock</span>
+<span class="font-bold tracking-wider text-outline">DENIED (EXPECTED):</span>
+<span class="text-on-surface-variant font-normal">Correctly forbidden (403/401)</span>
+</div>
+<!-- VIOLATION -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-error-container/40 border border-error/70 text-error font-code-sm text-body-sm shadow-[0_0_12px_rgba(239,68,68,0.25)]">
+<span class="material-symbols-outlined text-sm text-error animate-pulse-critical">warning</span>
+<span class="font-bold tracking-wider">VIOLATION:</span>
+<span class="text-on-error-container font-normal">Proven access-control failure (BOLA/BFLA)</span>
+</div>
+</div>
+</div>
+<!-- Caption Callout Banner -->
+<div class="bg-surface-container-high/40 border border-error/40 bg-gradient-to-r from-error-container/20 to-transparent p-3 rounded-lg flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-error-container/50 border border-error/60 flex items-center justify-center text-error shrink-0">
+<span class="material-symbols-outlined text-lg animate-pulse-critical">emergency_home</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+<strong class="text-error font-semibold uppercase tracking-wide mr-1">Differential Vulnerability Alert:</strong>
+          Red cells are proven access-control failures where an unauthorized persona successfully bypassed authorization controls. Click any red cell to inspect differential evidence in the Results Triage Workspace.
+        </p>
+</div>
+</section>
+<!-- 3. Interactive Heatmap Grid Container -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-lg flex flex-col">
+<div class="overflow-x-auto w-full">
+<table class="w-full border-collapse text-left text-on-surface">
+<!-- Table Header -->
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant font-label-md text-label-md text-on-surface-variant uppercase tracking-wider h-11">
+<th class="py-2.5 px-4 w-72 font-semibold border-r border-outline-variant/60" scope="col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-base">dataset</span>
+<span>Resource &amp; Object ID</span>
+</div>
+</th>
+<th class="py-2.5 px-4 w-36 font-semibold border-r border-outline-variant/60" scope="col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-base">verified_user</span>
+<span>Owner Identity</span>
+</div>
+</th>
+<th class="py-2.5 px-4 min-w-[210px] font-semibold border-r border-outline-variant/60 bg-surface-container/90" scope="col">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-base">person</span>
+<span class="font-code-md text-primary">userA</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-code-sm text-on-surface-variant">role: user</span>
+</div>
+</th>
+<th class="py-2.5 px-4 min-w-[210px] font-semibold border-r border-outline-variant/60 bg-surface-container/90" scope="col">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-base">person</span>
+<span class="font-code-md text-primary">userB</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-code-sm text-on-surface-variant">role: user</span>
+</div>
+</th>
+<th class="py-2.5 px-4 min-w-[210px] font-semibold border-r border-outline-variant/60 bg-surface-container/90" scope="col">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-base">admin_panel_settings</span>
+<span class="font-code-md text-primary">admin</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-code-sm text-on-surface-variant">role: admin</span>
+</div>
+</th>
+<th class="py-2.5 px-4 min-w-[200px] font-semibold bg-surface-container/90" scope="col">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-base">visibility_off</span>
+<span class="font-code-md text-on-surface-variant">anonymous</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-[10px] font-code-sm text-on-surface-variant">unauth</span>
+</div>
+</th>
+</tr>
+</thead>
+<!-- Table Body with 7 Defined Rows -->
+<tbody class="divide-y divide-outline-variant/40 font-code-sm text-body-sm">
+<!-- Row 1: orders:101 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    orders:101
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">Order Entity</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">userA</span>
+</td>
+<!-- userA: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Creator</span>
+</div>
+</td>
+<!-- userB: VIOLATION (Finding #1) -->
+<td class="p-2 border-r border-outline-variant/40 bg-error-container/10">
+<div class="h-14 rounded border border-error bg-error-container/60 p-2 flex flex-col justify-center transition-all hover:shadow-[0_0_16px_rgba(239,68,68,0.4)] cursor-pointer group/violation">
+<div class="flex items-center justify-between">
+<span class="font-bold text-error flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-sm animate-pulse-critical">warning</span> VIOLATION
+                    </span>
+<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-error text-surface-container-lowest font-code-sm">200 OK</span>
+</div>
+<div class="flex items-center justify-between mt-0.5">
+<span class="text-[10px] font-semibold text-error uppercase tracking-wider">Finding #1</span>
+<span class="text-[11px] text-on-error-container truncate font-body-sm">Cross-tenant leak</span>
+</div>
+</div>
+</td>
+<!-- admin: ALLOWED (ROLE) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-secondary/40 bg-[#022c1d]/30 p-2 flex flex-col justify-center transition-all hover:border-secondary hover:bg-[#022c1d]/50 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">check_circle</span> ALLOWED
+                    </span>
+<span class="text-xs px-1 rounded bg-[#022c1d] text-secondary font-code-sm border border-secondary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">SuperAdmin</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 2: orders:102 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    orders:102
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">Order Entity</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">userA</span>
+</td>
+<!-- userA: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Creator</span>
+</div>
+</td>
+<!-- userB: VIOLATION (Finding #2 - Delete BOLA) -->
+<td class="p-2 border-r border-outline-variant/40 bg-error-container/10">
+<div class="h-14 rounded border border-error bg-error-container/60 p-2 flex flex-col justify-center transition-all hover:shadow-[0_0_16px_rgba(239,68,68,0.4)] cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-bold text-error flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-sm animate-pulse-critical">warning</span> VIOLATION
+                    </span>
+<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-error text-surface-container-lowest font-code-sm">204 NO CONTENT</span>
+</div>
+<div class="flex items-center justify-between mt-0.5">
+<span class="text-[10px] font-semibold text-error uppercase tracking-wider">Finding #2</span>
+<span class="text-[11px] text-on-error-container truncate font-body-sm">Unauthorized purge</span>
+</div>
+</div>
+</td>
+<!-- admin: ALLOWED (ROLE) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-secondary/40 bg-[#022c1d]/30 p-2 flex flex-col justify-center transition-all hover:border-secondary hover:bg-[#022c1d]/50 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">check_circle</span> ALLOWED
+                    </span>
+<span class="text-xs px-1 rounded bg-[#022c1d] text-secondary font-code-sm border border-secondary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">SuperAdmin</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 3: orders:103 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    orders:103
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">Order Entity</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">userB</span>
+</td>
+<!-- userA: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- userB: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Creator</span>
+</div>
+</td>
+<!-- admin: ALLOWED (ROLE) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-secondary/40 bg-[#022c1d]/30 p-2 flex flex-col justify-center transition-all hover:border-secondary hover:bg-[#022c1d]/50 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">check_circle</span> ALLOWED
+                    </span>
+<span class="text-xs px-1 rounded bg-[#022c1d] text-secondary font-code-sm border border-secondary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">SuperAdmin</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 4: users:1 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    users:1
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">User Profile</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">userA</span>
+</td>
+<!-- userA: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Self</span>
+</div>
+</td>
+<!-- userB: VIOLATION (Finding #4 Data Leak) -->
+<td class="p-2 border-r border-outline-variant/40 bg-error-container/10">
+<div class="h-14 rounded border border-error bg-error-container/60 p-2 flex flex-col justify-center transition-all hover:shadow-[0_0_16px_rgba(239,68,68,0.4)] cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-bold text-error flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-sm animate-pulse-critical">warning</span> VIOLATION
+                    </span>
+<span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-error text-surface-container-lowest font-code-sm">DATA LEAK</span>
+</div>
+<div class="flex items-center justify-between mt-0.5">
+<span class="text-[10px] font-semibold text-error uppercase tracking-wider">Finding #4</span>
+<span class="text-[11px] text-on-error-container truncate font-body-sm">PII &amp; credentials exposed</span>
+</div>
+</div>
+</td>
+<!-- admin: ALLOWED (ROLE) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-secondary/40 bg-[#022c1d]/30 p-2 flex flex-col justify-center transition-all hover:border-secondary hover:bg-[#022c1d]/50 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">check_circle</span> ALLOWED
+                    </span>
+<span class="text-xs px-1 rounded bg-[#022c1d] text-secondary font-code-sm border border-secondary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Root</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 5: users:2 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    users:2
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">User Profile</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">userB</span>
+</td>
+<!-- userA: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- userB: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Self</span>
+</div>
+</td>
+<!-- admin: ALLOWED (ROLE) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-secondary/40 bg-[#022c1d]/30 p-2 flex flex-col justify-center transition-all hover:border-secondary hover:bg-[#022c1d]/50 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-secondary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">check_circle</span> ALLOWED
+                    </span>
+<span class="text-xs px-1 rounded bg-[#022c1d] text-secondary font-code-sm border border-secondary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Root</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 6: reports:summary -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    reports:summary
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">Financial Report</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">admin</span>
+</td>
+<!-- userA: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- userB: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- admin: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Role Author</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+<!-- Row 7: admin:users -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<!-- Object ID & Meta -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40 bg-surface-container-low/40">
+<div class="flex flex-col">
+<span class="font-bold text-primary font-code-md flex items-center gap-1">
+                    admin:users
+                  </span>
+<span class="text-outline text-label-sm font-body-sm">IAM Directory</span>
+</div>
+</td>
+<!-- Owner -->
+<td class="py-2.5 px-4 border-r border-outline-variant/40">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium border border-outline-variant">admin</span>
+</td>
+<!-- userA: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- userB: DENIED (403) -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">403</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Forbidden</span>
+</div>
+</td>
+<!-- admin: OWNS -->
+<td class="p-2 border-r border-outline-variant/40">
+<div class="h-14 rounded border border-primary/40 bg-[#032b43]/30 p-2 flex flex-col justify-center transition-all hover:border-primary hover:bg-[#032b43]/60 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-primary flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">vpn_key</span> OWNS
+                    </span>
+<span class="text-xs px-1 rounded bg-[#032b43] text-primary-fixed border border-primary/30">200 OK</span>
+</div>
+<span class="text-[11px] text-on-surface-variant mt-0.5 font-body-sm">Root</span>
+</div>
+</td>
+<!-- anonymous: DENIED (401) -->
+<td class="p-2">
+<div class="h-14 rounded border border-outline-variant/60 bg-surface-container-high/30 p-2 flex flex-col justify-center">
+<div class="flex items-center justify-between">
+<span class="font-semibold text-outline flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-xs">lock</span> DENIED
+                    </span>
+<span class="text-xs px-1 rounded bg-surface-container-lowest text-outline font-code-sm border border-outline-variant">401</span>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-0.5 font-body-sm">Unauthorized</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Quick Triage Sub-Bar -->
+<div class="bg-surface-container px-4 py-2 border-t border-outline-variant/60 flex flex-wrap items-center justify-between gap-2 text-on-surface-variant font-code-sm text-[11px]">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-xs">info</span>
+            Matrix Coordinates: 7 Resources × 4 Principal Contexts
+          </span>
+<span class="text-outline">|</span>
+<span>Differential Baseline: <strong class="text-on-surface">Deterministic Active Fuzzing</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-outline">Live Inspector:</span>
+<span class="text-on-surface px-2 py-0.5 rounded bg-surface-container-high border border-outline-variant font-medium">orders:102 [userB purge bypass] selected</span>
+</div>
+</div>
+</section>
+<!-- 4. Summary Telemetry Footer -->
+<footer class="bg-surface-container-low border border-outline-variant p-space-md rounded-lg flex flex-col gap-3">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<!-- Stats Pills -->
+<div class="flex flex-wrap items-center gap-2.5">
+<!-- Total Evaluated -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container border border-outline-variant text-on-surface font-code-sm">
+<span class="material-symbols-outlined text-outline text-base">grid_view</span>
+<span class="text-outline">Total Evaluated:</span>
+<span class="font-bold text-on-surface">28 Cells</span>
+</div>
+<!-- Expected Denials (Secure) -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container border border-outline-variant text-on-surface font-code-sm">
+<span class="material-symbols-outlined text-secondary text-base">verified</span>
+<span class="text-outline">Expected Denials (Secure):</span>
+<span class="font-bold text-secondary">14</span>
+</div>
+<!-- Authorized Access -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container border border-outline-variant text-on-surface font-code-sm">
+<span class="material-symbols-outlined text-primary text-base">shield</span>
+<span class="text-outline">Authorized Access:</span>
+<span class="font-bold text-primary">11</span>
+</div>
+<!-- Active Violations -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded bg-error-container/40 border border-error/70 text-error font-code-sm shadow-[0_0_12px_rgba(239,68,68,0.2)]">
+<span class="material-symbols-outlined text-error text-base animate-pulse-critical">report_problem</span>
+<span class="font-medium text-error">Active Violations:</span>
+<span class="font-bold text-error">3 (Critical)</span>
+</div>
+</div>
+<!-- Matrix Controls -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Export Button -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container border border-outline-variant text-on-surface hover:text-primary hover:border-primary-container font-title-md text-title-md transition-all">
+<span class="material-symbols-outlined text-base">file_download</span>
+<span>Export CSV / JSON Matrix</span>
+</button>
+<!-- Re-test Button -->
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary font-title-md text-title-md font-semibold transition-all shadow-[0_0_12px_rgba(56,189,248,0.25)]">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span>Run Differential Re-test</span>
+</button>
+</div>
+</div>
+<!-- Engine Telemetry Bar -->
+<div class="pt-2 border-t border-outline-variant/40 flex flex-wrap items-center justify-between text-outline font-code-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Probe Concurrency: <strong class="text-on-surface-variant font-medium">4 workers</strong></span>
+<span class="text-outline-variant">•</span>
+<span>Matrix Consistency: <strong class="text-secondary font-medium">Verified</strong></span>
+<span class="text-outline-variant">•</span>
+<span>Target: <strong class="text-on-surface-variant font-medium">target_api:9000</strong></span>
+</div>
+<div>
+<span>Execution Round: <span class="text-on-surface">#048-ACTIVE</span> • Engine Clock: <span class="text-on-surface">0.428s latency avg</span></span>
+</div>
+</div>
+</footer>
+</main>
+<script>
+    document.querySelectorAll('tbody tr td div[class*="cursor-pointer"]').forEach(cell => {
+      cell.addEventListener('click', function() {
+        console.log('Cell inspected for authorization differential audit');
+      });
+    });
+  </script>
+</body></html>

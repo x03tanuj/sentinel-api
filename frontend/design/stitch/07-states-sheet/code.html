@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI // System States &amp; Resilience Sheet</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface": "#dfe2f2",
+            "on-primary-container": "#004965",
+            "on-background": "#dfe2f2",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-variant": "#313441",
+            "on-primary-fixed-variant": "#004c69",
+            "surface-tint": "#7bd0ff",
+            "on-tertiary-container": "#613b00",
+            "on-secondary-fixed": "#002113",
+            "on-secondary": "#003824",
+            "surface-dim": "#0f131e",
+            "surface-bright": "#353945",
+            "tertiary-fixed": "#ffddb8",
+            "error-container": "#93000a",
+            "on-primary-fixed": "#001e2c",
+            "surface-container-low": "#171b27",
+            "surface": "#0f131e",
+            "primary-container": "#38bdf8",
+            "on-primary": "#00354a",
+            "secondary-fixed": "#6ffbbe",
+            "surface-container-highest": "#313441",
+            "inverse-surface": "#dfe2f2",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "primary": "#8ed5ff",
+            "on-secondary-fixed-variant": "#005236",
+            "outline-variant": "#3e484f",
+            "on-tertiary": "#472a00",
+            "on-error-container": "#ffdad6",
+            "secondary-container": "#00a572",
+            "on-surface-variant": "#bdc8d1",
+            "inverse-primary": "#00668a",
+            "surface-container-lowest": "#0a0e19",
+            "tertiary": "#ffc174",
+            "inverse-on-surface": "#2c303c",
+            "outline": "#87929a",
+            "surface-container": "#1b1f2b",
+            "on-tertiary-fixed": "#2a1700",
+            "secondary-fixed-dim": "#4edea3",
+            "surface-container-high": "#262a36",
+            "tertiary-container": "#f59e0b",
+            "secondary": "#4edea3",
+            "primary-fixed-dim": "#7bd0ff",
+            "on-secondary-container": "#00311f",
+            "primary-fixed": "#c4e7ff",
+            "background": "#0f131e",
+            "on-tertiary-fixed-variant": "#653e00"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "gutter": "0.75rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "title-md": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "headline-xl-mobile": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    
+    /* Subtle scanline tactical pattern */
+    .tactical-grid {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(35, 45, 66, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(35, 45, 66, 0.25) 1px, transparent 1px);
+    }
+
+    /* Pulse dot animation */
+    @keyframes tacticalPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .pulse-dot {
+      animation: tacticalPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased min-h-screen selection:bg-primary-container selection:text-on-primary-container flex flex-col">
+<!-- TOP NAV BAR (Shared Component Anchor) -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest dark:bg-surface-container-lowest border-b border-outline-variant dark:border-outline-variant docked full-width top-0 z-50 shadow-sm dark:shadow-none sticky">
+<!-- Brand Anchor & Search Left -->
+<div class="flex items-center space-x-space-md">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="shield">shield</span>
+<span class="font-title-md text-title-md text-primary dark:text-primary tracking-tight font-semibold">SentinelAPI</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<!-- Monospace Section Spec Indicator -->
+<span class="font-label-sm text-label-sm text-on-surface-variant hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container border border-outline-variant">
+        SENTINEL // SPECIFICATION &amp; RESILIENCE // SYSTEM STATES CATALOG
+      </span>
+<!-- Monospace Search Bar on Left -->
+<div class="relative hidden lg:flex items-center ml-2">
+<span class="material-symbols-outlined absolute left-2.5 text-outline text-sm" data-icon="search">search</span>
+<input class="bg-surface-container-lowest text-on-surface placeholder-outline font-label-sm text-label-sm pl-8 pr-3 py-1 rounded border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none w-72" placeholder="Filter state vectors: state:404, probe:stage_06..." type="text"/>
+</div>
+</div>
+<!-- Main Navigation Links Cluster (Findings / Spec catalog mapped) -->
+<nav class="hidden md:flex items-center space-x-space-lg">
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Scans</a>
+<a class="text-primary dark:text-primary border-b-2 border-primary dark:border-primary font-title-md text-title-md pb-1" href="#">Findings</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+<!-- Trailing Icon Actions & Primary/Secondary CTAs -->
+<div class="flex items-center space-x-space-sm">
+<div class="flex items-center space-x-1 text-on-surface-variant mr-1">
+<button class="p-1 rounded hover:bg-surface-container-high dark:hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-lg" data-icon="notifications">notifications</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high dark:hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Help Reference">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high dark:hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Configuration Settings">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+</button>
+</div>
+<button class="px-2.5 py-1 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:bg-surface-container hover:border-primary-container transition-colors active:scale-95">
+        Export
+      </button>
+<button class="px-3 py-1 text-xs font-title-md rounded bg-primary-container text-on-primary-container font-semibold hover:brightness-110 transition-all flex items-center space-x-1 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+<span>Run Scan</span>
+</button>
+<!-- Profile Avatar -->
+<div class="ml-1 w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary font-label-sm text-label-sm" title="Analyst profile avatar">
+        OP
+      </div>
+</div>
+</header>
+<!-- MAIN CANVAS -->
+<main class="flex-1 w-full max-w-7xl mx-auto px-space-md md:px-space-lg py-space-lg tactical-grid flex flex-col space-y-space-xl">
+<!-- SUBHEADER / CATALOG INTRO -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded p-space-lg relative overflow-hidden">
+<div class="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-primary-container/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-primary-container/10 text-primary border border-primary/30 uppercase">
+              SPEC-V2.4 :: STATE RUNBOOK
+            </span>
+<span class="font-label-sm text-label-sm text-outline">REVISION: 2026.09-DENSE</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
+            System States &amp; Resilience Sheet
+          </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+            Formal UX specification for loading skeletons, defensive edge cases, high-concurrency error recovery, interrupted runtimes, and zero-finding verification states under the SentinelAPI Zero-Data Leakage Fallback Engine.
+          </p>
+</div>
+<!-- Filter Pills & Quick Controls -->
+<div class="flex flex-wrap items-center gap-1.5 self-start lg:self-auto">
+<button class="px-2.5 py-1 rounded text-xs font-label-sm bg-primary-container text-on-primary-container font-semibold transition-all">
+            All States (7)
+          </button>
+<button class="px-2.5 py-1 rounded text-xs font-label-sm bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant transition-colors">
+            Loading (1)
+          </button>
+<button class="px-2.5 py-1 rounded text-xs font-label-sm bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant transition-colors">
+            Critical Errors (2)
+          </button>
+<button class="px-2.5 py-1 rounded text-xs font-label-sm bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant transition-colors">
+            Interrupted &amp; Aborted (2)
+          </button>
+<button class="px-2.5 py-1 rounded text-xs font-label-sm bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant transition-colors">
+            Not Found &amp; Empty (2)
+          </button>
+<div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+<button class="px-2 py-1 rounded text-xs font-label-sm bg-surface-container text-on-surface hover:border-primary-container border border-outline-variant flex items-center space-x-1" title="Copy Design Tokens">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+<span>Tokens</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 7 COMPREHENSIVE SYSTEM STATES CATALOG -->
+<div class="space-y-space-xl">
+<!-- ========================================================================= -->
+<!-- STATE 01: LOADING SKELETON VIEW -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<!-- Section Bar -->
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-primary font-semibold">01 // LOADING SKELETON</span>
+<span class="font-label-sm text-label-sm text-outline">• PROBE INGESTION &amp; PAYLOAD TRIAGE SKELETON</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-outline">
+            ANIMATION: PULSE_SHIMMER
+          </span>
+</div>
+<div class="p-space-lg space-y-space-md">
+<!-- Skeleton HUD Stat Cards (4-grid) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
+<div class="bg-surface-container-low border border-outline-variant p-space-sm rounded space-y-2 animate-pulse">
+<div class="flex justify-between items-center">
+<div class="h-2 w-16 bg-surface-container-high rounded"></div>
+<div class="h-3 w-3 bg-surface-container-high rounded-full"></div>
+</div>
+<div class="h-6 w-24 bg-surface-container-highest rounded"></div>
+<div class="h-1.5 w-full bg-surface-container-high rounded"></div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-space-sm rounded space-y-2 animate-pulse">
+<div class="flex justify-between items-center">
+<div class="h-2 w-20 bg-surface-container-high rounded"></div>
+<div class="h-3 w-3 bg-surface-container-high rounded-full"></div>
+</div>
+<div class="h-6 w-14 bg-surface-container-highest rounded"></div>
+<div class="h-1.5 w-4/5 bg-surface-container-high rounded"></div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-space-sm rounded space-y-2 animate-pulse">
+<div class="flex justify-between items-center">
+<div class="h-2 w-16 bg-surface-container-high rounded"></div>
+<div class="h-3 w-3 bg-surface-container-high rounded-full"></div>
+</div>
+<div class="h-6 w-20 bg-surface-container-highest rounded"></div>
+<div class="h-1.5 w-2/3 bg-surface-container-high rounded"></div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-space-sm rounded space-y-2 animate-pulse">
+<div class="flex justify-between items-center">
+<div class="h-2 w-24 bg-surface-container-high rounded"></div>
+<div class="h-3 w-3 bg-surface-container-high rounded-full"></div>
+</div>
+<div class="h-6 w-12 bg-surface-container-highest rounded"></div>
+<div class="h-1.5 w-1/2 bg-surface-container-high rounded"></div>
+</div>
+</div>
+<!-- Skeleton List Rows -->
+<div class="border border-outline-variant rounded bg-surface-container-low divide-y divide-outline-variant">
+<!-- Row 1 Skeleton -->
+<div class="p-2.5 flex items-center justify-between animate-pulse">
+<div class="flex items-center space-x-3 w-3/5">
+<div class="w-12 h-5 rounded bg-surface-container-highest"></div>
+<div class="w-2/3 h-4 rounded bg-surface-container-high"></div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="w-16 h-4 rounded bg-surface-container-high"></div>
+<div class="w-20 h-4 rounded bg-surface-container-high"></div>
+<div class="w-16 h-6 rounded bg-surface-container-highest"></div>
+</div>
+</div>
+<!-- Row 2 Skeleton -->
+<div class="p-2.5 flex items-center justify-between animate-pulse">
+<div class="flex items-center space-x-3 w-2/5">
+<div class="w-12 h-5 rounded bg-surface-container-highest"></div>
+<div class="w-4/5 h-4 rounded bg-surface-container-high"></div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="w-16 h-4 rounded bg-surface-container-high"></div>
+<div class="w-20 h-4 rounded bg-surface-container-high"></div>
+<div class="w-16 h-6 rounded bg-surface-container-highest"></div>
+</div>
+</div>
+</div>
+<!-- Skeleton Dual-Identity Differential Inspector (Split View) -->
+<div class="border border-outline-variant rounded bg-surface-container-low p-space-sm">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant mb-2">
+<div class="h-3 w-44 bg-surface-container-highest rounded animate-pulse"></div>
+<div class="h-3 w-24 bg-surface-container-high rounded animate-pulse"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm font-code-sm">
+<!-- Owner Baseline Placeholder -->
+<div class="bg-surface-container-lowest p-2.5 rounded border border-outline-variant space-y-1.5 animate-pulse">
+<div class="h-2 w-24 bg-surface-container-highest rounded mb-2"></div>
+<div class="h-2.5 w-full bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-5/6 bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-4/6 bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-3/4 bg-surface-container-high rounded"></div>
+</div>
+<!-- Attacker Response Placeholder -->
+<div class="bg-surface-container-lowest p-2.5 rounded border border-outline-variant space-y-1.5 animate-pulse">
+<div class="h-2 w-28 bg-surface-container-highest rounded mb-2"></div>
+<div class="h-2.5 w-full bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-4/5 bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-5/6 bg-surface-container-high rounded"></div>
+<div class="h-2.5 w-2/3 bg-surface-container-high rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 02: API UNREACHABLE ALERT BANNER & CARD -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-tertiary-container font-semibold">02 // BACKEND UNREACHABLE</span>
+<span class="font-label-sm text-label-sm text-outline">• NETWORK TRANSPORT FAULT</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-tertiary-container/20 text-tertiary-fixed-dim">
+            CRITICAL_LINK_DOWN
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-amber-500/40 bg-amber-500/5 rounded p-space-md md:p-space-lg relative">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-amber-500/10 border border-amber-500/30 text-tertiary-container mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="warning">warning</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      Backend Service Unreachable
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-amber-500/20 text-tertiary border border-amber-500/30">
+                      ERR_CONNECTION_REFUSED (PORT: 8000)
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    Failed to establish connection to SentinelAPI server at <code class="font-code-sm text-primary px-1 py-0.5 rounded bg-surface-container">127.0.0.1:8000</code>. Verify the backend daemon is running.
+                  </p>
+<!-- Diagnostic Info Box -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2 rounded inline-flex items-center space-x-2 flex-wrap">
+<span class="flex items-center space-x-1 text-on-surface">
+<span class="w-2 h-2 rounded-full bg-error inline-block pulse-dot"></span>
+<span>Daemon status: stopped</span>
+</span>
+<span>•</span>
+<span>Ping retry: 3/3 failed</span>
+<span>•</span>
+<span class="text-primary font-code-sm">Socket: /var/run/sentinel.sock</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded bg-primary-container text-on-primary-container font-semibold hover:brightness-110 transition-all flex items-center justify-center space-x-1.5 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+<span>Retry Connection</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:border-primary-container hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="health_and_safety">health_and_safety</span>
+<span>Check Engine Health</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 03: SCAN FAILED STATE (SANITIZED ERROR CALLOUT) -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-error font-semibold">03 // EXECUTION FAILURE</span>
+<span class="font-label-sm text-label-sm text-outline">• RUNTIME EXCEPTION &amp; DEFENSIVE ROLLBACK</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-error-container/40 text-error border border-error/30">
+            PURGE_VERIFIED: 100%
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-red-500/40 bg-red-500/5 rounded p-space-md md:p-space-lg">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-error-container/30 border border-error/40 text-error mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="emergency">emergency</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      Scan Execution Failed (Stage 6: Running Checks)
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-error/20 text-error border border-error/30">
+                      STAGE_06_PROBE_TIMEOUT
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    Target host <code class="font-code-sm text-primary px-1 py-0.5 rounded bg-surface-container">http://target_api:9000</code> reset connection during high-concurrency BOLA probe. In-flight requests safely cancelled and test objects cleaned up.
+                  </p>
+<!-- Telemetry Trace Box -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2.5 rounded font-mono space-y-1">
+<div class="text-on-surface flex items-center space-x-2">
+<span class="material-symbols-outlined text-xs text-error" data-icon="error">error</span>
+<span>Failed probe: #142 GET /orders/103 (ECONNRESET after 450ms)</span>
+</div>
+<div class="text-xs text-on-surface-variant flex items-center space-x-4">
+<span>Active worker: <span class="text-primary font-code-sm">worker_pod_03</span></span>
+<span>•</span>
+<span>Cleanup status: <span class="text-secondary font-code-sm">100% purged</span></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded bg-primary-container text-on-primary-container font-semibold hover:brightness-110 transition-all flex items-center justify-center space-x-1.5 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="replay">replay</span>
+<span>▶ Retry Scan with Lower Concurrency</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:border-primary-container hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+<span>Download Failure Diagnostic Log</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 04: SCAN CANCELLED STATE (GRACEFUL ABORT CARD) -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">04 // USER ABORTED</span>
+<span class="font-label-sm text-label-sm text-outline">• DETERMINISTIC SHUTDOWN SEQUENCE</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">
+            OP_ABORT_ACK
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-amber-500/40 bg-amber-500/5 rounded p-space-md md:p-space-lg">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-tertiary/10 border border-tertiary/30 text-tertiary mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="stop_circle">stop_circle</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      Scan Cancelled by User
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-tertiary-fixed-dim border border-tertiary/30">
+                      CANCELLED (OPERATOR_TRIGGERED)
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    Scan <code class="font-code-sm text-primary px-1 py-0.5 rounded bg-surface-container">scan_8f91c2</code> was halted by operator at 00:01:12. Shielded cleanup successfully deleted 3 temporary test objects from target.
+                  </p>
+<!-- Cleanup Telemetry -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2.5 rounded font-mono">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+<span>Fixtures purged: <span class="text-on-surface font-code-sm">orders:101, orders:102, users:99</span></span>
+<span>•</span>
+<span>Target state restored: <span class="text-secondary font-code-sm">Clean</span></span>
+<span>•</span>
+<span>Recorded duration: <span class="text-on-surface font-code-sm">01m 12s</span></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-primary text-primary hover:bg-primary/10 transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+<span>View Partial Findings (2)</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+<span>Dismiss</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 05: INTERRUPTED BY RESTART STATE -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-[#c084fc] font-semibold">05 // SERVER RESTART INTERRUPT</span>
+<span class="font-label-sm text-label-sm text-outline">• PERSISTENT CHECKPOINT ENGINE</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-[#c084fc] border border-[#c084fc]/30">
+            CHECKPOINT: #84/150
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-purple-500/40 bg-purple-500/5 rounded p-space-md md:p-space-lg">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-purple-500/10 border border-purple-500/30 text-[#c084fc] mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="bolt">bolt</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      Scan Interrupted by Server Restart
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-purple-500/20 text-[#c084fc] border border-purple-500/30">
+                      SNAPSHOT RECOVERED
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    The backend engine restarted while <code class="font-code-sm text-primary px-1 py-0.5 rounded bg-surface-container">scan_4d60a8</code> was executing. Partial findings and ownership fixtures were recovered from <code class="font-code-sm text-on-surface px-1 py-0.5 rounded bg-surface-container">scans.json</code> snapshot.
+                  </p>
+<!-- Snapshot Metadata Box -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2.5 rounded font-mono">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+<span>Interrupted at: <span class="text-on-surface font-code-sm">2026-09-24 15:02:11</span></span>
+<span>•</span>
+<span>Checkpoint #84/150</span>
+<span>•</span>
+<span class="text-[#c084fc] font-code-sm">SHA-256 state seal intact</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded bg-[#9333ea] hover:bg-[#a855f7] text-white font-semibold transition-all flex items-center justify-center space-x-1.5 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="restore">restore</span>
+<span>Resume Scan from Snapshot</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:border-primary-container hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="inventory_2">inventory_2</span>
+<span>View Recovered Findings</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 06: 404 SCAN NOT FOUND STATE -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-outline font-semibold">06 // RESOURCE NOT FOUND (404)</span>
+<span class="font-label-sm text-label-sm text-outline">• RETENTION POLICY EVICTION OR NULL POINTER</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-outline border border-outline-variant">
+            LEDGER_MISSING
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-slate-500/40 bg-slate-500/5 rounded p-space-md md:p-space-lg">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-surface-container border border-outline text-outline mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="search_off">search_off</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      Scan Not Found (404)
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant">
+                      SCAN_EVICTED_OR_INVALID
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    Audit record <code class="font-code-sm text-error px-1 py-0.5 rounded bg-surface-container">'scan_999'</code> does not exist or was evicted by the retention policy (max 50 scans).
+                  </p>
+<!-- Diagnostic Ledger Notice -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2.5 rounded font-mono">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+<span>Retention horizon: <span class="text-on-surface font-code-sm">90 days</span></span>
+<span>•</span>
+<span>Vault capacity: 50 scans (Current: 5/50)</span>
+<span>•</span>
+<span class="text-on-surface-variant">Check Audit Vault archive for archived exports</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded bg-primary-container text-on-primary-container font-semibold hover:brightness-110 transition-all flex items-center justify-center space-x-1.5 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_back">arrow_back</span>
+<span>← Back to Scan History</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:border-primary-container hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+<span>Launch New Scan</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- STATE 07: FINDINGS EMPTY STATE ('NO FINDINGS MATCH' / CLEAN SCAN) -->
+<!-- ========================================================================= -->
+<section class="border border-outline-variant rounded bg-surface-container-lowest overflow-hidden">
+<div class="px-space-md py-1.5 bg-surface-container flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">07 // ZERO FINDINGS (CLEAN AUDIT)</span>
+<span class="font-label-sm text-label-sm text-outline">• RIGOROUS RECONNAISSANCE VALIDATED</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary-container/20 text-secondary border border-secondary/30">
+            PROBES: 150/150 PASSED
+          </span>
+</div>
+<div class="p-space-lg">
+<div class="border border-emerald-500/40 bg-emerald-500/5 rounded p-space-md md:p-space-lg">
+<div class="flex flex-col md:flex-row items-start justify-between gap-space-md">
+<div class="flex items-start space-x-3">
+<div class="p-2 rounded bg-secondary-container/20 border border-secondary/40 text-secondary mt-0.5">
+<span class="material-symbols-outlined text-2xl" data-icon="verified_user">verified_user</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center space-x-2 flex-wrap gap-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                      No Vulnerabilities Found
+                    </h3>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary/10 text-secondary border border-secondary/30">
+                      STRICT ACCESS CONTROL ENFORCED
+                    </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+                    All 150 planned test cases passed without authorization failures. Target API correctly enforces object-level and function-level access controls.
+                  </p>
+<!-- Audit Proof Breakdown -->
+<div class="pt-2">
+<div class="font-code-sm text-code-sm text-outline bg-surface-container-lowest/80 border border-outline-variant p-2.5 rounded font-mono">
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+<span class="text-on-surface">150/150 probes completed</span>
+<span>•</span>
+<span class="text-secondary font-code-sm">Expected 403/401 verified: 48</span>
+<span>•</span>
+<span class="text-on-surface-variant">Zero-leak tenant isolation confirmed</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="px-3 py-1.5 text-xs font-title-md rounded bg-secondary-container hover:bg-secondary text-white font-semibold transition-all flex items-center justify-center space-x-1.5 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+<span>Download Clean Compliance Report (MD/JSON)</span>
+</button>
+<button class="px-3 py-1.5 text-xs font-title-md rounded border border-outline-variant text-on-surface hover:border-primary-container hover:bg-surface-container transition-colors flex items-center justify-center space-x-1.5 active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="filter_alt">filter_alt</span>
+<span>Adjust Filter Criteria</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- FOOTER: SYSTEM RESILIENCE STATUS BAR -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant py-2.5 px-space-lg text-xs font-label-sm text-outline mt-auto">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+<div class="flex items-center space-x-2 flex-wrap">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary pulse-dot"></span>
+<span class="text-on-surface">SentinelAPI Resilience Framework v2.4</span>
+<span>•</span>
+<span>Zero-Data Leakage Fallback Engine</span>
+<span>•</span>
+<span class="text-primary">Sandbox V2 Isolation Active</span>
+</div>
+<div class="flex items-center space-x-4">
+<span>Telemetry Retention: 90 days</span>
+<span class="text-on-surface-variant">SYS_TIME: 2026.09.24_UTC</span>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI Scan History</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline": "#87929a",
+            "on-tertiary-container": "#613b00",
+            "on-tertiary": "#472a00",
+            "surface-container-high": "#262a36",
+            "surface": "#0f131e",
+            "tertiary": "#ffc174",
+            "surface-container-lowest": "#0a0e19",
+            "primary-container": "#38bdf8",
+            "on-primary-fixed": "#001e2c",
+            "inverse-surface": "#dfe2f2",
+            "on-secondary-fixed": "#002113",
+            "on-secondary-container": "#00311f",
+            "on-error": "#690005",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container-highest": "#313441",
+            "on-surface": "#dfe2f2",
+            "on-secondary-fixed-variant": "#005236",
+            "on-background": "#dfe2f2",
+            "surface-variant": "#313441",
+            "primary-fixed-dim": "#7bd0ff",
+            "on-secondary": "#003824",
+            "on-tertiary-fixed-variant": "#653e00",
+            "background": "#0f131e",
+            "tertiary-container": "#f59e0b",
+            "primary": "#8ed5ff",
+            "on-primary": "#00354a",
+            "on-tertiary-fixed": "#2a1700",
+            "on-surface-variant": "#bdc8d1",
+            "surface-dim": "#0f131e",
+            "on-error-container": "#ffdad6",
+            "inverse-primary": "#00668a",
+            "inverse-on-surface": "#2c303c",
+            "on-primary-fixed-variant": "#004c69",
+            "error": "#ffb4ab",
+            "surface-container-low": "#171b27",
+            "surface-container": "#1b1f2b",
+            "on-primary-container": "#004965",
+            "surface-bright": "#353945",
+            "secondary-fixed-dim": "#4edea3",
+            "tertiary-fixed-dim": "#ffb95f",
+            "secondary": "#4edea3",
+            "secondary-fixed": "#6ffbbe",
+            "secondary-container": "#00a572",
+            "error-container": "#93000a",
+            "surface-tint": "#7bd0ff",
+            "outline-variant": "#3e484f",
+            "primary-fixed": "#c4e7ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "space-xl": "1.5rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "headline-xl-mobile": ["Inter"],
+            "headline-xl": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "title-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.92); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .tactical-glow-cyan {
+      box-shadow: 0 0 14px -2px rgba(56, 189, 248, 0.35);
+    }
+    .tactical-glow-red {
+      box-shadow: 0 0 12px -2px rgba(239, 68, 68, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-[#06080F] text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-fixed">
+<!-- ========================================================================= -->
+<!-- 1. TOP NAVIGATION BAR (SentinelAPI Brand Shell from Shared Components)     -->
+<!-- ========================================================================= -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest border-b border-outline-variant docked full-width top-0 z-50 sticky shadow-sm">
+<!-- Left Section: Brand Logo & Navigation Links -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-title-md text-title-md text-primary tracking-tight font-semibold">SentinelAPI</span>
+<span class="ml-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant font-label-sm text-label-sm text-primary">v2.4</span>
+</div>
+<!-- Navigation Links from Shared Components JSON with Contextual Active Tab -->
+<nav class="hidden md:flex items-center gap-space-lg ml-space-sm">
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Scans</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Findings</a>
+<!-- ACTIVE TAB: Scan Audit History closely maps to historical audit log / scans -->
+<a class="text-primary border-b-2 border-primary font-title-md text-title-md pb-1 flex items-center gap-1" href="#">
+          Scan History
+          <span class="w-1.5 h-1.5 rounded-full bg-primary-container inline-block shadow-[0_0_6px_#38bdf8]"></span>
+</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+</div>
+<!-- Center Recon Target Context Pills -->
+<div class="hidden xl:flex items-center gap-2">
+<!-- Target Pill -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0D111C] border border-[#232D42] font-code-sm text-code-sm text-on-surface-variant">
+<span class="text-outline">Target:</span>
+<span class="text-primary font-medium">http://target_api:9000</span>
+<span class="text-outline text-[10px]">(spec: openapi.json)</span>
+</div>
+<!-- Status Pill -->
+<div class="flex items-center gap-1.5 px-2 py-1 rounded bg-[#0D111C] border border-[#232D42] font-label-sm text-label-sm text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_6px_#4edea3]"></span>
+        READY
+      </div>
+<!-- Scope Guard -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0D111C] border border-[#232D42] font-code-sm text-code-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-sm">lock</span>
+<span>Scope Guard: <span class="text-secondary font-medium">Active</span> (target_api:9000 allow-listed)</span>
+</div>
+</div>
+<!-- Right Actions & Profile Avatar -->
+<div class="flex items-center gap-space-sm">
+<!-- Secondary Export Action from JSON -->
+<button class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded border border-[#232D42] text-on-surface font-title-md text-title-md hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+        Export
+      </button>
+<!-- Primary Action: Run Scan / Run New Scan -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container text-on-primary-fixed font-title-md text-title-md font-semibold hover:bg-primary transition-all duration-150 active:scale-95 tactical-glow-cyan">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+        Run New Scan
+      </button>
+<!-- Trailing Icon Actions from JSON -->
+<div class="flex items-center border-l border-outline-variant pl-2 ml-1 gap-1 text-on-surface-variant">
+<button class="p-1.5 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Help">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-1.5 rounded hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<!-- User Avatar / Profile alt from JSON -->
+<div class="w-7 h-7 rounded border border-outline-variant bg-[#151B2B] flex items-center justify-center ml-1" title="Analyst profile avatar">
+<span class="material-symbols-outlined text-primary text-base">shield_person</span>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CANVAS                                                     -->
+<!-- ========================================================================= -->
+<main class="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 py-4 flex flex-col gap-4">
+<!-- 2. HEADER & METRICS HUD BAR -->
+<section class="flex flex-col gap-3">
+<!-- Breadcrumb & Tactical Level -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-outline tracking-wider">
+<span>SENTINEL</span>
+<span>/</span>
+<span>AUDIT VAULT</span>
+<span>/</span>
+<span class="text-primary font-semibold">HISTORICAL EXECUTION LOG</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded bg-[#0D111C] border border-[#232D42] text-on-surface-variant hover:text-on-surface hover:border-outline font-code-sm text-code-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm">archive</span>
+            Export Archive (ZIP)
+          </button>
+<button class="px-2.5 py-1 rounded bg-[#0D111C] border border-[#232D42] text-primary hover:bg-[#151B2B] font-code-sm text-code-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm animate-spin-reverse">refresh</span>
+            Refresh Records
+          </button>
+</div>
+</div>
+<!-- Title Headline -->
+<div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-1 border-b border-[#232D42]">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-white font-semibold tracking-tight">Scan Audit History</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Historical scan records, vulnerability distributions, and compliance report downloads</p>
+</div>
+<div class="font-code-sm text-code-sm text-outline flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+          Telemetry Engine Online (Zero Data Leakage Model)
+        </div>
+</div>
+<!-- Metrics HUD: 4 Bento Stat Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<!-- Metric 1: Total Audits -->
+<div class="p-3 bg-[#0D111C] border border-[#232D42] rounded flex flex-col justify-between h-[84px] relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Audits</span>
+<span class="material-symbols-outlined text-outline-variant text-base">history</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-white">5</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">100% telemetry retained</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant"></div>
+</div>
+<!-- Metric 2: Active Findings -->
+<div class="p-3 bg-[#0D111C] border border-[#232D42] rounded flex flex-col justify-between h-[84px] relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Active Findings</span>
+<span class="w-2 h-2 rounded-full bg-error tactical-glow-red"></span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-error">3</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Unresolved across latest runs</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-error/40"></div>
+</div>
+<!-- Metric 3: In-Flight Scan -->
+<div class="p-3 bg-[#0D111C] border border-[#232D42] rounded flex flex-col justify-between h-[84px] relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">In-Flight Scan</span>
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-primary">1 Active</span>
+<span class="font-label-sm text-label-sm text-primary/80">Worker pod telemetry active</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-container"></div>
+</div>
+<!-- Metric 4: Storage Allocation -->
+<div class="p-3 bg-[#0D111C] border border-[#232D42] rounded flex flex-col justify-between h-[84px] relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Vault Storage</span>
+<span class="font-label-sm text-label-sm text-outline">50 scans max</span>
+</div>
+<div>
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-code-md text-code-md font-semibold text-white">4.2 MB</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8.4% used</span>
+</div>
+<div class="w-full bg-[#151B2B] h-1.5 rounded-full overflow-hidden border border-[#232D42]">
+<div class="bg-primary-container h-full rounded-full" style="width: 8.4%"></div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant"></div>
+</div>
+</div>
+</section>
+<!-- 3. FILTER & SEARCH CONTROLS BAR -->
+<section class="flex flex-wrap items-center justify-between gap-3 bg-[#0D111C] border border-[#232D42] p-2.5 rounded">
+<!-- Filter Status Pills -->
+<div class="flex flex-wrap items-center gap-1.5">
+<!-- All Scans (Active) -->
+<button class="px-2.5 py-1 rounded bg-[#151B2B] border border-primary-container text-primary font-label-sm text-label-sm flex items-center gap-1.5">
+<span>All Scans</span>
+<span class="px-1 py-0.2 bg-primary-container/20 rounded font-code-sm text-code-sm">5</span>
+</button>
+<!-- Completed -->
+<button class="px-2.5 py-1 rounded bg-[#06080F] border border-[#232D42] hover:border-outline-variant text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Completed</span>
+<span class="text-outline">2</span>
+</button>
+<!-- Running -->
+<button class="px-2.5 py-1 rounded bg-[#06080F] border border-[#232D42] hover:border-outline-variant text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse-subtle"></span>
+<span>Running</span>
+<span class="text-primary">1</span>
+</button>
+<!-- Failed -->
+<button class="px-2.5 py-1 rounded bg-[#06080F] border border-[#232D42] hover:border-outline-variant text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444]"></span>
+<span>Failed</span>
+<span class="text-error">1</span>
+</button>
+<!-- Cancelled -->
+<button class="px-2.5 py-1 rounded bg-[#06080F] border border-[#232D42] hover:border-outline-variant text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+<span>Cancelled</span>
+<span class="text-tertiary">1</span>
+</button>
+</div>
+<!-- Right Search & Batch Actions -->
+<div class="flex items-center gap-2 flex-grow sm:flex-grow-0">
+<!-- Monospace Search Input -->
+<div class="relative flex-1 sm:w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full pl-8 pr-12 py-1 bg-[#06080F] border border-[#232D42] rounded font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" placeholder="Filter scans by ID or target host..." type="text"/>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 px-1 py-0.2 rounded bg-[#151B2B] border border-[#232D42] font-label-sm text-label-sm text-outline">⌘K</kbd>
+</div>
+<!-- Date Range Filter -->
+<div class="relative">
+<button class="px-2.5 py-1 bg-[#06080F] border border-[#232D42] rounded font-code-sm text-code-sm text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Last 30 Days</span>
+<span class="material-symbols-outlined text-xs">expand_more</span>
+</button>
+</div>
+<!-- Batch Action -->
+<button class="px-2 py-1 bg-[#06080F] border border-outline-variant hover:border-error text-outline hover:text-error rounded font-label-sm text-label-sm flex items-center gap-1 transition-colors" title="Purge historical logs">
+<span class="material-symbols-outlined text-sm">delete_sweep</span>
+<span class="hidden md:inline">Purge Old Logs</span>
+</button>
+</div>
+</section>
+<!-- 4. SCANS TABLE (Tactical High-Density Grid) -->
+<section class="border border-[#232D42] rounded bg-[#0D111C] overflow-hidden shadow-2xl">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#0A0E19] border-b border-[#232D42] font-label-sm text-label-sm text-[#64748B] uppercase tracking-wider">
+<th class="py-2.5 px-3 w-[140px]">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+                  SCAN ID
+                  <span class="material-symbols-outlined text-xs">unfold_more</span>
+</div>
+</th>
+<th class="py-2.5 px-3 w-[140px]">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+                  STATUS
+                  <span class="material-symbols-outlined text-xs">unfold_more</span>
+</div>
+</th>
+<th class="py-2.5 px-3 w-[220px]">TARGET HOST</th>
+<th class="py-2.5 px-3 w-[180px]">
+<div class="flex items-center gap-1 cursor-pointer hover:text-on-surface">
+                  STARTED
+                  <span class="material-symbols-outlined text-xs">arrow_downward</span>
+</div>
+</th>
+<th class="py-2.5 px-3 w-[120px]">DURATION</th>
+<th class="py-2.5 px-3 w-[260px]">SEVERITY DISTRIBUTION</th>
+<th class="py-2.5 px-3 w-[200px] text-right">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#151B2B] font-code-sm text-code-sm">
+<!-- ROW 1: scan_8f91c2 (Completed) -->
+<tr class="hover:bg-[#151B2B] transition-colors group">
+<td class="py-2.5 px-3 font-semibold text-primary">
+<a class="hover:underline flex items-center gap-1" href="#">
+                  scan_8f91c2
+                  <span class="material-symbols-outlined text-xs opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
+</a>
+</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-label-sm text-label-sm bg-secondary/10 border border-secondary/30 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_6px_#4edea3]"></span>
+                  COMPLETED
+                </span>
+</td>
+<td class="py-2.5 px-3 text-on-surface">
+<span class="text-on-surface-variant">http://</span>target_api:9000
+              </td>
+<td class="py-2.5 px-3 text-on-surface-variant">2026-09-24 18:30:12</td>
+<td class="py-2.5 px-3 text-outline">01m 42s</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] font-semibold">2 Crit</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#F97316]/15 border border-[#F97316]/40 text-[#F97316] font-semibold">1 High</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#F59E0B]">3 Med</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#313441]/50 border border-outline-variant text-outline">0 Low</span>
+</div>
+</td>
+<td class="py-2.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-primary-container/20 border border-primary-container text-primary hover:bg-primary-container hover:text-on-primary-fixed font-title-md text-xs transition-colors">
+                    Open Dashboard
+                  </button>
+<button class="px-1.5 py-1 rounded bg-[#06080F] border border-[#232D42] text-on-surface-variant hover:text-on-surface font-code-sm text-xs flex items-center gap-0.5">
+<span>Report</span>
+<span class="material-symbols-outlined text-xs">expand_more</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error/10 transition-colors" title="Delete scan record">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: scan_7a14e9 (Running Active) -->
+<tr class="bg-[#151B2B]/60 hover:bg-[#151B2B] transition-colors border-l-2 border-l-primary-container">
+<td class="py-2.5 px-3 font-semibold text-primary">
+<span class="flex items-center gap-1">
+                  scan_7a14e9
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-ping"></span>
+</span>
+</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-label-sm text-label-sm bg-primary-container/15 border border-primary-container/40 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse-subtle"></span>
+                  RUNNING
+                </span>
+</td>
+<td class="py-2.5 px-3 text-on-surface">
+<span class="text-on-surface-variant">http://</span>target_api:9000
+              </td>
+<td class="py-2.5 px-3 text-on-surface-variant">2026-09-24 19:15:00</td>
+<td class="py-2.5 px-3 text-primary font-medium">00m 45s (active)</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] font-semibold">1 Crit</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#313441]/50 border border-outline-variant text-outline">0 High</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#F59E0B]">1 Med</span>
+</div>
+</td>
+<td class="py-2.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-primary-container text-on-primary-fixed font-title-md text-xs font-semibold hover:bg-primary transition-all tactical-glow-cyan flex items-center gap-1">
+<span class="material-symbols-outlined text-xs animate-spin">sync</span>
+                    View Live Progress
+                  </button>
+<button class="px-2 py-1 rounded border border-[#EF4444]/50 text-[#EF4444] hover:bg-[#EF4444]/20 font-title-md text-xs transition-colors">
+                    Cancel Scan
+                  </button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: scan_6b82d1 (Failed) -->
+<tr class="hover:bg-[#151B2B] transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface">scan_6b82d1</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-label-sm text-label-sm bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444]">
+<span class="material-symbols-outlined text-xs">warning</span>
+                  FAILED
+                </span>
+</td>
+<td class="py-2.5 px-3 text-on-surface">
+<span class="text-on-surface-variant">http://</span>target_api:9000
+              </td>
+<td class="py-2.5 px-3 text-on-surface-variant">2026-09-24 17:10:04</td>
+<td class="py-2.5 px-3 text-outline">00m 18s</td>
+<td class="py-2.5 px-3 text-outline italic">
+                — <span class="text-xs font-body-sm">(Target reset connection)</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded border border-primary-container/60 text-primary hover:bg-primary-container/20 font-title-md text-xs transition-colors">
+                    Retry Scan
+                  </button>
+<button class="px-2 py-1 rounded bg-[#06080F] border border-[#232D42] text-outline hover:text-on-surface font-title-md text-xs transition-colors">
+                    View Error Log
+                  </button>
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error/10 transition-colors" title="Delete scan record">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: scan_5c71b0 (Cancelled) -->
+<tr class="hover:bg-[#151B2B] transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface">scan_5c71b0</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/15 border border-tertiary-container/40 text-tertiary">
+<span class="material-symbols-outlined text-xs">stop_circle</span>
+                  CANCELLED
+                </span>
+</td>
+<td class="py-2.5 px-3 text-on-surface">
+<span class="text-on-surface-variant">http://</span>target_api:9000
+              </td>
+<td class="py-2.5 px-3 text-on-surface-variant">2026-09-24 16:45:22</td>
+<td class="py-2.5 px-3 text-outline">00m 52s</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] font-semibold">1 Crit</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#F97316]/15 border border-[#F97316]/40 text-[#F97316] font-semibold">1 High</span>
+</div>
+</td>
+<td class="py-2.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-[#06080F] border border-[#232D42] text-on-surface hover:border-outline font-title-md text-xs transition-colors">
+                    Open Partial
+                  </button>
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error/10 transition-colors" title="Delete scan record">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 5: scan_4d60a8 (Interrupted) -->
+<tr class="hover:bg-[#151B2B] transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface">scan_4d60a8</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-label-sm text-label-sm bg-[#8B5CF6]/15 border border-[#8B5CF6]/40 text-[#A78BFA]">
+<span class="material-symbols-outlined text-xs">bolt</span>
+                  INTERRUPTED
+                </span>
+</td>
+<td class="py-2.5 px-3 text-on-surface">
+<span class="text-on-surface-variant">http://</span>target_api:9000
+              </td>
+<td class="py-2.5 px-3 text-on-surface-variant">2026-09-24 15:02:11</td>
+<td class="py-2.5 px-3 text-outline">01m 05s</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] font-semibold">1 Crit</span>
+</div>
+</td>
+<td class="py-2.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-[#06080F] border border-[#232D42] text-on-surface hover:border-outline font-title-md text-xs transition-colors">
+                    Recover Snapshot
+                  </button>
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error/10 transition-colors" title="Delete scan record">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Sub-Bar / Pagination Telemetry -->
+<div class="flex flex-col sm:flex-row items-center justify-between px-4 py-2 bg-[#0A0E19] border-t border-[#232D42] font-label-sm text-label-sm text-outline gap-2">
+<div class="flex items-center gap-3">
+<span>Showing 5 of 5 entries</span>
+<span>•</span>
+<span>Retention: 90 days remaining</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-0.5 rounded bg-[#06080F] border border-[#232D42] text-outline disabled:opacity-40" disabled="">PREV</button>
+<span class="px-2 py-0.5 rounded bg-primary-container/20 text-primary border border-primary-container font-semibold">1</span>
+<button class="px-2 py-0.5 rounded bg-[#06080F] border border-[#232D42] text-outline disabled:opacity-40" disabled="">NEXT</button>
+</div>
+</div>
+</section>
+<!-- 5. ZERO-STATE AUDIT PREVIEW (Collapsible Tactical Reference) -->
+<section class="mt-1 border border-dashed border-[#232D42] rounded-lg bg-[#0D111C]/80 p-5 relative overflow-hidden">
+<div class="flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-[#151B2B] border border-[#232D42] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-2xl">track_changes</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="px-1.5 py-0.5 rounded bg-[#151B2B] border border-[#232D42] font-label-sm text-label-sm text-outline">ZERO-STATE AUDIT PREVIEW</span>
+<span class="font-code-sm text-code-sm text-secondary">Target Ready</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-white font-medium">No Audit Scans Found in History</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl mt-0.5">
+              Initiate an automated authorization and BOLA scan against target_api:9000 to generate historical benchmarks, API lineage, and compliance reports.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-3 py-1.5 rounded border border-[#232D42] text-on-surface-variant hover:text-on-surface hover:bg-[#151B2B] font-title-md text-title-md transition-colors">
+            Configure Baseline
+          </button>
+<button class="px-4 py-1.5 rounded bg-primary-container text-on-primary-fixed font-title-md text-title-md font-semibold hover:bg-primary transition-all tactical-glow-cyan flex items-center gap-1.5 active:scale-95">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+            Launch First Scan
+          </button>
+</div>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- 6. BOTTOM ENGINE STATUS BAR (HUD Telemetry Footer)                         -->
+<!-- ========================================================================= -->
+<footer class="mt-auto w-full bg-[#0A0E19] border-t border-[#232D42] px-space-lg py-2 flex flex-col sm:flex-row items-center justify-between gap-2 font-code-sm text-code-sm text-outline">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+        Audit Engine v2.4-recon
+      </span>
+<span>•</span>
+<span>Immutable Ledger: <span class="text-on-surface-variant font-medium">SHA-256 Verified</span></span>
+<span>•</span>
+<span>Auto-retention: <span class="text-on-surface-variant">90 days</span></span>
+</div>
+<div class="flex items-center gap-3">
+<span>UTC: <span class="text-white">2026-09-24 19:15:45</span></span>
+<span>|</span>
+<span>Storage Allocation: <span class="text-primary font-medium">8.4%</span></span>
+</div>
+</footer>
+</body></html>

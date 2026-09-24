@@ -69,3 +69,7 @@ data/
 .vscode/
 *.swp
 *.swo
+
+# Design artifacts & keys
+frontend/design/.stitch-cache/
+*.key

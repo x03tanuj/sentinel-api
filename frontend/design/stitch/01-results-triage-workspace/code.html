@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SentinelAPI — Results Triage Workspace</title>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#472a00",
+            "on-primary-fixed-variant": "#004c69",
+            "surface-variant": "#313441",
+            "primary": "#8ed5ff",
+            "on-secondary": "#003824",
+            "inverse-surface": "#dfe2f2",
+            "on-tertiary-fixed": "#2a1700",
+            "error-container": "#93000a",
+            "tertiary-container": "#f59e0b",
+            "primary-fixed-dim": "#7bd0ff",
+            "on-secondary-fixed": "#002113",
+            "surface-tint": "#7bd0ff",
+            "surface-bright": "#353945",
+            "on-surface-variant": "#bdc8d1",
+            "tertiary": "#ffc174",
+            "primary-container": "#38bdf8",
+            "secondary": "#4edea3",
+            "surface-container-lowest": "#0a0e19",
+            "background": "#0f131e",
+            "on-tertiary-container": "#613b00",
+            "primary-fixed": "#c4e7ff",
+            "on-primary-container": "#004965",
+            "on-background": "#dfe2f2",
+            "secondary-container": "#00a572",
+            "outline-variant": "#3e484f",
+            "inverse-on-surface": "#2c303c",
+            "surface-container": "#1b1f2b",
+            "tertiary-fixed-dim": "#ffb95f",
+            "on-primary": "#00354a",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed": "#6ffbbe",
+            "outline": "#87929a",
+            "on-secondary-fixed-variant": "#005236",
+            "on-error": "#690005",
+            "inverse-primary": "#00668a",
+            "surface-container-highest": "#313441",
+            "on-surface": "#dfe2f2",
+            "on-secondary-container": "#00311f",
+            "on-primary-fixed": "#001e2c",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container-high": "#262a36",
+            "surface": "#0f131e",
+            "error": "#ffb4ab",
+            "surface-container-low": "#171b27",
+            "secondary-fixed-dim": "#4edea3",
+            "on-tertiary-fixed-variant": "#653e00",
+            "surface-dim": "#0f131e"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "margin": "1rem",
+            "gutter": "0.75rem",
+            "space-md": "0.75rem"
+          },
+          "fontFamily": {
+            "title-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "label-md": ["JetBrains Mono"],
+            "headline-xl": ["Inter"],
+            "headline-xl-mobile": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "title-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "600" }],
+            "code-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "500" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "headline-xl-mobile": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.625rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "code-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Surgical tactical scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0e19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232d42;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+    .animate-pulse-dot {
+      animation: pulseDot 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .tactical-glow-critical {
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+    }
+    .tactical-glow-cyan {
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-[#06080F] text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+<!-- ================= ZONE 1: TOP NAVIGATION BAR (Anchored from Shared Component Blueprint) ================= -->
+<header class="docked full-width top-0 z-50 flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest dark:bg-surface-container-lowest border-b border-outline-variant dark:border-outline-variant h-12 shadow-sm dark:shadow-none">
+<!-- Brand & Version & Primary Nav Cluster -->
+<div class="flex items-center space-x-space-lg">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary-container text-lg" data-icon="shield">shield</span>
+<span class="font-title-md text-title-md text-primary dark:text-primary tracking-tight font-semibold">SentinelAPI</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded">v0.9.0-alpha</span>
+</div>
+<!-- Semantic Shell Top Navigation -->
+<nav class="hidden md:flex items-center space-x-5 ml-2">
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Scans</a>
+<a class="text-primary dark:text-primary border-b-2 border-primary dark:border-primary font-title-md text-title-md pb-1" href="#">Findings</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-title-md text-title-md hover:text-on-surface dark:hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+</div>
+<!-- Center Reconnaissance Telemetry Pills -->
+<div class="hidden xl:flex items-center space-x-space-sm font-label-sm text-label-sm">
+<!-- Status Indicator -->
+<div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#0D111C] border border-outline-variant rounded text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse-dot"></span>
+<span class="tracking-wider">READY</span>
+</div>
+<!-- Target Spec Pill -->
+<div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#0D111C] border border-outline-variant rounded text-on-surface-variant">
+<span class="text-outline">Target:</span>
+<span class="text-primary font-code-sm text-code-sm">http://target_api:9000</span>
+<span class="text-outline">(spec: openapi.json)</span>
+</div>
+<!-- Scope-Guard Pill -->
+<div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#0D111C] border border-outline-variant rounded text-on-surface">
+<span class="material-symbols-outlined text-xs text-primary-container" data-icon="lock">lock</span>
+<span>Scope Guard:</span>
+<span class="text-secondary font-code-sm text-code-sm">Active (target_api:9000 allow-listed)</span>
+</div>
+</div>
+<!-- Trailing Actions & Tactical Control -->
+<div class="flex items-center space-x-space-sm">
+<!-- Trailing Icon Action: Notifications -->
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high hover:text-on-surface rounded transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-base" data-icon="notifications">notifications</span>
+</button>
+<!-- Trailing Icon Action: Help -->
+<button class="p-1 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-high hover:text-on-surface rounded transition-colors" title="Documentation">
+<span class="material-symbols-outlined text-base" data-icon="help">help</span>
+</button>
+<!-- Trailing Secondary Action: Export Dropdown -->
+<div class="relative group">
+<button class="flex items-center space-x-1 px-2.5 py-1 bg-transparent border border-outline-variant text-on-surface font-title-md text-title-md rounded hover:bg-[#151B2B] hover:border-primary-container transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined text-sm" data-icon="ios_share">ios_share</span>
+<span>Export</span>
+<span class="material-symbols-outlined text-xs" data-icon="expand_more">expand_more</span>
+</button>
+<!-- Dropdown Menu -->
+<div class="hidden group-hover:block absolute right-0 mt-1 w-44 bg-[#0D111C] border border-outline-variant rounded shadow-xl py-1 z-50">
+<a class="flex items-center space-x-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-[#151B2B] hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xs" data-icon="data_object">data_object</span>
+<span>JSON Report</span>
+</a>
+<a class="flex items-center space-x-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-[#151B2B] hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xs" data-icon="markdown">markdown</span>
+<span>Markdown Report</span>
+</a>
+<a class="flex items-center space-x-2 px-3 py-1.5 font-label-sm text-label-sm text-on-surface hover:bg-[#151B2B] hover:text-primary" href="#">
+<span class="material-symbols-outlined text-xs" data-icon="terminal">terminal</span>
+<span>cURL Suite</span>
+</a>
+</div>
+</div>
+<!-- Trailing Primary Action: Run Scan -->
+<button class="flex items-center space-x-1.5 px-3 py-1 bg-primary-container text-[#06080F] font-title-md text-title-md font-semibold rounded hover:bg-[#7DD3FC] tactical-glow-cyan active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+<span>Run Scan</span>
+</button>
+<!-- Analyst Profile Avatar -->
+<div class="w-7 h-7 rounded border border-outline-variant bg-[#151B2B] flex items-center justify-center font-label-sm text-label-sm text-primary ml-1 font-semibold" title="Analyst profile avatar">
+        OP
+      </div>
+</div>
+</header>
+<!-- ================= ZONE 2: TACTICAL METRIC HUD CARDS ================= -->
+<section class="w-full px-space-lg py-space-sm bg-[#06080F] border-b border-outline-variant grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-gutter">
+<!-- HUD Card 1: Endpoints Audited -->
+<div class="h-16 bg-[#0D111C] border border-outline-variant rounded p-2.5 flex flex-col justify-between hover:border-primary transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">ENDPOINTS AUDITED</span>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="api">api</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-on-surface leading-none">12 / 12</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1"></span> 100% surface
+        </span>
+</div>
+</div>
+<!-- HUD Card 2: Critical Severity -->
+<div class="h-16 bg-[#0D111C] border border-outline-variant rounded p-2.5 flex flex-col justify-between hover:border-[#EF4444] transition-colors relative overflow-hidden">
+<div class="absolute -right-2 -bottom-2 w-10 h-10 bg-[#EF4444] opacity-5 rounded-full blur-md"></div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">CRITICAL</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[rgba(239,68,68,0.15)] text-[#EF4444] border border-[#EF4444]/40 rounded flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse-dot"></span>
+<span>HIGH IMPACT</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-[#EF4444] leading-none">2</span>
+<span class="font-label-sm text-label-sm text-[#EF4444] font-medium">BOLA &amp; Write Access</span>
+</div>
+</div>
+<!-- HUD Card 3: High Severity -->
+<div class="h-16 bg-[#0D111C] border border-outline-variant rounded p-2.5 flex flex-col justify-between hover:border-[#F97316] transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">HIGH</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[rgba(249,115,22,0.15)] text-[#F97316] border border-[#F97316]/40 rounded">
+          EXPLOITABLE
+        </span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-[#F97316] leading-none">1</span>
+<span class="font-label-sm text-label-sm text-[#F97316] font-medium">State Modification</span>
+</div>
+</div>
+<!-- HUD Card 4: Medium Severity -->
+<div class="h-16 bg-[#0D111C] border border-outline-variant rounded p-2.5 flex flex-col justify-between hover:border-tertiary-container transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">MEDIUM</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[rgba(245,158,11,0.15)] text-tertiary-container border border-tertiary-container/40 rounded">
+          TELEMETRY
+        </span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-tertiary-container leading-none">3</span>
+<span class="font-label-sm text-label-sm text-tertiary-container font-medium">Data Exposure</span>
+</div>
+</div>
+<!-- HUD Card 5: Verified Controls -->
+<div class="h-16 bg-[#0D111C] border border-outline-variant rounded p-2.5 flex flex-col justify-between hover:border-secondary transition-colors col-span-2 lg:col-span-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider">VERIFIED CONTROLS</span>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="verified_user">verified_user</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-headline-lg font-semibold text-secondary leading-none">14</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Expected 403 Denied</span>
+</div>
+</div>
+</section>
+<!-- ================= ZONE 3: SPLIT WORKSPACE ================= -->
+<main class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#06080F]">
+<!-- ----------------- ZONE 3A: LEFT FINDING EXPLORER (~410px) ----------------- -->
+<aside class="w-full lg:w-[420px] bg-[#0D111C] border-r border-outline-variant flex flex-col shrink-0">
+<!-- Explorer Header: Filter Pills -->
+<div class="p-space-sm border-b border-outline-variant bg-[#0A0E19]">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-xs text-primary" data-icon="filter_list">filter_list</span>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Target Findings Filter</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">6 Total Issues</span>
+</div>
+<!-- Filter Tabs -->
+<div class="flex flex-wrap gap-1 font-label-sm text-label-sm">
+<button class="px-2 py-0.5 rounded bg-primary-container text-[#06080F] font-semibold flex items-center gap-1">
+<span>All</span>
+<span class="bg-[#06080F]/20 px-1 rounded text-xs">6</span>
+</button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-[#EF4444] border border-[#EF4444]/30 hover:border-[#EF4444] flex items-center gap-1">
+<span>Critical</span>
+<span class="text-xs">2</span>
+</button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-[#F97316] border border-[#F97316]/30 hover:border-[#F97316] flex items-center gap-1">
+<span>High</span>
+<span class="text-xs">1</span>
+</button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-tertiary-container border border-tertiary-container/30 hover:border-tertiary-container flex items-center gap-1">
+<span>Medium</span>
+<span class="text-xs">3</span>
+</button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-outline border border-outline-variant hover:text-on-surface flex items-center gap-1">
+<span>Low</span>
+<span class="text-xs">0</span>
+</button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-secondary border border-secondary/30 hover:border-secondary flex items-center gap-1">
+<span>Secure</span>
+<span class="text-xs">14</span>
+</button>
+</div>
+</div>
+<!-- Monospace Search Bar -->
+<div class="p-space-sm border-b border-outline-variant bg-[#0D111C]">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-sm text-outline" data-icon="search">search</span>
+<input class="w-full bg-[#06080F] border border-outline-variant rounded pl-8 pr-12 py-1 font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:border-primary focus:ring-0 focus:outline-none" placeholder="filter findings (e.g. path:/orders method:GET)..." type="text" value="path:/orders"/>
+<span class="absolute right-2 font-label-sm text-label-sm text-outline border border-outline-variant px-1 rounded bg-[#151B2B]">⌘K</span>
+</div>
+</div>
+<!-- Findings List -->
+<div class="flex-1 overflow-y-auto divide-y divide-[#151B2B]">
+<!-- Finding Card 1 (Active/Selected) -->
+<div class="p-3 bg-[#151B2B] border-l-4 border-primary-container cursor-pointer transition-colors relative group">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-primary-container/20 text-primary border border-primary-container/40 rounded font-code-sm">GET</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium">/orders/{id}</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.2 bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/40 rounded font-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse-dot"></span>
+              [!] CRITICAL
+            </span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface mb-1 font-semibold">BOLA in Order Resource Access</h4>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mt-2">
+<div class="flex items-center space-x-2">
+<span class="text-primary font-code-sm">OWASP API1:2023</span>
+<span class="text-outline">•</span>
+<span>attacker: <span class="text-on-surface font-code-sm">userB</span></span>
+</div>
+<div class="flex items-center space-x-1 text-primary">
+<span class="material-symbols-outlined text-xs" data-icon="insights">insights</span>
+<span class="font-code-sm">95% conf</span>
+</div>
+</div>
+</div>
+<!-- Finding Card 2 -->
+<div class="p-3 bg-[#0D111C] hover:bg-[#151B2B]/70 cursor-pointer transition-colors border-l-4 border-transparent">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 rounded font-code-sm">DELETE</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium">/orders/{id}</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.2 bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/40 rounded font-code-sm flex items-center gap-1">
+              [!] CRITICAL
+            </span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface-variant group-hover:text-on-surface mb-1 font-medium">Unauthorized Resource Deletion via BOLA</h4>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mt-2">
+<div class="flex items-center space-x-2">
+<span class="text-primary font-code-sm">OWASP API1:2023</span>
+<span class="text-outline">•</span>
+<span>attacker: <span class="text-on-surface font-code-sm">userB</span></span>
+</div>
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<span class="font-code-sm">92% conf</span>
+</div>
+</div>
+</div>
+<!-- Finding Card 3 -->
+<div class="p-3 bg-[#0D111C] hover:bg-[#151B2B]/70 cursor-pointer transition-colors border-l-4 border-transparent">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[#F97316]/20 text-[#F97316] border border-[#F97316]/40 rounded font-code-sm">PUT</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium">/orders/{id}</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.2 bg-[#F97316]/15 text-[#F97316] border border-[#F97316]/40 rounded font-code-sm flex items-center gap-1">
+              [!] HIGH
+            </span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface-variant group-hover:text-on-surface mb-1 font-medium">BOLA State Modification</h4>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mt-2">
+<div class="flex items-center space-x-2">
+<span class="text-primary font-code-sm">OWASP API1:2023</span>
+<span class="text-outline">•</span>
+<span>attacker: <span class="text-on-surface font-code-sm">userB</span></span>
+</div>
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<span class="font-code-sm">88% conf</span>
+</div>
+</div>
+</div>
+<!-- Finding Card 4 -->
+<div class="p-3 bg-[#0D111C] hover:bg-[#151B2B]/70 cursor-pointer transition-colors border-l-4 border-transparent">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-primary-container/20 text-primary border border-primary-container/40 rounded font-code-sm">GET</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium">/users/{id}</span>
+</div>
+<span class="font-label-sm text-label-sm px-1.5 py-0.2 bg-tertiary-container/15 text-tertiary-container border border-tertiary-container/40 rounded font-code-sm flex items-center gap-1">
+              [i] MEDIUM
+            </span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface-variant group-hover:text-on-surface mb-1 font-medium">Excessive Data Exposure in User Profile</h4>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mt-2">
+<div class="flex items-center space-x-2">
+<span class="text-primary font-code-sm">OWASP API3:2023</span>
+<span class="text-outline">•</span>
+<span>attacker: <span class="text-on-surface font-code-sm">userA</span></span>
+</div>
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<span class="font-code-sm">85% conf</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Left Rail Status Footer -->
+<div class="p-2 border-t border-outline-variant bg-[#0A0E19] flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Diff Engine: Active</span>
+</span>
+<span class="font-code-sm">Sentinel Telemetry v0.9</span>
+</div>
+</aside>
+<!-- ----------------- ZONE 3B: RIGHT DEEP-DIVE INSPECTOR PANEL (flex-1) ----------------- -->
+<section class="flex-1 overflow-y-auto p-space-md lg:p-space-lg space-y-space-md bg-[#06080F]">
+<!-- Header Forensic Banner -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-space-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex flex-wrap items-center gap-2 mb-1.5">
+<span class="font-label-sm text-label-sm px-2 py-0.5 bg-primary-container/20 text-primary border border-primary-container/40 rounded font-code-sm">GET</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold">/orders/{id}</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/40 rounded font-code-sm flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse-dot"></span>
+              ● CRITICAL
+            </span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded font-code-sm">
+              OWASP API1:2023
+            </span>
+<span class="font-label-sm text-label-sm text-outline">Confidence: <span class="text-on-surface font-code-sm">95% (0.95)</span></span>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface font-bold">BOLA in Order Resource Access</h1>
+</div>
+<!-- Composite Risk Gauge & Actions -->
+<div class="flex items-center space-x-space-md shrink-0">
+<!-- Tactical Meter Gauge -->
+<div class="flex items-center space-x-3 px-3 py-2 bg-[#06080F] border border-outline-variant rounded">
+<div class="text-right">
+<div class="font-label-sm text-label-sm text-[#EF4444] font-semibold tracking-wider">CRITICAL RISK</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold leading-none">88 <span class="text-outline text-xs font-normal">/ 100</span></div>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-outline-variant flex items-center justify-center relative">
+<span class="material-symbols-outlined text-[#EF4444] text-lg" data-icon="gpp_maybe">gpp_maybe</span>
+</div>
+</div>
+<!-- Quick Action Group -->
+<div class="flex items-center space-x-1.5">
+<button class="px-2.5 py-1.5 bg-[#151B2B] border border-outline-variant text-on-surface hover:border-primary font-title-md text-title-md rounded transition-colors" title="Mark as Triaged">
+<span class="material-symbols-outlined text-sm align-middle" data-icon="check_circle">check_circle</span>
+</button>
+<button class="px-2.5 py-1.5 bg-[#151B2B] border border-outline-variant text-on-surface hover:border-primary font-title-md text-title-md rounded transition-colors" title="Create Jira Issue">
+<span class="material-symbols-outlined text-sm align-middle" data-icon="bug_report">bug_report</span>
+</button>
+<button class="px-3 py-1.5 bg-primary-container text-[#06080F] font-title-md text-title-md font-semibold rounded hover:bg-[#7DD3FC] transition-colors flex items-center space-x-1">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+<span>Re-test Endpoint</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Plain-English Root Cause & Impact Container -->
+<div class="bg-[#0D111C] border-l-4 border-primary-container border border-outline-variant rounded p-space-md flex items-start space-x-3">
+<span class="material-symbols-outlined text-primary-container mt-0.5" data-icon="info">info</span>
+<div>
+<span class="font-label-sm text-label-sm text-primary tracking-wider uppercase font-semibold block mb-0.5">Vulnerability Summary &amp; Root Cause</span>
+<p class="font-body-md text-body-md text-on-surface">
+            Endpoint <span class="font-code-sm text-primary">/orders/{id}</span> fails to validate caller ownership. Attacker <span class="font-code-sm text-[#EF4444] font-semibold">'userB'</span> successfully retrieved order 101 owned by <span class="font-code-sm text-secondary font-semibold">'userA'</span>. Object-level access control filters are missing from the data access controller.
+          </p>
+</div>
+</div>
+<!-- Four-Bar Component Breakdown -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-space-md">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="analytics">analytics</span>
+<span class="font-label-sm text-label-sm text-on-surface tracking-wider font-semibold uppercase">Severity Breakdown Factors</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Deterministic Telemetry Assessment</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-space-lg gap-y-3 font-label-sm text-label-sm">
+<!-- Metric 1: Impact -->
+<div>
+<div class="flex justify-between text-on-surface mb-1">
+<span class="text-on-surface-variant font-medium">Impact: <span class="text-on-surface">35 / 40</span> (high unauthorized data access)</span>
+<span class="text-[#EF4444] font-code-sm font-semibold">87.5%</span>
+</div>
+<div class="w-full h-1.5 bg-[#06080F] border border-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-[#EF4444] rounded-full" style="width: 87.5%;"></div>
+</div>
+</div>
+<!-- Metric 2: Exploitability -->
+<div>
+<div class="flex justify-between text-on-surface mb-1">
+<span class="text-on-surface-variant font-medium">Exploitability: <span class="text-on-surface">22 / 25</span> (trivial standard user token)</span>
+<span class="text-[#F97316] font-code-sm font-semibold">88.0%</span>
+</div>
+<div class="w-full h-1.5 bg-[#06080F] border border-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-[#F97316] rounded-full" style="width: 88%;"></div>
+</div>
+</div>
+<!-- Metric 3: Data Sensitivity -->
+<div>
+<div class="flex justify-between text-on-surface mb-1">
+<span class="text-on-surface-variant font-medium">Data Sensitivity: <span class="text-on-surface">21 / 30</span> (PII &amp; order records exposed)</span>
+<span class="text-tertiary-container font-code-sm font-semibold">70.0%</span>
+</div>
+<div class="w-full h-1.5 bg-[#06080F] border border-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 70%;"></div>
+</div>
+</div>
+<!-- Metric 4: Evidence Strength -->
+<div>
+<div class="flex justify-between text-on-surface mb-1">
+<span class="text-on-surface-variant font-medium">Evidence Strength: <span class="text-on-surface">10 / 15</span> (reproduced live differential)</span>
+<span class="text-primary font-code-sm font-semibold">66.7%</span>
+</div>
+<div class="w-full h-1.5 bg-[#06080F] border border-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 66.7%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- cURL Reproducer Console -->
+<div class="bg-[#06080F] border border-outline-variant rounded-lg overflow-hidden">
+<div class="bg-[#0D111C] px-3 py-1.5 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="flex space-x-1">
+<span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]/60 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary-container/60 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary/60 inline-block"></span>
+</div>
+<span class="font-code-sm text-code-sm text-outline ml-2">cURL Differential Reproducer</span>
+</div>
+<button class="flex items-center space-x-1 px-2 py-0.5 bg-[#151B2B] hover:bg-[#232D42] border border-outline-variant rounded font-label-sm text-label-sm text-primary transition-colors">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+<span>Copy cURL</span>
+</button>
+</div>
+<div class="p-3 font-code-sm text-code-sm leading-relaxed overflow-x-auto">
+<div class="text-primary select-all">
+            curl -X GET "http://target_api:9000/orders/101" -H "Authorization: Bearer $TOKEN"
+          </div>
+<div class="text-outline mt-1 font-label-sm text-label-sm select-none">
+            # Note: export TOKEN=&lt;attacker token&gt; first
+          </div>
+</div>
+</div>
+<!-- Side-by-Side Dual-Identity Differential Inspector -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Left Panel: Owner Baseline (userA) -->
+<div class="bg-[#0D111C] border border-outline-variant rounded flex flex-col">
+<div class="px-3 py-2 border-b border-outline-variant bg-[#0A0E19] flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="account_circle">account_circle</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Owner Baseline (userA)</span>
+</div>
+<span class="font-code-sm text-code-sm px-2 py-0.5 bg-secondary/15 text-secondary border border-secondary/30 rounded">
+              200 OK
+            </span>
+</div>
+<div class="p-3 font-code-sm text-code-sm flex-1 bg-[#06080F]/60 text-on-surface overflow-x-auto leading-relaxed">
+<pre class="font-code-sm"><code>{
+  <span class="text-outline">"id":</span> <span class="text-primary">101</span>,
+  <span class="text-outline">"owner":</span> <span class="text-secondary">"userA"</span>,
+  <span class="text-outline">"item":</span> <span class="text-on-surface">"Standard Package"</span>,
+  <span class="text-outline">"amount":</span> <span class="text-primary">49.99</span>
+}</code></pre>
+</div>
+<div class="px-3 py-1.5 bg-[#0A0E19] border-t border-outline-variant text-outline font-label-sm text-label-sm flex items-center justify-between">
+<span>Identity: Authenticated Legit Owner</span>
+<span class="text-secondary">Baseline Match ✓</span>
+</div>
+</div>
+<!-- Right Panel: Attacker Response (userB) -->
+<div class="bg-[#0D111C] border border-[#EF4444]/40 rounded flex flex-col tactical-glow-critical">
+<div class="px-3 py-2 border-b border-outline-variant bg-[#0A0E19] flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[#EF4444] text-sm" data-icon="warning">warning</span>
+<span class="font-label-sm text-label-sm text-[#EF4444] font-semibold">Attacker Response (userB)</span>
+</div>
+<span class="font-code-sm text-code-sm px-2 py-0.5 bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/50 rounded flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse-dot"></span>
+              Expected 403, got 200 - Access Granted
+            </span>
+</div>
+<div class="p-3 font-code-sm text-code-sm flex-1 bg-[#06080F]/60 text-on-surface overflow-x-auto leading-relaxed">
+<pre class="font-code-sm"><code>{
+  <span class="text-outline">"id":</span> <span class="text-primary">101</span>,
+  <span class="text-outline">"owner":</span> <span class="text-secondary">"userA"</span>,   <span class="text-[#EF4444] bg-[#EF4444]/10 px-1 rounded">&lt;-- [EXFILTRATED]</span>
+  <span class="text-outline">"ssn":</span> <span class="text-tertiary-container">"44*******66"</span>, <span class="text-[#EF4444] bg-[#EF4444]/10 px-1 rounded">&lt;-- [LEAKED PII]</span>
+  <span class="text-outline">"credit_card":</span> <span class="text-tertiary-container">"44*******66"</span> <span class="text-[#EF4444] bg-[#EF4444]/10 px-1 rounded">&lt;-- [LEAKED FINANCIAL]</span>
+}</code></pre>
+</div>
+<div class="px-3 py-1.5 bg-[#0A0E19] border-t border-outline-variant text-outline font-label-sm text-label-sm flex items-center justify-between">
+<span class="text-[#EF4444] font-medium">Identity: Unprivileged Tenant userB</span>
+<span class="text-[#EF4444]">Differential Breach Triggered</span>
+</div>
+</div>
+</div>
+<!-- Reproduction Verification Banner -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-title-md text-title-md text-secondary font-semibold">● 2 of 2 reproduced</span>
+<span class="text-outline font-label-sm text-label-sm">(Live Differential Verified — No downgrade applied)</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="font-label-sm text-label-sm text-outline">Affected Objects:</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded">101</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded">102</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded">103</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 bg-[#151B2B] text-primary border border-outline-variant rounded">104</span>
+</div>
+</div>
+<!-- Fix Remediation Hint Card -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-space-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+<div class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-secondary text-lg mt-0.5" data-icon="shield_with_heart">shield_with_heart</span>
+<div>
+<span class="font-label-sm text-label-sm text-secondary tracking-wider uppercase font-semibold block mb-0.5">Recommended Remediation</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+              Enforce object ownership verification: check <code class="font-code-sm text-primary px-1 bg-[#06080F] rounded border border-outline-variant">req.user.id == order.owner_id</code> before returning data.
+            </p>
+</div>
+</div>
+<button class="px-3 py-1.5 bg-[#151B2B] border border-secondary/40 text-secondary hover:bg-secondary hover:text-[#06080F] font-title-md text-title-md font-semibold rounded transition-colors whitespace-nowrap">
+          Apply Tenant Boundary Filter Patch
+        </button>
+</div>
+<!-- Collapsible AI & Secure Preview Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Collapsible Section: AI Code Fix -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-3">
+<button class="w-full flex items-center justify-between text-left group">
+<span class="font-label-sm text-label-sm text-outline group-hover:text-primary transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs" data-icon="arrow_right">arrow_right</span>
+<span>AI-suggested code fix (verify before use)</span>
+</span>
+<span class="font-label-sm text-label-sm text-outline border border-outline-variant px-1.5 py-0.5 rounded bg-[#06080F]">
+              Phase 10
+            </span>
+</button>
+</div>
+<!-- Secure Inspector Variant Preview Toggle -->
+<div class="bg-[#0D111C] border border-outline-variant rounded p-3 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="lock_open_right">lock_open_right</span>
+<span class="font-label-sm text-label-sm text-on-surface">Reference Baseline</span>
+</div>
+<button class="px-2.5 py-1 bg-[#151B2B] hover:border-primary border border-outline-variant rounded font-label-sm text-label-sm text-on-surface transition-colors flex items-center gap-1">
+<span>[View Secure Endpoint 403 Variant]</span>
+<span class="material-symbols-outlined text-xs" data-icon="open_in_new">open_in_new</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom Navigation (Responsive Pivot strictly enforcing mobile spec) -->
+<nav class="md:hidden flex items-center justify-around w-full h-12 bg-surface-container-lowest border-t border-outline-variant px-2 z-50">
+<a class="flex flex-col items-center justify-center text-outline hover:text-on-surface text-xs" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm mt-0.5">Dash</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline hover:text-on-surface text-xs" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="radar">radar</span>
+<span class="font-label-sm text-label-sm mt-0.5">Scans</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="crisis_alert">crisis_alert</span>
+<span class="font-label-sm text-label-sm mt-0.5">Findings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline hover:text-on-surface text-xs" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-sm text-label-sm mt-0.5">Audit</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline hover:text-on-surface text-xs" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm mt-0.5">Settings</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Scan Progress — SentinelAPI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#0f131e",
+            "on-secondary-fixed": "#002113",
+            "inverse-surface": "#dfe2f2",
+            "tertiary": "#ffc174",
+            "tertiary-fixed": "#ffddb8",
+            "inverse-on-surface": "#2c303c",
+            "on-tertiary-fixed-variant": "#653e00",
+            "outline": "#87929a",
+            "surface-variant": "#313441",
+            "surface-container-low": "#171b27",
+            "on-error-container": "#ffdad6",
+            "secondary-container": "#00a572",
+            "on-primary-fixed": "#001e2c",
+            "surface-bright": "#353945",
+            "secondary": "#4edea3",
+            "secondary-fixed-dim": "#4edea3",
+            "on-secondary": "#003824",
+            "on-primary-fixed-variant": "#004c69",
+            "surface-container-lowest": "#0a0e19",
+            "on-tertiary": "#472a00",
+            "on-error": "#690005",
+            "background": "#0f131e",
+            "primary-fixed-dim": "#7bd0ff",
+            "inverse-primary": "#00668a",
+            "error-container": "#93000a",
+            "surface-container": "#1b1f2b",
+            "outline-variant": "#3e484f",
+            "surface-container-high": "#262a36",
+            "on-surface": "#dfe2f2",
+            "on-primary-container": "#004965",
+            "tertiary-container": "#f59e0b",
+            "error": "#ffb4ab",
+            "surface-dim": "#0f131e",
+            "primary-container": "#38bdf8",
+            "on-tertiary-fixed": "#2a1700",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container-highest": "#313441",
+            "on-primary": "#00354a",
+            "primary-fixed": "#c4e7ff",
+            "primary": "#8ed5ff",
+            "on-secondary-fixed-variant": "#005236",
+            "on-tertiary-container": "#613b00",
+            "on-background": "#dfe2f2",
+            "surface-tint": "#7bd0ff",
+            "on-surface-variant": "#bdc8d1",
+            "on-secondary-container": "#00311f",
+            "secondary-fixed": "#6ffbbe"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "gutter": "0.75rem",
+            "margin": "1rem"
+          },
+          fontFamily: {
+            "headline-xl-mobile": ["Inter"],
+            "title-md": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "label-md": ["JetBrains Mono"],
+            "headline-xl": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "body-md": ["Inter"]
+          },
+          fontSize: {
+            "headline-xl-mobile": ["1.5rem", { lineHeight: "2rem", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "title-md": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "0em", fontWeight: "600" }],
+            "code-md": ["0.8125rem", { lineHeight: "1.25rem", letterSpacing: "-0.01em", fontWeight: "400" }],
+            "label-sm": ["0.625rem", { lineHeight: "0.875rem", letterSpacing: "0.06em", fontWeight: "600" }],
+            "headline-sm": ["1.125rem", { lineHeight: "1.5rem", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "label-md": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.04em", fontWeight: "500" }],
+            "headline-xl": ["2rem", { lineHeight: "2.5rem", letterSpacing: "-0.025em", fontWeight: "600" }],
+            "headline-lg": ["1.5rem", { lineHeight: "2rem", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "body-sm": ["0.75rem", { lineHeight: "1.125rem", letterSpacing: "0.01em", fontWeight: "400" }],
+            "code-sm": ["0.6875rem", { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "500" }],
+            "body-md": ["0.8125rem", { lineHeight: "1.25rem", letterSpacing: "0.005em", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Tactical Scan Pulse Keyframes */
+    @keyframes tacticalPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.92); }
+    }
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    @keyframes glowSweep {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .pulse-glow {
+      animation: tacticalPulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .blink-cursor {
+      animation: cursorBlink 0.9s infinite;
+    }
+    .shimmer-progress {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer-progress::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0; width: 50%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      animation: glowSweep 2.2s infinite;
+    }
+    /* Custom low-profile scrollbar for logs */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #06080F;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232D42;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38BDF8;
+    }
+  </style>
+</head>
+<body class="bg-[#06080F] text-on-surface antialiased min-h-screen flex flex-col font-body-md select-none">
+<!-- ========================================================================= -->
+<!-- 1. TOP NAVIGATION BAR (Source: Shared Components JSON TopNavBar)          -->
+<!-- ========================================================================= -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-sm bg-surface-container-lowest border-b border-outline-variant docked full-width top-0 z-50 sticky shadow-sm">
+<!-- Brand & Left Cluster -->
+<div class="flex items-center space-x-space-md">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="shield">shield</span>
+<span class="font-title-md text-title-md text-primary tracking-tight font-semibold">SentinelAPI</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-1 py-0.5 rounded border border-outline-variant ml-1">v2.4</span>
+</div>
+<!-- Live State Flag -->
+<div class="flex items-center space-x-1.5 bg-[#0D1826] border border-[#1E3A5F] px-2 py-0.5 rounded">
+<span class="w-2 h-2 rounded-full bg-primary-container pulse-glow shadow-[0_0_8px_#38bdf8]"></span>
+<span class="font-label-sm text-label-sm text-primary-container font-bold tracking-wider">● SCANNING</span>
+</div>
+<!-- Target Spec Pill -->
+<div class="hidden xl:flex items-center space-x-1 bg-surface-container px-2 py-0.5 rounded border border-outline-variant text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="dns">dns</span>
+<span class="font-code-sm text-code-sm text-on-surface">Target:</span>
+<span class="font-code-sm text-code-sm text-primary">http://target_api:9000</span>
+<span class="font-label-sm text-label-sm text-outline">(spec: openapi.json)</span>
+</div>
+<!-- Scope Guard Lock -->
+<div class="hidden lg:flex items-center space-x-1 bg-[#061A14] border border-[#0D3829] px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px] text-secondary" data-icon="lock">lock</span>
+<span class="font-label-sm text-label-sm text-secondary tracking-normal">Scope Guard: Active</span>
+<span class="font-label-sm text-label-sm text-[#00a572]">(allow-listed)</span>
+</div>
+</div>
+<!-- Center Navigation Links (Active: Scans) -->
+<nav class="hidden md:flex items-center space-x-space-xl">
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Dashboard</a>
+<a class="text-primary border-b-2 border-primary font-title-md text-title-md pb-1 flex items-center gap-1" href="#">
+<span>Scans</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container pulse-glow"></span>
+</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Findings</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Audit Log</a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-on-surface transition-colors pb-1" href="#">Settings</a>
+</nav>
+<!-- Right Actions Cluster -->
+<div class="flex items-center space-x-space-sm">
+<!-- Cancel Scan Button with Danger Styling & Tooltip -->
+<button class="flex items-center space-x-1.5 px-space-sm py-1 rounded bg-[#EF4444]/10 border border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444]/20 hover:shadow-[0_0_12px_rgba(239,68,68,0.35)] active:scale-95 transition-all duration-150 cursor-pointer" title="Graceful abort: in-flight probes finish and created objects are cleaned up" type="button">
+<span class="material-symbols-outlined text-[15px]" data-icon="cancel">cancel</span>
+<span class="font-label-md text-label-md font-semibold tracking-wide">Cancel Scan</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Icon Actions -->
+<button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-container rounded-full"></span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Help Documentation">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Configuration Settings">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+</button>
+<!-- Profile Avatar -->
+<div class="flex items-center pl-1">
+<div class="w-6 h-6 rounded border border-outline-variant bg-[#151B2B] flex items-center justify-center text-primary font-code-sm text-code-sm font-semibold" title="Analyst profile avatar">
+          SA
+        </div>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- MAIN CONTENT CANVAS: High-Density Mission-Critical Workspace              -->
+<!-- ========================================================================= -->
+<main class="flex-1 px-space-lg py-space-md flex flex-col space-y-space-md max-w-[1920px] w-full mx-auto">
+<!-- SUB-HEADER: Execution Metadata & Quick Controls -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm bg-[#0D111C] border border-[#232D42] px-space-md py-space-sm rounded">
+<div class="flex items-center space-x-space-md flex-wrap">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary-container text-[18px]" data-icon="terminal">terminal</span>
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Active Audit Execution:</span>
+<span class="font-code-md text-code-md text-primary-container bg-[#06080F] px-2 py-0.5 rounded border border-[#232D42]">scan_8f91c2</span>
+</div>
+<div class="hidden sm:flex items-center space-x-1.5 font-code-sm text-code-sm text-outline">
+<span>run_session</span>
+<span>/</span>
+<span>worker_pod_03</span>
+<span>/</span>
+<span class="text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> live_socket
+          </span>
+</div>
+</div>
+<!-- Quick Action Controls -->
+<div class="flex items-center space-x-2">
+<button class="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#151B2B] border border-[#232D42] text-on-surface hover:border-primary-container hover:text-primary transition-all text-xs font-title-md active:scale-95">
+<span class="material-symbols-outlined text-[14px]" data-icon="pause">pause</span>
+<span>Pause Probes</span>
+</button>
+<button class="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#151B2B] border border-[#232D42] text-on-surface hover:border-primary-container hover:text-primary transition-all text-xs font-title-md active:scale-95">
+<span class="material-symbols-outlined text-[14px]" data-icon="tune">tune</span>
+<span>Telemetry Mode</span>
+</button>
+<button class="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#151B2B] border border-[#232D42] text-on-surface hover:border-primary-container hover:text-primary transition-all text-xs font-title-md active:scale-95">
+<span class="material-symbols-outlined text-[14px]" data-icon="fullscreen">fullscreen</span>
+<span>Fullscreen Stream</span>
+</button>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 2. GRID OF 4 LIVE TELEMETRY HUD CARDS                                    -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1: Overall Progress -->
+<div class="bg-[#0D111C] border border-[#232D42] rounded p-space-md flex flex-col justify-between hover:border-outline-variant transition-colors relative overflow-hidden group">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">OVERALL PROGRESS</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" data-icon="speed">speed</span>
+</div>
+<div class="my-2">
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-semibold">68%</span>
+<span class="font-code-sm text-code-sm text-primary-container">Stage 6/8</span>
+</div>
+<!-- Animated glowing cyan progress bar -->
+<div class="w-full bg-[#06080F] h-2 rounded overflow-hidden mt-1.5 border border-[#232D42]/60">
+<div class="bg-primary-container h-full shimmer-progress shadow-[0_0_10px_#38bdf8]" style="width: 68%;"></div>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Stage 6 of 8 in progress</span>
+<span class="text-secondary font-medium">Running Checks</span>
+</div>
+</div>
+<!-- Card 2: Requests Sent -->
+<div class="bg-[#0D111C] border border-[#232D42] rounded p-space-md flex flex-col justify-between hover:border-outline-variant transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">REQUESTS SENT</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" data-icon="send">send</span>
+</div>
+<div class="my-2">
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-semibold">142</span>
+<span class="font-code-md text-code-md text-outline">/ 300</span>
+</div>
+<!-- Gauge Mini Bar -->
+<div class="w-full bg-[#06080F] h-2 rounded overflow-hidden mt-1.5 border border-[#232D42]/60 flex">
+<div class="bg-primary h-full" style="width: 47%;"></div>
+<div class="bg-[#151B2B] h-full" style="width: 53%;"></div>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Budget limit: 300 max</span>
+<span class="font-code-sm text-code-sm text-primary">47% consumed</span>
+</div>
+</div>
+<!-- Card 3: Time Elapsed -->
+<div class="bg-[#0D111C] border border-[#232D42] rounded p-space-md flex flex-col justify-between hover:border-outline-variant transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">TIME ELAPSED</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" data-icon="timer">timer</span>
+</div>
+<div class="my-2">
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-code-md font-semibold">00:01:24</span>
+</div>
+<!-- Throughput indicator line -->
+<div class="flex items-center space-x-1 mt-2">
+<div class="flex-1 h-1 bg-[#10B981] rounded-full"></div>
+<div class="flex-1 h-1 bg-[#10B981] rounded-full"></div>
+<div class="flex-1 h-1 bg-[#10B981] rounded-full"></div>
+<div class="flex-1 h-1 bg-[#10B981] rounded-full"></div>
+<div class="flex-1 h-1 bg-outline-variant rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Est. remaining: 00:00:38</span>
+<span class="font-code-sm text-code-sm text-secondary">Target: 14.2 req/s</span>
+</div>
+</div>
+<!-- Card 4: Live Findings Detected -->
+<div class="bg-[#0D111C] border border-[#232D42] rounded p-space-md flex flex-col justify-between hover:border-outline-variant transition-colors relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">LIVE FINDINGS DETECTED</span>
+<span class="material-symbols-outlined text-[#EF4444] text-[18px]" data-icon="warning">warning</span>
+</div>
+<div class="my-2 flex items-baseline justify-between">
+<span class="font-headline-xl text-headline-xl text-[#EF4444] tracking-tight font-semibold">3</span>
+<div class="flex items-center space-x-1">
+<span class="px-2 py-0.5 rounded bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#EF4444] pulse-glow"></span>
+              2 Critical
+            </span>
+<span class="px-2 py-0.5 rounded bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#F59E0B] font-label-sm text-label-sm font-bold">
+              1 High
+            </span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container border border-outline-variant text-outline font-label-sm text-label-sm">
+              0 Med
+            </span>
+</div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span class="text-[#EF4444] font-medium">BOLA detected on orders API</span>
+<span class="text-outline">OWASP: API1:2023</span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. EIGHT-STAGE EXECUTION STEPPER                                          -->
+<!-- ========================================================================= -->
+<section class="bg-[#0D111C] border border-[#232D42] rounded p-space-md">
+<div class="flex items-center justify-between pb-3 mb-3 border-b border-[#232D42]/70">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary text-[17px]" data-icon="linear_scale">linear_scale</span>
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">TACTICAL AUDIT PIPELINE EXECUTION</span>
+</div>
+<span class="font-code-sm text-code-sm text-primary-container">Pipeline Status: Synchronized (6/8 active)</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 relative">
+<!-- Stage 1 -->
+<div class="bg-[#151B2B] border border-[#232D42] p-2.5 rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline font-semibold">STAGE 01</span>
+<span class="w-4 h-4 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center text-[10px] font-bold">✓</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-on-surface font-medium leading-tight">Loading Spec</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">12 endpoints parsed</div>
+</div>
+<div class="font-code-sm text-code-sm text-[#10B981] text-right">00:03</div>
+</div>
+<!-- Stage 2 -->
+<div class="bg-[#151B2B] border border-[#232D42] p-2.5 rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline font-semibold">STAGE 02</span>
+<span class="w-4 h-4 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center text-[10px] font-bold">✓</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-on-surface font-medium leading-tight">Mapping Surface</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">Schemas validated</div>
+</div>
+<div class="font-code-sm text-code-sm text-[#10B981] text-right">00:05</div>
+</div>
+<!-- Stage 3 -->
+<div class="bg-[#151B2B] border border-[#232D42] p-2.5 rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline font-semibold">STAGE 03</span>
+<span class="w-4 h-4 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center text-[10px] font-bold">✓</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-on-surface font-medium leading-tight">Authenticating</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">3 identities logged in</div>
+</div>
+<div class="font-code-sm text-code-sm text-[#10B981] text-right">00:04</div>
+</div>
+<!-- Stage 4 -->
+<div class="bg-[#151B2B] border border-[#232D42] p-2.5 rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline font-semibold">STAGE 04</span>
+<span class="w-4 h-4 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center text-[10px] font-bold">✓</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-on-surface font-medium leading-tight">Discovering</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">Fixtures mapped</div>
+</div>
+<div class="font-code-sm text-code-sm text-[#10B981] text-right">00:06</div>
+</div>
+<!-- Stage 5 -->
+<div class="bg-[#151B2B] border border-[#232D42] p-2.5 rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline font-semibold">STAGE 05</span>
+<span class="w-4 h-4 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center text-[10px] font-bold">✓</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-on-surface font-medium leading-tight">Planning</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">150 tests budgeted</div>
+</div>
+<div class="font-code-sm text-code-sm text-[#10B981] text-right">00:08</div>
+</div>
+<!-- Stage 6: ACTIVE -->
+<div class="bg-[#182033] border-2 border-primary-container p-2.5 rounded flex flex-col justify-between shadow-[0_0_16px_rgba(56,189,248,0.25)] relative">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-primary-container font-bold">STAGE 06</span>
+<span class="w-4 h-4 rounded-full bg-primary-container text-[#06080F] flex items-center justify-center text-[10px] font-bold pulse-glow">▶</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-primary-container font-bold leading-tight flex items-center gap-1">
+              Running Checks
+            </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant truncate mt-0.5">5 threads active</div>
+</div>
+<div class="font-code-sm text-code-sm text-primary-container font-semibold text-right">IN FLIGHT</div>
+</div>
+<!-- Stage 7: Pending -->
+<div class="bg-[#0A0E19] border border-[#232D42]/60 p-2.5 rounded flex flex-col justify-between opacity-60">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline">STAGE 07</span>
+<span class="text-outline text-xs">⏳</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-outline font-medium leading-tight">Reproducing</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">Empirical verification</div>
+</div>
+<div class="font-code-sm text-code-sm text-outline text-right">QUEUED</div>
+</div>
+<!-- Stage 8: Pending -->
+<div class="bg-[#0A0E19] border border-[#232D42]/60 p-2.5 rounded flex flex-col justify-between opacity-60">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-outline">STAGE 08</span>
+<span class="text-outline text-xs">⏳</span>
+</div>
+<div class="my-1.5">
+<div class="font-title-md text-title-md text-outline font-medium leading-tight">Finalizing</div>
+<div class="font-label-sm text-label-sm text-outline truncate mt-0.5">Atomic snapshot save</div>
+</div>
+<div class="font-code-sm text-code-sm text-outline text-right">QUEUED</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. PER-CHECK EXECUTION STATUS CHIPS                                      -->
+<!-- ========================================================================= -->
+<section class="bg-[#0D111C] border border-[#232D42] rounded p-space-md">
+<div class="flex items-center justify-between mb-2.5">
+<span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">PER-CHECK SUITE EXECUTION STATUS</span>
+<span class="font-label-sm text-label-sm text-outline">Concurrency: 5 threads isolated</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+<!-- BOLA (Running) -->
+<div class="bg-[#182033] border border-primary-container/80 rounded p-2 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-on-surface font-semibold">BOLA</span>
+<span class="px-1.5 py-0.2 bg-primary-container/15 text-primary-container font-label-sm text-label-sm rounded border border-primary-container/30 flex items-center gap-1 font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container pulse-glow"></span> RUNNING
+            </span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-[#EF4444] font-semibold bg-[#EF4444]/10 px-1 rounded">2 findings</span>
+<span class="font-code-sm text-code-sm text-primary">84/100 probes</span>
+</div>
+</div>
+<!-- BFLA (Queued) -->
+<div class="bg-[#06080F] border border-[#232D42] rounded p-2 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-outline font-semibold">BFLA</span>
+<span class="text-outline font-label-sm text-label-sm">⏳ QUEUED</span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-outline">Auth functions</span>
+<span class="font-code-sm text-code-sm text-outline">0/30 probes</span>
+</div>
+</div>
+<!-- Data Exposure (Queued) -->
+<div class="bg-[#06080F] border border-[#232D42] rounded p-2 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-outline font-semibold">Data Exposure</span>
+<span class="text-outline font-label-sm text-label-sm">⏳ QUEUED</span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-outline">PII filters</span>
+<span class="font-code-sm text-code-sm text-outline">0/25 probes</span>
+</div>
+</div>
+<!-- Unauthenticated Access (Completed) -->
+<div class="bg-[#151B2B] border border-[#10B981]/50 rounded p-2 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Unauthenticated</span>
+<span class="px-1.5 py-0.2 bg-[#10B981]/15 text-[#10B981] font-label-sm text-label-sm rounded border border-[#10B981]/30 font-bold">
+              ✔ DONE
+            </span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-[#10B981]">0 findings</span>
+<span class="font-code-sm text-code-sm text-outline">14ms avg</span>
+</div>
+</div>
+<!-- Input Handling (Queued) -->
+<div class="bg-[#06080F] border border-[#232D42] rounded p-2 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-outline font-semibold">Input Handling</span>
+<span class="text-outline font-label-sm text-label-sm">⏳ QUEUED</span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-outline">Boundary fuzz</span>
+<span class="font-code-sm text-code-sm text-outline">0/50 probes</span>
+</div>
+</div>
+<!-- Rate Limiting (Queued alone) -->
+<div class="bg-[#06080F] border border-[#232D42] rounded p-2 flex flex-col justify-between relative">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-md text-title-md text-outline font-semibold truncate">Rate Limiting</span>
+<span class="text-outline font-label-sm text-label-sm">⏳ QUEUED</span>
+</div>
+<div class="flex items-center justify-between text-[11px] mt-1">
+<span class="font-label-sm text-label-sm text-[#F59E0B] bg-[#F59E0B]/10 px-1 rounded truncate">Runs last &amp; alone</span>
+<span class="font-code-sm text-code-sm text-outline">Burst mode</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. LIVE MONOSPACE EVENT LOG STREAM & WIRE INSPECTOR (Split Canvas)         -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md flex-1 min-h-[380px]">
+<!-- Event Log Stream (8 Cols) -->
+<div class="lg:col-span-8 bg-[#06080F] border border-[#232D42] rounded flex flex-col overflow-hidden shadow-2xl">
+<!-- Terminal Header -->
+<div class="bg-[#0D111C] px-space-md py-2 border-b border-[#232D42] flex items-center justify-between">
+<!-- Window Dots & Title -->
+<div class="flex items-center space-x-2">
+<div class="flex items-center space-x-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]/80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]/80 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981]/80 inline-block"></span>
+</div>
+<div class="h-3 w-[1px] bg-[#232D42] mx-1"></div>
+<span class="material-symbols-outlined text-[15px] text-outline" data-icon="terminal">terminal</span>
+<span class="font-code-sm text-code-sm text-on-surface font-semibold">telemetry-stream.log</span>
+<span class="font-label-sm text-label-sm text-outline hidden sm:inline">(SSE /scans/scan_8f91c2/events)</span>
+</div>
+<!-- Log Controls -->
+<div class="flex items-center space-x-2">
+<span class="font-label-sm text-label-sm text-outline hidden md:inline">142 buffered events</span>
+<button class="px-2 py-0.5 rounded bg-primary-container text-[#06080F] font-label-sm text-label-sm font-semibold flex items-center gap-1 active:scale-95 shadow-[0_0_8px_rgba(56,189,248,0.4)]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#06080F]"></span>
+              Autoscroll [ON]
+            </button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-outline hover:text-on-surface border border-[#232D42] font-label-sm text-label-sm active:scale-95">
+              Clear
+            </button>
+<button class="px-2 py-0.5 rounded bg-[#151B2B] text-outline hover:text-on-surface border border-[#232D42] font-label-sm text-label-sm active:scale-95">
+              Export Raw
+            </button>
+</div>
+</div>
+<!-- Terminal Console Body -->
+<div class="p-3 font-code-sm text-code-sm overflow-y-auto flex-1 space-y-1.5 bg-[#06080F] leading-relaxed text-on-surface-variant max-h-[380px]">
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:03]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[SPEC_LOAD]</span>
+<span class="text-on-surface">Successfully parsed OpenAPI 3.1 spec from <span class="text-primary underline">http://target_api:9000/openapi.json</span></span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:12]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[AUTH]</span>
+<span>Authenticated identity <span class="text-on-surface font-semibold">'userA'</span> (role: user) via POST /auth/login</span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:15]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[AUTH]</span>
+<span>Authenticated identity <span class="text-on-surface font-semibold">'userB'</span> (role: user) via POST /auth/login</span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:18]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[AUTH]</span>
+<span>Authenticated identity <span class="text-on-surface font-semibold">'admin'</span> (role: admin) via POST /auth/login</span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:26]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[DISCOVERY]</span>
+<span>Discovered owned objects: <span class="text-secondary font-medium">orders:101</span>, <span class="text-secondary font-medium">orders:102</span> for userA; <span class="text-secondary font-medium">orders:103</span> for userB</span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:41]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary font-medium">[PLANNER]</span>
+<span>Generated 150 test cases across 6 check suites within request budget</span>
+</div>
+<div class="flex items-start space-x-2">
+<span class="text-outline select-none">[00:00:48]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-secondary font-medium">[CHECKS:UNAUTH]</span>
+<span>Probing GET /users/me without token -&gt; <span class="text-[#10B981] font-bold">Status 401 (OK)</span></span>
+</div>
+<!-- WARN / Finding 1 -->
+<div class="flex items-start space-x-2 bg-[#EF4444]/10 border-l-2 border-[#EF4444] px-1.5 py-0.5 rounded-r">
+<span class="text-outline select-none">[00:01:02]</span>
+<span class="text-[#EF4444] font-bold">[WARN]</span>
+<span class="text-[#EF4444] font-medium">[CHECKS:BOLA]</span>
+<span class="text-on-surface font-medium">Probing GET /orders/101 with attacker 'userB' -&gt; <span class="text-[#EF4444] font-bold underline">Status 200 (VIOLATION DETECTED)</span></span>
+</div>
+<!-- WARN / Finding 2 -->
+<div class="flex items-start space-x-2 bg-[#EF4444]/10 border-l-2 border-[#EF4444] px-1.5 py-0.5 rounded-r">
+<span class="text-outline select-none">[00:01:14]</span>
+<span class="text-[#EF4444] font-bold">[WARN]</span>
+<span class="text-[#EF4444] font-medium">[CHECKS:BOLA]</span>
+<span class="text-on-surface font-medium">Probing DELETE /orders/102 with attacker 'userB' -&gt; <span class="text-[#EF4444] font-bold underline">Status 204 (CRITICAL VIOLATION)</span></span>
+</div>
+<!-- In Flight Active Probe -->
+<div class="flex items-start space-x-2 bg-[#38BDF8]/10 border-l-2 border-primary-container px-1.5 py-0.5 rounded-r">
+<span class="text-outline select-none">[00:01:21]</span>
+<span class="text-[#38BDF8] font-semibold">[INFO]</span>
+<span class="text-primary-container font-medium">[CHECKS:BOLA]</span>
+<span class="text-on-surface">Dispatched probe 142/300: GET /orders/103 with 'userA' -&gt; <span class="text-primary-container italic">waiting for response...</span></span>
+<span class="inline-block w-2 h-3 bg-primary-container blink-cursor ml-1"></span>
+</div>
+</div>
+<!-- Terminal Footer Status Bar -->
+<div class="bg-[#0D111C] px-space-md py-1 border-t border-[#232D42] flex items-center justify-between text-xs font-code-sm text-outline">
+<div class="flex items-center space-x-3">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span> SSE Connected</span>
+<span>Latency: 14ms</span>
+<span>Active Worker: pod_03_us_east</span>
+</div>
+<div class="flex items-center space-x-2">
+<span>Encoding: UTF-8</span>
+<span>Rate: 14.2 req/s</span>
+</div>
+</div>
+</div>
+<!-- Live Wire & Payload Inspector Drawer (4 Cols) -->
+<div class="lg:col-span-4 bg-[#0D111C] border border-[#232D42] rounded flex flex-col justify-between overflow-hidden">
+<div>
+<!-- Wire Header -->
+<div class="bg-[#151B2B] px-space-md py-2 border-b border-[#232D42] flex items-center justify-between">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary-container" data-icon="cable">cable</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Active Wire Probe Inspector</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-[#38BDF8]/20 text-primary-container font-label-sm text-label-sm border border-[#38BDF8]/40 font-bold">
+              PROBE #142
+            </span>
+</div>
+<!-- Payload Wire Details -->
+<div class="p-space-md space-y-3 font-code-sm text-code-sm">
+<!-- HTTP Method & Path -->
+<div class="bg-[#06080F] p-2.5 rounded border border-[#232D42]">
+<div class="font-label-sm text-label-sm text-outline uppercase mb-1">HTTP Request Target</div>
+<div class="flex items-center space-x-2">
+<span class="px-1.5 py-0.5 rounded bg-primary-container/20 text-primary-container font-bold text-xs">GET</span>
+<span class="text-on-surface font-medium">/orders/103</span>
+</div>
+</div>
+<!-- Headers & Identity Token -->
+<div class="bg-[#06080F] p-2.5 rounded border border-[#232D42] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase">Headers</span>
+<span class="font-label-sm text-label-sm text-secondary">Authenticated as 'userA'</span>
+</div>
+<div class="text-on-surface-variant font-code-sm text-code-sm space-y-0.5 leading-snug">
+<div><span class="text-outline">Host:</span> target_api:9000</div>
+<div><span class="text-outline">Accept:</span> application/json</div>
+<div><span class="text-outline">Authorization:</span> <span class="text-primary-container font-medium">Bearer $TOKEN</span></div>
+<div><span class="text-outline">X-Probe-Trace:</span> <span class="text-outline">sentinel_8f91c2_probe142</span></div>
+</div>
+</div>
+<!-- Target Identity Assertion -->
+<div class="bg-[#06080F] p-2.5 rounded border border-[#232D42]">
+<div class="font-label-sm text-label-sm text-outline uppercase mb-1">Audit Assertion Matrix</div>
+<div class="text-on-surface-variant space-y-1 text-xs font-body-sm">
+<div class="flex justify-between">
+<span class="text-outline font-label-sm">Owner of Object:</span>
+<span class="text-secondary font-code-sm font-semibold">userB</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline font-label-sm">Current Attacker:</span>
+<span class="text-[#EF4444] font-code-sm font-semibold">userA</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline font-label-sm">Expected Code:</span>
+<span class="text-on-surface font-code-sm">403 Forbidden / 404</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Wire Footer Telemetry -->
+<div class="p-space-md bg-[#0A0E19] border-t border-[#232D42] flex items-center justify-between text-xs font-code-sm">
+<div class="flex items-center space-x-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px] text-[#10B981]" data-icon="timer">timer</span>
+<span>Wire latency: <strong class="text-secondary">14ms</strong></span>
+</div>
+<button class="px-2 py-1 rounded bg-[#151B2B] text-primary hover:text-white border border-[#232D42] hover:border-primary transition-all font-title-md text-xs flex items-center gap-1 active:scale-95">
+<span class="material-symbols-outlined text-[13px]" data-icon="content_copy">content_copy</span>
+<span>Copy cURL</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

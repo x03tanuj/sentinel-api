@@ -154,3 +154,29 @@ Core Rules:
 - Cleanup must be shielded (`asyncio.shield`) so created objects are deleted even when cancelled or timed out.
 - Localhost binding: When `SENTINEL_API_KEY` is not set, API is bound strictly to `127.0.0.1`. If set, `X-API-Key` is enforced via constant-time comparison.
 
+## Phase 9A completed
+Designed the dashboard UI design system and all 7 screens using Google Stitch MCP, producing design artifacts only (`screenshot.png`, `code.html`, `PROJECT.md`, `DESIGN_SYSTEM.md`, `SCREENS.md`, `BRIEF_USER.md`).
+
+Artifacts location:
+- `frontend/design/`:
+  - `BRIEF_USER.md`: Visual source of truth and aesthetic foundation.
+  - `DESIGN_SYSTEM.md`: Comprehensive tokens, ready-to-paste Tailwind theme snippet, typography, component specs, and WCAG AA rules.
+  - `SCREENS.md`: Screen-to-API route mappings, inspector field tables, differential response analysis findings, gap list, and QA checklist.
+  - `stitch/PROJECT.md`: Stitch project metadata and screen ID directory.
+  - `stitch/01-results-triage-workspace/`: Results Triage Workspace (`screenshot.png`, `code.html`).
+  - `stitch/02-new-scan/`: New Scan Configuration Dialog (`screenshot.png`, `code.html`).
+  - `stitch/03-live-scan-progress/`: Live Scan Progress & Telemetry Monitor (`screenshot.png`, `code.html`).
+  - `stitch/04-authorization-matrix/`: Ground-Truth Authorization Matrix (`screenshot.png`, `code.html`).
+  - `stitch/05-attack-surface/`: Discovered Attack Surface (`screenshot.png`, `code.html`).
+  - `stitch/06-scan-history/`: Scan Audit History (`screenshot.png`, `code.html`).
+  - `stitch/07-states-sheet/`: System States & Resilience Sheet (`screenshot.png`, `code.html`).
+
+Core Implementation Rule:
+Phase 9B implements from `frontend/design/` (`BRIEF_USER.md` tokens, `DESIGN_SYSTEM.md`, `SCREENS.md` mapping); use Stitch MCP again only for small refinements.
+
+Identified DESIGN-vs-API Gaps:
+1. `verified_controls` Metric (GAP-01): `ScanSummary` does not yet expose a count of test cases where unauthorized access was denied as expected. Proposed fix: add `verified_controls: int` and `verified_endpoints: list[str]` to `ScanSummary`. (Needs backend change in Phase 9B/10).
+2. Top-Level `risk_breakdown` on Finding (GAP-02): 4-component risk scores reside in `finding.evidence.response_diff["risk_breakdown"]`. Phase 9B reads from `response_diff` directly, with future option to promote to top-level model field.
+3. Endpoint Priority Score in Surface API (GAP-03): `GET /scans/{id}/surface` returns `Endpoint` models without the computed risk rank attached. Proposed fix: add `priority_score: int` to `Endpoint` schema in `app/models.py`. (Needs backend change in Phase 9B/10).
+4. cURL Suite Export (GAP-04): UI offers "cURL Attack Suite" export. Assembled client-side from `finding.curl_poc` in Phase 9B.
+
