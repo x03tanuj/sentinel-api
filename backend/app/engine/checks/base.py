@@ -43,6 +43,7 @@ def register_check(check: BaseCheck) -> None:
 async def run_checks(
     ctx: ScanContext,
     enabled: list[str] | None = None,
+    on_check_done: Any = None,
 ) -> list[Finding]:
     """Execute enabled security checks with concurrency controls, timeouts, and deduplication.
 
@@ -57,6 +58,7 @@ async def run_checks(
     Args:
         ctx: Active ScanContext.
         enabled: Optional list of check names to execute; defaults to all registered checks.
+        on_check_done: Optional callback invoked when each check completes execution.
 
     Returns:
         Aggregated, confidence-filtered list of Findings.
@@ -83,6 +85,14 @@ async def run_checks(
             ctx.notes.append(f"check_error:{check.name}:{type(exc).__name__}")
             logger.exception("Check %s crashed: %s", check.name, exc)
             return []
+        finally:
+            if on_check_done:
+                try:
+                    cb = on_check_done(check.name)
+                    if asyncio.iscoroutine(cb):
+                        await cb
+                except Exception as cb_exc:
+                    logger.debug("on_check_done callback error for %s: %s", check.name, cb_exc)
 
     # 1. Run non-rate-limit checks concurrently
     if concurrent_checks:
@@ -144,6 +154,7 @@ async def run_checks_with_reproduction(
     ctx: ScanContext,
     enabled: list[str] | None = None,
     top_n: int = 8,
+    on_check_done: Any = None,
 ) -> list[Finding]:
     """Execute enabled security checks and empirically reproduce top-priority findings.
 
@@ -151,6 +162,7 @@ async def run_checks_with_reproduction(
         ctx: Active ScanContext.
         enabled: Optional list of check names to execute.
         top_n: Maximum number of top findings to empirically reproduce.
+        on_check_done: Optional callback invoked when each check completes execution.
 
     Returns:
         List of finalized findings with reproduction evidence and refined confidence scores.
@@ -158,7 +170,7 @@ async def run_checks_with_reproduction(
     from app.engine.reproduce import reproduce_top_findings
     from app.engine.checks.bola import cleanup_created
 
-    findings = await run_checks(ctx, enabled=enabled)
+    findings = await run_checks(ctx, enabled=enabled, on_check_done=on_check_done)
     try:
         return await reproduce_top_findings(findings, ctx, top_n=top_n)
     finally:

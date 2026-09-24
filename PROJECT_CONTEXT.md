@@ -118,3 +118,39 @@ Public classes and functions:
 
 Core Rule:
 Finding.severity and Finding.confidence must always be set via `risk.py`, never hardcoded in a check, except through the documented `provisional_severity` fallback path wrapped in try/except.
+
+## Phase 8 completed
+Implemented the unified scan pipeline, atomic JSON snapshot store with secret leak guards, scan scheduler/manager, FastAPI REST and SSE streaming routes, report renderers, and schema export tooling.
+
+Public classes and functions:
+- `run_scan(config: ScanConfig, on_progress=None, settings=None, scan_id=None) -> ScanResult`: Unified scan pipeline orchestrating specification loading, attack surface mapping, identity authentication, ownership discovery, matrix planning, check execution with progress callbacks, empirical reproduction, and shielded cleanup.
+- `ScanConfig(BaseModel)`: Validated scan configuration enforcing scope verification, identity naming rules, check registry validation, and budget caps.
+  - `public_view() -> dict`: Returns sanitized, secret-free scan metadata. Never persists or exposes credentials.
+- `ProgressEvent(BaseModel)`: Monotonically increasing progress events with execution stages, percentage weights (0-100), and terminal status.
+- `ScanResult(BaseModel)`: Complete aggregated scan output encapsulating redacted findings, attack surface endpoints with risk scores, authorization matrix heatmap, planning stats, telemetry notes, and executive summary.
+- `JsonSnapshotStore(ScanStore)`: In-memory store with async lock synchronization, atomic disk persistence (`os.replace`) to `{DATA_DIR}/scans.json`, retention policy (max `MAX_STORED_SCANS`, evicting oldest finished), debounced flushing, automatic corruption recovery (`scans.json.corrupt-<timestamp>`), and startup interruption recovery.
+- `assert_no_secrets(payload: str) -> None`: Strict safety guard raising `SecretLeakError` if serialized JSON contains Bearer JWTs, raw JWT token structures, or unredacted passwords.
+- `ScanManager(store, settings)`: Central scheduler managing scan execution, enforcing `MAX_CONCURRENT_SCANS` (429 with `Retry-After`), duplicate active `base_url` conflict rejection (409), bounded cancellation with shielded cleanup, and real-time SSE subscriber fan-out via async queues.
+- `render_markdown(record: ScanRecord) -> str`: Deterministic Markdown audit report generator with executive summary, severity tables, authorization matrix, findings breakdown, and curl PoC snippets.
+- `render_json(record: ScanRecord) -> str`: Deterministic JSON findings export with secret leak validation.
+- Routes in `backend/app/routes/scans.py`:
+  - `POST /scans`: Submit new scan (202 Accepted, 400 for scope/validation, 409 conflict, 429 concurrency).
+  - `GET /scans`: List scan summaries (newest first, paginated).
+  - `GET /scans/{id}`: Detailed scan status, progress, public config, and summary.
+  - `GET /scans/{id}/findings`: Filterable findings (`severity`, `check`, `min_confidence`, `sort`, `order`).
+  - `GET /scans/{id}/findings/{id}`: Retrieve single finding details.
+  - `GET /scans/{id}/surface`: Mapped attack surface endpoints with risk score, flags, and resource categories.
+  - `GET /scans/{id}/matrix`: Authorization matrix heatmap cells and summary counts.
+  - `GET /scans/{id}/notes`: Telemetry notes and execution logs.
+  - `GET /scans/{id}/events`: Real-time SSE event stream with past event replay and 15s keep-alive heartbeats.
+  - `POST /scans/{id}/cancel`: Cancel ongoing scan with bounded wait for shielded cleanup.
+  - `DELETE /scans/{id}`: Remove finished scan from storage.
+  - `GET /scans/{id}/report.md`: Download Markdown audit report.
+  - `GET /scans/{id}/report.json`: Download JSON findings report.
+
+Core Rules:
+- One pipeline for everything: CLI `scan` and FastAPI routes both invoke `run_scan`.
+- Credentials protection: Only `ScanConfig.public_view()` is persisted in `store` or returned by the API; raw passwords exist only in the execution task closure and are discarded upon completion.
+- Cleanup must be shielded (`asyncio.shield`) so created objects are deleted even when cancelled or timed out.
+- Localhost binding: When `SENTINEL_API_KEY` is not set, API is bound strictly to `127.0.0.1`. If set, `X-API-Key` is enforced via constant-time comparison.
+

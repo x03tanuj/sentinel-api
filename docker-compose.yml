@@ -3,8 +3,14 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    # Bind to localhost only so the scanner API is not exposed to the network
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      - SENTINEL_API_KEY=${SENTINEL_API_KEY:-}
     env_file:
       - .env
     networks:
@@ -20,8 +26,10 @@ services:
     build:
       context: ./target_api
       dockerfile: Dockerfile
+    # Docker-internal scans initiated from the scanner container use http://target_api:9000
+    # Host tests/curls access target_api on http://127.0.0.1:9000
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     environment:
       - SECURE=${SECURE:-false}
       - JWT_SECRET=${JWT_SECRET:-dev-secret-demo-only-32bytes-long!!}

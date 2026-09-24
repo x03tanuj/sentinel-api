@@ -9,7 +9,7 @@ from functools import lru_cache
 from typing import Any
 from urllib.parse import urlparse
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -63,6 +63,42 @@ class Settings(BaseSettings):
         default=120,
         description="Maximum timeout in seconds permitted per security check",
     )
+    DATA_DIR: str = Field(
+        default="data",
+        description="Directory for local scan snapshots and persistent storage",
+    )
+    MAX_CONCURRENT_SCANS: int = Field(
+        default=2,
+        description="Maximum concurrent scans executing simultaneously",
+    )
+    MAX_STORED_SCANS: int = Field(
+        default=50,
+        description="Maximum scan history records retained in storage",
+    )
+    SCAN_TIMEOUT_SECONDS: int = Field(
+        default=900,
+        description="Maximum wall-clock execution time permitted for a scan before timeout",
+    )
+    SENTINEL_API_KEY: SecretStr | None = Field(
+        default=None,
+        description="Optional API key required to access /scans endpoints via X-API-Key header",
+    )
+    CORS_ORIGINS: list[str] = Field(
+        default=["http://localhost:5173"],
+        description="Permitted CORS origins for the API",
+    )
+    MAX_SPEC_BYTES: int = Field(
+        default=10_000_000,
+        description="Maximum size in bytes for loaded or inline OpenAPI specifications",
+    )
+    MAX_IDENTITIES: int = Field(
+        default=5,
+        description="Maximum test identities allowed per scan configuration",
+    )
+    MAX_TEST_CASE_BUDGET: int = Field(
+        default=500,
+        description="Maximum test case generation budget allowed",
+    )
     LLM_PROVIDER: str = Field(
         default="groq",
         description="LLM provider name for finding explanation synthesis",
@@ -94,6 +130,32 @@ class Settings(BaseSettings):
             return [h.strip() for h in value.split(",") if h.strip()]
         if isinstance(value, (list, set, tuple)):
             return [str(h).strip() for h in value]
+        return value
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: Any) -> list[str]:
+        """Parse CORS_ORIGINS from list, JSON string, or comma-separated string."""
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("[") and value.endswith("]"):
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed]
+                except Exception:
+                    pass
+            return [h.strip() for h in value.split(",") if h.strip()]
+        if isinstance(value, (list, set, tuple)):
+            return [str(h).strip() for h in value]
+        return value
+
+    @field_validator("SENTINEL_API_KEY", mode="before")
+    @classmethod
+    def parse_api_key(cls, value: Any) -> Any:
+        """Treat empty or whitespace-only API keys as None."""
+        if isinstance(value, str) and not value.strip():
+            return None
         return value
 
 

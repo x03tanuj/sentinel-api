@@ -121,6 +121,9 @@ def matrix_summary(cells: list[MatrixCell]) -> dict[str, Any]:
     }
 
 
+summarize_matrix = matrix_summary
+
+
 def render_matrix(cells: list[MatrixCell], identities: list[Identity]) -> str:
     """Render the authorization matrix as a formatted Rich table string.
 

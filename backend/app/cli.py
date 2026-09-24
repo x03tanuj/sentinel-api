@@ -233,9 +233,10 @@ async def execute_scan(
     json_out: str | None = None,
 ) -> int:
     """Execute complete security scan pipeline with differential analysis and modular checks."""
+    from app.engine.scanner import ScanConfig, run_scan
+
     console = Console()
     err_console = Console(stderr=True)
-    settings = get_settings()
 
     # 1. Parse sample bodies
     sample_bodies: dict[str, dict[str, Any]] = {}
@@ -246,9 +247,8 @@ async def execute_scan(
                 try:
                     sample_bodies[resource_name.strip()] = json.loads(raw_json)
                 except Exception as exc:
-                    console.print(
-                        f"[bold red]Invalid sample body JSON for '{resource_name}':[/bold red] {exc}",
-                        file=sys.stderr,
+                    err_console.print(
+                        f"[bold red]Invalid sample body JSON for '{resource_name}':[/bold red] {exc}"
                     )
                     return 1
 
@@ -257,159 +257,146 @@ async def execute_scan(
     if checks_filter:
         enabled_checks = [c.strip() for c in checks_filter.split(",") if c.strip()]
 
+    # 3. Parse identity configs
+    configs: list[IdentityConfig] = []
+    for spec in identity_specs:
+        parts = [p.strip() for p in spec.split(",")]
+        if len(parts) < 4:
+            err_console.print(
+                f"[bold red]Invalid identity format:[/bold red] '{spec}'. Expected: name,role,username,password"
+            )
+            return 1
+        configs.append(
+            IdentityConfig(
+                name=parts[0],
+                role=parts[1],
+                username=parts[2],
+                password=SecretStr(parts[3]),
+            )
+        )
+
     try:
-        # 3. Load specification and compute attack surface
-        raw_spec = await load_spec(spec_source)
-        resolved_spec = resolve_and_validate(raw_spec)
-        endpoints = build_attack_surface(resolved_spec)
+        # Determine spec_url vs spec_inline
+        spec_url: str | None = None
+        spec_inline: dict[str, Any] | None = None
+        if spec_source.startswith(("http://", "https://")):
+            spec_url = spec_source
+        else:
+            spec_inline = await load_spec(spec_source)
 
-        # 4. Initialize executor and authenticate personas
-        async with Executor(settings=settings) as executor:
-            mgr = IdentityManager(base_url=base_url, executor=executor)
-            configs: list[IdentityConfig] = []
-            for spec in identity_specs:
-                parts = [p.strip() for p in spec.split(",")]
-                if len(parts) < 4:
-                    err_console.print(
-                        f"[bold red]Invalid identity format:[/bold red] '{spec}'. Expected: name,role,username,password"
-                    )
-                    return 1
-                configs.append(
-                    IdentityConfig(
-                        name=parts[0],
-                        role=parts[1],
-                        username=parts[2],
-                        password=SecretStr(parts[3]),
-                    )
-                )
+        scan_config = ScanConfig(
+            spec_url=spec_url,
+            spec_inline=spec_inline,
+            base_url=base_url,
+            identities=configs,
+            enabled_checks=enabled_checks,
+            test_case_budget=budget,
+            sample_bodies=sample_bodies,
+        )
 
-            identities = await mgr.login_all(configs)
+        def _on_progress(event: dict[str, Any]) -> None:
+            pct = event.get("percent", 0)
+            msg = event.get("message", "")
+            # Print milestone updates
+            if pct in (2, 8, 15, 22, 32, 38, 86, 95, 100) or event.get("check"):
+                console.print(f"[dim cyan][{pct:3d}%][/dim cyan] [dim]{msg}[/dim]")
 
-            # 5. Discover ownership, construct matrix, and generate test cases
-            owned = await discover_ownership(endpoints, identities, executor, base_url=base_url)
-            matrix_cells = build_matrix(owned, identities)
-            test_gen_res = generate_all(endpoints, identities, owned, matrix_cells, budget=budget)
-            cases = test_gen_res.cases
+        scan_result = await run_scan(scan_config, on_progress=_on_progress)
+        findings = scan_result.findings
 
-            # 6. Build execution context
-            ctx = ScanContext(
-                base_url=base_url,
-                endpoints=endpoints,
-                identity_manager=mgr,
-                owned=owned,
-                matrix_cells=matrix_cells,
-                cases=cases,
-                executor=executor,
-                settings=settings,
-                sample_bodies=sample_bodies,
+        # Sort findings by severity and confidence
+        severity_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}
+        findings.sort(key=lambda f: (severity_rank.get(f.get("severity", "INFO"), 99), -float(f.get("confidence", 0.0))))
+
+        # Render findings table
+        table = Table(
+            title="SentinelAPI Security Vulnerability Findings",
+            show_lines=True,
+            header_style="bold cyan",
+        )
+        table.add_column("SEVERITY", style="bold", justify="center")
+        table.add_column("CONFIDENCE", justify="center")
+        table.add_column("CHECK", justify="left")
+        table.add_column("METHOD + PATH", justify="left")
+        table.add_column("ATTACKER IDENTITY", justify="center")
+        table.add_column("TITLE", justify="left")
+
+        for f in findings:
+            sev_str = f.get("severity", "INFO")
+            sev_style = SEVERITY_COLORS.get(Severity(sev_str) if sev_str in Severity._value2member_map_ else Severity.INFO, "white")
+            ev = f.get("evidence") or {}
+            attacker = ev.get("identity") or "-"
+            conf_val = float(f.get("confidence", 0.0))
+            table.add_row(
+                f"[{sev_style}]{sev_str}[/{sev_style}]",
+                f"{conf_val:.2f}",
+                f.get("check", ""),
+                f"{f.get('method', '')} {f.get('endpoint', '')}",
+                attacker,
+                f.get("title", ""),
             )
+        console.print(table)
 
-            # 7. Execute security check modules with empirical reproduction
-            start_time = time.monotonic()
-            findings = await run_checks_with_reproduction(ctx, enabled=enabled_checks)
-            elapsed_secs = time.monotonic() - start_time
+        # Render per-check count summary
+        summary_table = Table(
+            title="Security Checks Summary",
+            show_lines=True,
+            header_style="bold cyan",
+        )
+        summary_table.add_column("CHECK", style="bold white", justify="left")
+        summary_table.add_column("FINDINGS COUNT", justify="center")
 
-            # 8. Sort findings by severity and confidence
-            findings.sort(key=lambda f: (SEVERITY_ORDER.get(f.severity, 99), -f.confidence))
+        check_counts = scan_result.summary.get("by_check", {})
+        for chk_name in sorted(CHECKS.keys()):
+            if enabled_checks is None or chk_name in enabled_checks:
+                cnt = check_counts.get(chk_name, 0)
+                cnt_style = "bold red" if cnt > 0 else "green"
+                summary_table.add_row(chk_name, f"[{cnt_style}]{cnt}[/{cnt_style}]")
 
-            # 9. Render findings table
-            table = Table(
-                title="SentinelAPI Security Vulnerability Findings",
-                show_lines=True,
-                header_style="bold cyan",
-            )
-            table.add_column("SEVERITY", style="bold", justify="center")
-            table.add_column("CONFIDENCE", justify="center")
-            table.add_column("CHECK", justify="left")
-            table.add_column("METHOD + PATH", justify="left")
-            table.add_column("ATTACKER IDENTITY", justify="center")
-            table.add_column("TITLE", justify="left")
+        console.print(summary_table)
 
-            for f in findings:
-                sev_style = SEVERITY_COLORS.get(f.severity, "white")
-                attacker = f.evidence.identity if (f.evidence and f.evidence.identity) else "-"
-                conf_str = f"{f.confidence:.2f}"
-                table.add_row(
-                    f"[{sev_style}]{f.severity.value}[/{sev_style}]",
-                    conf_str,
-                    f.check,
-                    f"{f.method} {f.endpoint}",
-                    attacker,
-                    f.title,
-                )
-            console.print(table)
+        # Render reproduction summary
+        reproduced_count = scan_result.summary.get("reproduced_count", 0)
+        downgraded_count = scan_result.summary.get("downgraded_count", 0)
+        attempted_count = sum(
+            1 for f in findings
+            if (f.get("evidence") or {}).get("response_diff", {}).get("reproduction")
+        )
+        skipped_count = len(findings) - attempted_count
 
-            # 10. Render per-check count summary
-            summary_table = Table(
-                title="Security Checks Summary",
-                show_lines=True,
-                header_style="bold cyan",
-            )
-            summary_table.add_column("CHECK", style="bold white", justify="left")
-            summary_table.add_column("FINDINGS COUNT", justify="center")
+        console.print("\n[bold cyan]Vulnerability Reproduction Summary:[/bold cyan]")
+        console.print(
+            f" • Verified & Reproduced: [bold green]{reproduced_count}[/bold green]\n"
+            f" • Failed / Downgraded: [bold red]{downgraded_count}[/bold red]\n"
+            f" • Skipped (top_n cap): [bold yellow]{skipped_count}[/bold yellow]"
+        )
 
-            check_counts: dict[str, int] = {}
-            for f in findings:
-                check_counts[f.check] = check_counts.get(f.check, 0) + 1
+        # Render context notes
+        if scan_result.notes:
+            console.print("\n[bold yellow]Scan Execution Notes:[/bold yellow]")
+            for note in scan_result.notes:
+                console.print(f" • [dim yellow]{note}[/dim yellow]")
 
-            for chk_name in sorted(CHECKS.keys()):
-                if enabled_checks is None or chk_name in enabled_checks:
-                    cnt = check_counts.get(chk_name, 0)
-                    cnt_style = "bold red" if cnt > 0 else "green"
-                    summary_table.add_row(chk_name, f"[{cnt_style}]{cnt}[/{cnt_style}]")
+        # Execution metrics
+        console.print(
+            f"\n[bold cyan]Scan Execution Metrics:[/bold cyan] "
+            f"Requests Sent: [bold white]{scan_result.requests_sent}[/bold white] / Budget: [bold white]{scan_config.max_requests}[/bold white] | "
+            f"Elapsed: [bold white]{scan_result.duration_seconds:.2f}s[/bold white]"
+        )
 
-            console.print(summary_table)
+        console.print(f"\n[bold white]FINDINGS: {len(findings)}[/bold white]\n")
 
-            # 11. Render reproduction summary
-            reproduced_count = sum(
-                1 for f in findings
-                if f.evidence and f.evidence.response_diff.get("reproduction", {}).get("reproduced", 0) > 0
-            )
-            downgraded_count = sum(
-                1 for f in findings
-                if f.evidence and f.evidence.response_diff.get("downgraded") is True
-            )
-            attempted_count = sum(
-                1 for f in findings
-                if f.evidence and "reproduction" in f.evidence.response_diff
-            )
-            skipped_count = len(findings) - attempted_count
+        # Write JSON output if requested
+        if json_out:
+            with open(json_out, "w", encoding="utf-8") as fp:
+                json.dump(findings, fp, indent=2)
+            console.print(f"[bold green]Exported {len(findings)} findings to:[/bold green] {json_out}\n")
 
-            console.print("\n[bold cyan]Vulnerability Reproduction Summary:[/bold cyan]")
-            console.print(
-                f" • Verified & Reproduced: [bold green]{reproduced_count}[/bold green]\n"
-                f" • Failed / Downgraded: [bold red]{downgraded_count}[/bold red]\n"
-                f" • Skipped (top_n cap): [bold yellow]{skipped_count}[/bold yellow]"
-            )
-
-            # 12. Render context notes (skipped tests & errors)
-            if ctx.notes:
-                console.print("\n[bold yellow]Scan Execution Notes:[/bold yellow]")
-                for note in ctx.notes:
-                    console.print(f" • [dim yellow]{note}[/dim yellow]")
-
-            # 13. Execution metrics
-            console.print(
-                f"\n[bold cyan]Scan Execution Metrics:[/bold cyan] "
-                f"Requests Sent: [bold white]{executor.requests_sent}[/bold white] / Budget: [bold white]{budget}[/bold white] | "
-                f"Elapsed: [bold white]{elapsed_secs:.2f}s[/bold white]"
-            )
-
-            # Clear FINDINGS count line
-            console.print(f"\n[bold white]FINDINGS: {len(findings)}[/bold white]\n")
-
-            # 14. Write JSON output if requested
-            if json_out:
-                data = [f.to_dict() for f in findings]
-                with open(json_out, "w", encoding="utf-8") as fp:
-                    json.dump(data, fp, indent=2)
-                console.print(f"[bold green]Exported {len(findings)} findings to:[/bold green] {json_out}\n")
-
-            return 0
+        return 0
 
     except Exception as exc:
         err_console.print(f"[bold red]Scan Execution Error:[/bold red] {exc}")
-        return 0
+        return 1
 
 
 def execute_report(json_in: str) -> int:

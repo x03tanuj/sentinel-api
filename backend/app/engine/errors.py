@@ -39,3 +39,9 @@ class IdentityNotFoundError(SentinelError):
     """Raised when a requested identity is not registered or found in the manager."""
 
     pass
+
+
+class ScanTimeoutError(SentinelError):
+    """Raised when a scan exceeds the maximum permitted execution timeout."""
+
+    pass

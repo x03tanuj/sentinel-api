@@ -377,5 +377,97 @@ python -m app.cli report --json-in findings.json
 
 Outputs a formatted table detailing the four component scores (`IMPACT`, `EXPLOIT`, `SENSITIVITY`, `EVIDENCE`) alongside live reproduction status (`Yes (2/2)`, `Failed (Downgraded)`, or `Skipped`).
 
+---
+
+## Scanner API
+
+SentinelAPI exposes a RESTful API and Server-Sent Events (SSE) streaming service to schedule scans, track real-time progress, inspect findings, and download structured reports.
+
+> **Security & Binding Notice**:
+> The Scanner API accepts target credentials and dispatches active HTTP network probes. 
+> - **Localhost Binding**: Bind to `127.0.0.1` only (configured by default in `docker-compose.yml`) to prevent exposing the scanner to untrusted networks.
+> - **API Key Authentication**: When `SENTINEL_API_KEY` is configured, all `/scans` endpoints require the `X-API-Key` request header.
+
+### API Walkthrough (curl)
+
+#### 1. Submit a New Scan Job
+Submit target OpenAPI specification and test identity credentials:
+
+```bash
+curl -X POST http://localhost:8000/scans \
+  -H "Content-Type: application/json" \
+  -d '{
+    "spec_url": "http://target_api:9000/openapi.json",
+    "base_url": "http://target_api:9000",
+    "identities": [
+      {"name": "userA", "role": "user", "username": "userA", "password": "passA123", "login_path": "/auth/login"},
+      {"name": "userB", "role": "user", "username": "userB", "password": "passB123", "login_path": "/auth/login"},
+      {"name": "admin", "role": "admin", "username": "admin", "password": "admin123", "login_path": "/auth/login"}
+    ],
+    "test_case_budget": 150,
+    "sample_bodies": {
+      "order": {
+        "items": [{"product_id": 1, "qty": 1}],
+        "shipping_address": "Demo Street 100"
+      }
+    }
+  }'
+```
+
+Returns `HTTP 202 Accepted` with scan identifiers and URLs:
+```json
+{
+  "scan_id": "68382d57-7c89-4a84-92be-2e6b7de421a2",
+  "status": "queued",
+  "status_url": "/scans/68382d57-7c89-4a84-92be-2e6b7de421a2",
+  "events_url": "/scans/68382d57-7c89-4a84-92be-2e6b7de421a2/events"
+}
+```
+
+#### 2. Stream Live Progress Updates (SSE)
+Subscribe to real-time progress events until completion:
+
+```bash
+curl -N http://localhost:8000/scans/<scan_id>/events
+```
+
+Streams progress stages (`queued`, `loading_spec`, `mapping_surface`, `authenticating`, `discovering`, `planning`, `running_checks`, `reproducing`, `finalizing`):
+```text
+event: progress
+data: {"seq": 1, "scan_id": "...", "stage": "queued", "status": "running", "percent": 0, "message": "Scan initialized and queued", "check": null, "timestamp": "..."}
+
+event: progress
+data: {"seq": 13, "scan_id": "...", "stage": "running_checks", "status": "running", "percent": 45, "message": "Check completed: bfla (1/6)", "check": "bfla", "timestamp": "..."}
+
+event: progress
+data: {"seq": 22, "scan_id": "...", "stage": "finalizing", "status": "completed", "percent": 100, "message": "Scan completed successfully", "check": null, "timestamp": "..."}
+```
+
+#### 3. Inspect Scan Summary & Findings
+Retrieve executive summary and filter findings by severity:
+
+```bash
+# Get high-level scan summary
+curl http://localhost:8000/scans/<scan_id>
+
+# Filter findings by severity (e.g. CRITICAL)
+curl "http://localhost:8000/scans/<scan_id>/findings?severity=CRITICAL"
+
+# Inspect authorization matrix
+curl http://localhost:8000/scans/<scan_id>/matrix
+```
+
+#### 4. Download Reports
+Export Markdown or JSON audit reports:
+
+```bash
+# Download Markdown audit report
+curl http://localhost:8000/scans/<scan_id>/report.md -o report.md
+
+# Download JSON findings report
+curl http://localhost:8000/scans/<scan_id>/report.json -o report.json
+```
+
+
 
 

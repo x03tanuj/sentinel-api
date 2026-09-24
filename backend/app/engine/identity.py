@@ -7,7 +7,7 @@ extracting subject IDs and roles from JWTs without persisting tokens to disk.
 from typing import Any
 
 import jwt
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, field_validator
 
 from app.engine.errors import IdentityNotFoundError, LoginFailedError
 from app.engine.http_executor import Executor
@@ -32,6 +32,13 @@ class IdentityConfig(BaseModel):
     token_key: str = Field(default="access_token", description="JSON response key containing token")
     username_field: str = Field(default="username", description="Form field or JSON key for username")
     password_field: str = Field(default="password", description="Form field or JSON key for password")
+
+    @field_validator("login_path")
+    @classmethod
+    def validate_login_path(cls, v: str) -> str:
+        if not v or not v.startswith("/"):
+            raise ValueError("login_path must start with '/'")
+        return v
 
 
 class IdentityManager:
