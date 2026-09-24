@@ -1,0 +1,37 @@
+services:
+  scanner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  target_api:
+    build:
+      context: ./target_api
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  sentinel_net:
+    name: sentinel_net
+    driver: bridge
