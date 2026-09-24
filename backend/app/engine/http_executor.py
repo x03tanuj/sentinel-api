@@ -187,22 +187,22 @@ class Executor:
 
         assert_in_scope(final_url, self.settings)
 
-        # 2. Enforce request budget
-        if self._requests_sent >= self.settings.MAX_REQUESTS_PER_SCAN:
-            raise BudgetExceededError(
-                f"Maximum scan request budget of {self.settings.MAX_REQUESTS_PER_SCAN} exceeded."
-            )
-
-        # 3. Enforce rate cap (MAX_RPS) across concurrent callers
+        # 2. Enforce request budget and rate cap atomically
         min_interval = 1.0 / max(1, self.settings.MAX_RPS)
         async with self._lock:
+            if self._requests_sent >= self.settings.MAX_REQUESTS_PER_SCAN:
+                raise BudgetExceededError(
+                    f"Maximum scan request budget of {self.settings.MAX_REQUESTS_PER_SCAN} exceeded."
+                )
+
             now = time.monotonic()
             elapsed = now - self._last_request_time
             if elapsed < min_interval:
                 await asyncio.sleep(min_interval - elapsed)
             self._last_request_time = time.monotonic()
+            self._requests_sent += 1
 
-        # 4. Construct outgoing headers (token never placed anywhere else)
+        # 3. Construct outgoing headers (token never placed anywhere else)
         out_headers = dict(extra_headers or {})
         if identity and identity.token and identity.name != "anonymous":
             out_headers["Authorization"] = f"Bearer {identity.token}"
@@ -211,9 +211,6 @@ class Executor:
             lower_keys = {k.lower() for k in out_headers.keys()}
             if "content-type" not in lower_keys:
                 out_headers["Content-Type"] = "application/json"
-
-        # 5. Increment budget count only for requests actually sent
-        self._requests_sent += 1
 
         # 6. Stream request to cap response reading at MAX_RESPONSE_BYTES
         start_time = time.perf_counter()

@@ -2,21 +2,45 @@
 
 import argparse
 import asyncio
+import json
+from pathlib import Path
 import sys
+import time
+from typing import Any
 
 from pydantic import SecretStr
 from rich.console import Console
 from rich.table import Table
 
+from app.config import get_settings
 from app.engine.auth_matrix import build_matrix, render_matrix
+from app.engine.checks import CHECKS, run_checks
+from app.engine.context import ScanContext
 from app.engine.discovery import discover_ownership
 from app.engine.http_executor import Executor
 from app.engine.identity import IdentityConfig, IdentityManager
 from app.engine.test_generator import TestCategory, generate_all
+from app.models import Finding, Severity
 from app.parser.describe import describe_surface, summarize
 from app.parser.openapi_loader import SpecLoadError, SpecValidationError, load_spec, resolve_and_validate
 from app.parser.risk_prioritizer import prioritize
 from app.parser.surface_mapper import build_attack_surface
+
+SEVERITY_ORDER = {
+    Severity.CRITICAL: 0,
+    Severity.HIGH: 1,
+    Severity.MEDIUM: 2,
+    Severity.LOW: 3,
+    Severity.INFO: 4,
+}
+
+SEVERITY_COLORS = {
+    Severity.CRITICAL: "bold red",
+    Severity.HIGH: "red",
+    Severity.MEDIUM: "yellow",
+    Severity.LOW: "blue",
+    Severity.INFO: "dim white",
+}
 
 
 async def execute_surface(spec_source: str) -> int:
@@ -52,13 +76,7 @@ async def execute_surface(spec_source: str) -> int:
 
 
 async def execute_whoami(base_url: str, identity_specs: list[str], me_path: str = "/users/me") -> int:
-    """Authenticate configured identities, verify permissions via profile endpoint, and display identity status.
-
-    Note:
-        Passing plaintext passwords via CLI arguments is strictly intended for sandboxed
-        demo and testing environments. In production, load credentials via secure environment
-        variables or a secret management store.
-    """
+    """Authenticate configured identities, verify permissions via profile endpoint, and display identity status."""
     console = Console()
     try:
         async with Executor() as executor:
@@ -96,7 +114,6 @@ async def execute_whoami(base_url: str, identity_specs: list[str], me_path: str 
                 if ident.user_id is not None:
                     user_ids.append(str(ident.user_id))
 
-            # Determine whether multiple identities resolved to distinct user accounts
             distinct_users = len(set(user_ids)) > 1 if len(logged_in) > 1 else True
 
             table = Table(
@@ -141,7 +158,6 @@ async def execute_plan(
     """Execute complete test planning pipeline: spec load -> discovery -> matrix -> test case generation."""
     console = Console()
     try:
-        # 1. Parse and build attack surface
         raw_spec = await load_spec(spec_source)
         resolved_spec = resolve_and_validate(raw_spec)
         endpoints = build_attack_surface(resolved_spec)
@@ -166,24 +182,15 @@ async def execute_plan(
                     )
                 )
 
-            # 2. Authenticate personas
             identities = await mgr.login_all(configs)
-
-            # 3. Discover legitimate object ownership
             owned = await discover_ownership(endpoints, identities, executor, base_url=base_url)
-
-            # 4. Construct authorization matrix
             matrix_cells = build_matrix(owned, identities)
-
-            # 5. Generate prioritized test cases
             res = generate_all(endpoints, identities, owned, matrix_cells, budget=budget)
             cases, stats = res.cases, res.stats
 
-            # 6. Render authorization matrix
             matrix_table_str = render_matrix(matrix_cells, identities)
             console.print(matrix_table_str)
 
-            # 7. Render category summary table
             summary_table = Table(
                 title="SentinelAPI Test Generation Plan",
                 show_lines=True,
@@ -214,6 +221,173 @@ async def execute_plan(
     except Exception as exc:
         console.print(f"[bold red]Plan Execution Error:[/bold red] {exc}", file=sys.stderr)
         return 1
+
+
+async def execute_scan(
+    spec_source: str,
+    base_url: str,
+    identity_specs: list[str],
+    budget: int = 150,
+    sample_body_specs: list[str] | None = None,
+    checks_filter: str | None = None,
+    json_out: str | None = None,
+) -> int:
+    """Execute complete security scan pipeline with differential analysis and modular checks."""
+    console = Console()
+    err_console = Console(stderr=True)
+    settings = get_settings()
+
+    # 1. Parse sample bodies
+    sample_bodies: dict[str, dict[str, Any]] = {}
+    if sample_body_specs:
+        for item in sample_body_specs:
+            if "=" in item:
+                resource_name, raw_json = item.split("=", 1)
+                try:
+                    sample_bodies[resource_name.strip()] = json.loads(raw_json)
+                except Exception as exc:
+                    console.print(
+                        f"[bold red]Invalid sample body JSON for '{resource_name}':[/bold red] {exc}",
+                        file=sys.stderr,
+                    )
+                    return 1
+
+    # 2. Parse enabled checks
+    enabled_checks: list[str] | None = None
+    if checks_filter:
+        enabled_checks = [c.strip() for c in checks_filter.split(",") if c.strip()]
+
+    try:
+        # 3. Load specification and compute attack surface
+        raw_spec = await load_spec(spec_source)
+        resolved_spec = resolve_and_validate(raw_spec)
+        endpoints = build_attack_surface(resolved_spec)
+
+        # 4. Initialize executor and authenticate personas
+        async with Executor(settings=settings) as executor:
+            mgr = IdentityManager(base_url=base_url, executor=executor)
+            configs: list[IdentityConfig] = []
+            for spec in identity_specs:
+                parts = [p.strip() for p in spec.split(",")]
+                if len(parts) < 4:
+                    err_console.print(
+                        f"[bold red]Invalid identity format:[/bold red] '{spec}'. Expected: name,role,username,password"
+                    )
+                    return 1
+                configs.append(
+                    IdentityConfig(
+                        name=parts[0],
+                        role=parts[1],
+                        username=parts[2],
+                        password=SecretStr(parts[3]),
+                    )
+                )
+
+            identities = await mgr.login_all(configs)
+
+            # 5. Discover ownership, construct matrix, and generate test cases
+            owned = await discover_ownership(endpoints, identities, executor, base_url=base_url)
+            matrix_cells = build_matrix(owned, identities)
+            test_gen_res = generate_all(endpoints, identities, owned, matrix_cells, budget=budget)
+            cases = test_gen_res.cases
+
+            # 6. Build execution context
+            ctx = ScanContext(
+                base_url=base_url,
+                endpoints=endpoints,
+                identity_manager=mgr,
+                owned=owned,
+                matrix_cells=matrix_cells,
+                cases=cases,
+                executor=executor,
+                settings=settings,
+                sample_bodies=sample_bodies,
+            )
+
+            # 7. Execute security check modules
+            start_time = time.monotonic()
+            findings = await run_checks(ctx, enabled=enabled_checks)
+            elapsed_secs = time.monotonic() - start_time
+
+            # 8. Sort findings by severity and confidence
+            findings.sort(key=lambda f: (SEVERITY_ORDER.get(f.severity, 99), -f.confidence))
+
+            # 9. Render findings table
+            table = Table(
+                title="SentinelAPI Security Vulnerability Findings",
+                show_lines=True,
+                header_style="bold cyan",
+            )
+            table.add_column("SEVERITY", style="bold", justify="center")
+            table.add_column("CONFIDENCE", justify="center")
+            table.add_column("CHECK", justify="left")
+            table.add_column("METHOD + PATH", justify="left")
+            table.add_column("ATTACKER IDENTITY", justify="center")
+            table.add_column("TITLE", justify="left")
+
+            for f in findings:
+                sev_style = SEVERITY_COLORS.get(f.severity, "white")
+                attacker = f.evidence.identity if (f.evidence and f.evidence.identity) else "-"
+                conf_str = f"{f.confidence:.2f}"
+                table.add_row(
+                    f"[{sev_style}]{f.severity.value}[/{sev_style}]",
+                    conf_str,
+                    f.check,
+                    f"{f.method} {f.endpoint}",
+                    attacker,
+                    f.title,
+                )
+            console.print(table)
+
+            # 10. Render per-check count summary
+            summary_table = Table(
+                title="Security Checks Summary",
+                show_lines=True,
+                header_style="bold cyan",
+            )
+            summary_table.add_column("CHECK", style="bold white", justify="left")
+            summary_table.add_column("FINDINGS COUNT", justify="center")
+
+            check_counts: dict[str, int] = {}
+            for f in findings:
+                check_counts[f.check] = check_counts.get(f.check, 0) + 1
+
+            for chk_name in sorted(CHECKS.keys()):
+                if enabled_checks is None or chk_name in enabled_checks:
+                    cnt = check_counts.get(chk_name, 0)
+                    cnt_style = "bold red" if cnt > 0 else "green"
+                    summary_table.add_row(chk_name, f"[{cnt_style}]{cnt}[/{cnt_style}]")
+
+            console.print(summary_table)
+
+            # 11. Render context notes (skipped tests & errors)
+            if ctx.notes:
+                console.print("\n[bold yellow]Scan Execution Notes:[/bold yellow]")
+                for note in ctx.notes:
+                    console.print(f" • [dim yellow]{note}[/dim yellow]")
+
+            # 12. Execution metrics
+            console.print(
+                f"\n[bold cyan]Scan Execution Metrics:[/bold cyan] "
+                f"Requests Sent: [bold white]{executor.requests_sent}[/bold white] / Budget: [bold white]{budget}[/bold white] | "
+                f"Elapsed: [bold white]{elapsed_secs:.2f}s[/bold white]"
+            )
+
+            # Clear FINDINGS count line
+            console.print(f"\n[bold white]FINDINGS: {len(findings)}[/bold white]\n")
+
+            # 13. Write JSON output if requested
+            if json_out:
+                data = [f.to_dict() for f in findings]
+                with open(json_out, "w", encoding="utf-8") as fp:
+                    json.dump(data, fp, indent=2)
+                console.print(f"[bold green]Exported {len(findings)} findings to:[/bold green] {json_out}\n")
+
+            return 0
+
+    except Exception as exc:
+        err_console.print(f"[bold red]Scan Execution Error:[/bold red] {exc}")
+        return 0
 
 
 def main() -> None:
@@ -285,6 +459,50 @@ def main() -> None:
         help="Maximum test case execution budget (default: 150)",
     )
 
+    # Subcommand: scan
+    scan_parser = subparsers.add_parser(
+        "scan",
+        help="Execute automated authorization and security vulnerability scan",
+    )
+    scan_parser.add_argument(
+        "--spec",
+        required=True,
+        help="Local file path or allow-listed URL to OpenAPI specification",
+    )
+    scan_parser.add_argument(
+        "--base-url",
+        required=True,
+        help="Target API base URL (e.g. http://localhost:9000)",
+    )
+    scan_parser.add_argument(
+        "--identity",
+        action="append",
+        required=True,
+        help="Identity in format: name,role,username,password (repeatable)",
+    )
+    scan_parser.add_argument(
+        "--budget",
+        type=int,
+        default=150,
+        help="Maximum test case execution budget (default: 150)",
+    )
+    scan_parser.add_argument(
+        "--sample-body",
+        action="append",
+        default=[],
+        help="Sample JSON body for resource creation: resource=JSON (repeatable)",
+    )
+    scan_parser.add_argument(
+        "--checks",
+        default=None,
+        help="Comma-separated list of check modules to run (e.g. bola,bfla,data_exposure)",
+    )
+    scan_parser.add_argument(
+        "--json-out",
+        default=None,
+        help="Optional path to export redacted findings JSON",
+    )
+
     args = parser.parse_args()
 
     if args.command == "surface":
@@ -295,6 +513,19 @@ def main() -> None:
         sys.exit(exit_code)
     elif args.command == "plan":
         exit_code = asyncio.run(execute_plan(args.spec, args.base_url, args.identity, args.budget))
+        sys.exit(exit_code)
+    elif args.command == "scan":
+        exit_code = asyncio.run(
+            execute_scan(
+                spec_source=args.spec,
+                base_url=args.base_url,
+                identity_specs=args.identity,
+                budget=args.budget,
+                sample_body_specs=args.sample_body,
+                checks_filter=args.checks,
+                json_out=args.json_out,
+            )
+        )
         sys.exit(exit_code)
 
 

@@ -20,9 +20,11 @@ SENSITIVE_HEADER_NAMES: set[str] = {
 }
 
 SENSITIVE_KEY_PATTERN: re.Pattern = re.compile(
-    r"password|passwd|token|access_token|refresh_token|secret|api_?key|authorization",
+    r"password|passwd|token|access_token|refresh_token|secret|api_?key|authorization|ssn|social_security|cvv|iban|private_key|hash",
     re.IGNORECASE,
 )
+
+SSN_VALUE_PATTERN: re.Pattern = re.compile(r"^\d{3}-\d{2}-\d{4}$")
 
 
 def redact_headers(headers: Mapping[str, Any] | None) -> dict[str, str]:
@@ -72,11 +74,15 @@ def redact_body(body: Any) -> Any:
         for k, v in body.items():
             if SENSITIVE_KEY_PATTERN.search(str(k)):
                 new_dict[k] = "***REDACTED***"
+            elif isinstance(v, str) and SSN_VALUE_PATTERN.match(v.strip()):
+                new_dict[k] = "***REDACTED***"
             else:
                 new_dict[k] = redact_body(v)
         return new_dict
     elif isinstance(body, list):
         return [redact_body(item) for item in body]
+    elif isinstance(body, str) and SSN_VALUE_PATTERN.match(body.strip()):
+        return "***REDACTED***"
     return body
 
 

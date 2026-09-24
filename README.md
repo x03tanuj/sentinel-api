@@ -242,3 +242,59 @@ Sample output:
 Plan Budget Allocation: Generated: 120 | Capped to Budget: 120 / 150
 ```
 
+---
+
+## Automated Security Checks & Vulnerability Scanning
+
+SentinelAPI includes a modular security check suite that executes differential response analysis to prove vulnerabilities with high precision and near-zero false positives.
+
+### Security Check Modules
+
+| Check | OWASP API Top 10 | Description & Detection Strategy | False-Positive Mitigations | Limitations & Out-of-Scope |
+|---|---|---|---|---|
+| **`bola`** | API1:2023 | Detects Broken Object Level Authorization across tenants. Probes GET endpoints across personas and executes write BOLA (PUT/DELETE) strictly on objects created by the scanner. | Compares attack response to legitimate owner baseline; requires high body similarity, owner ID mismatch, and non-error payload; skips admin personas; write tests run only on tracked, scanner-created objects and cleaned up in `finally`. | Cannot test resources without creation schemas; cannot guess non-numeric/unguessable UUIDs without discovery. |
+| **`bfla`** | API5:2023 | Detects Broken Function Level Authorization where non-admin personas access privileged routes. | Compares non-admin response against admin baseline; checks for structured non-error bodies; safe 401/403/404 responses are never flagged. | Only tests GET privileged routes; non-GET privileged routes are deferred and noted; does not test fine-grained multi-tenant organizational permissions. |
+| **`data_exposure`** | API3:2023 | Flags excessive data exposure, contract mismatches (undeclared schema fields), and leak of secret credentials (passwords, hashes, SSNs) to non-admin users. | Does not evaluate admin responses (who legitimately see more); uses token-aware field classifier preventing false matches (`passenger` is not `password`); masks all values in evidence. | Dynamic schemas with `additionalProperties: true` fall back to sensitive-name testing only. |
+| **`rate_limit`** | API4:2023 | Probes unauthenticated POST auth/login routes with invalid credentials to verify enforcement of HTTP 429 and rate-limiting headers (`Retry-After`, `X-RateLimit-*`). | Monitors response status and latency deceleration; acknowledges protection immediately if 429 is observed; runs sequentially last to avoid locking out test identities. | Probes at most `MAX_RPS` requests/sec; rate limits looser than this threshold are not detected; distributed multi-IP rate limiting is not tested. |
+| **`unauth_access`** | API2:2023 | Identifies specification/implementation mismatches where endpoints declare `requires_auth: true` in OpenAPI but respond with 200 OK to anonymous callers. | Excludes public utility paths (`/health`, `/metrics`, `/_reset`); ignores soft error responses. | Non-GET routes are not tested anonymously; multi-step authentication schemes (e.g. MFA, OAuth authorization code flows) are out of scope. |
+| **`input_handling`** | API8:2023 | Robustness and stability probe monitoring boundary and malformed identifiers for unhandled 5xx server crashes or phantom object leaks. | Distinguishes 5xx unhandled exceptions from clean 400/404 validation responses. | **NOT an injection scanner** (SQL injection, XSS, and command injection are explicitly out of scope). |
+
+### Safety Rules
+
+1. **Read-Only by Default**: Test cases targeting pre-existing seed or discovered objects only use `GET`. Write probes (`PUT`, `DELETE`) execute **only** against fresh objects created during the scan run.
+2. **Guaranteed Cleanup**: All scanner-created objects are tracked in `ctx.created_objects` and cleaned up in a `finally` block via `cleanup_created`.
+3. **Strict Scope Enforcement**: Every single probe is dispatched through `Executor.execute`, validating host allowlists, rate caps, and budget exhaustion.
+4. **Zero Cleartext Credentials**: Raw tokens and passwords never enter disk logs, reports, or serialized evidence artifacts (`redaction.py` and `mask_value`).
+5. **Fault Isolation**: Check exceptions are isolated per check and recorded in `ctx.notes`, ensuring a crashed check never aborts the scan.
+6. **Rate-Limit Isolation**: `rate_limit` runs strictly last and alone to prevent request bursts from causing collateral throttling on other checks.
+
+---
+
+## How to Run a Security Scan
+
+Run a complete automated security scan via the CLI `scan` command:
+
+```bash
+cd backend
+python -m app.cli scan \
+  --spec http://localhost:9000/openapi.json \
+  --base-url http://localhost:9000 \
+  --identity userA,user,userA,passA123 \
+  --identity userB,user,userB,passB123 \
+  --identity admin,admin,admin,admin123 \
+  --budget 150 \
+  --sample-body 'order={"items":[{"product_id":1,"qty":1}],"shipping_address":"SentinelAPI test"}' \
+  --json-out scan_results.json
+```
+
+### CLI Options
+
+- `--spec`: Local file path or allow-listed URL to target OpenAPI specification.
+- `--base-url`: Target API base URL (e.g. `http://localhost:9000`).
+- `--identity`: Repeatable persona specification formatted as `name,role,username,password`.
+- `--budget`: Maximum probe request budget (default: 150).
+- `--sample-body`: Repeatable sample JSON body for resource creation: `resource=JSON`.
+- `--checks`: Optional comma-separated list of checks to run (e.g. `bola,bfla,data_exposure`).
+- `--json-out`: Optional path to write redacted findings JSON.
+
+

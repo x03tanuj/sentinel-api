@@ -181,3 +181,7 @@ class IdentityManager:
     def owners_of_role(self, role: str) -> list[Identity]:
         """Return all registered identities matching the given role."""
         return [ident for ident in self._identities.values() if ident.role == role]
+
+    def list_identities(self) -> list[Identity]:
+        """Return list of all registered identities including anonymous."""
+        return list(self._identities.values())

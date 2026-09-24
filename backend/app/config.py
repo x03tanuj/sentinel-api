@@ -51,6 +51,18 @@ class Settings(BaseSettings):
         default=150,
         description="Default budget cap for generated test cases",
     )
+    MIN_REPORT_CONFIDENCE: float = Field(
+        default=0.5,
+        description="Minimum confidence threshold required to report a finding",
+    )
+    CASE_CONCURRENCY: int = Field(
+        default=5,
+        description="Maximum concurrent test cases executed during scan runs",
+    )
+    CHECK_TIMEOUT_SECONDS: int = Field(
+        default=120,
+        description="Maximum timeout in seconds permitted per security check",
+    )
     LLM_PROVIDER: str = Field(
         default="groq",
         description="LLM provider name for finding explanation synthesis",

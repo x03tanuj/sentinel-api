@@ -82,3 +82,24 @@ Public classes and functions:
 Core Rule:
 `generate_all` is the single entry point Phase 6 must call to get TestCases; it already respects the request budget.
 
+## Phase 6 completed
+Implemented the differential analysis engine, test case runner, modular security check suite, and automated vulnerability scanning pipeline.
+
+Public classes and functions:
+- `compare(baseline: ResponseRecord | None, attack: ResponseRecord, attacker: Identity | None = None, requested_object_id: str | None = None) -> DiffResult`: Differential response analyzer computing weighted Jaccard similarity for JSON payloads, difflib ratio for text, owner ID divergence, sensitive field classification, and soft-fail error detection.
+- `DiffResult`: Pydantic model encapsulating status changes, body/schema similarity scores, owner divergence, same-object validation, and sensitive fields exposed.
+- `run_cases(ctx: ScanContext, cases: list[TestCase]) -> list[CaseResult]`: Throttled test runner executing GET cases via `asyncio.Semaphore(CASE_CONCURRENCY)`, caching legitimate baselines per (endpoint, owner, object_id), and safely deferring write operations.
+- `BaseCheck`: Abstract base class defining check interface (`run(ctx: ScanContext) -> list[Finding]`), name, owasp_id, and description.
+- `CHECKS`: Global registry mapping check names to check instances (`bola`, `bfla`, `data_exposure`, `rate_limit`, `unauth_access`, `input_handling`).
+- `run_checks(ctx: ScanContext, enabled: list[str] | None = None) -> list[Finding]`: Execution harness running checks concurrently with timeout isolation, running `rate_limit` sequentially last, filtering findings below `MIN_REPORT_CONFIDENCE`, and deduplicating findings on (check, method, path, identity) while recording all `affected_objects`.
+- `make_finding(...) -> Finding`: Factory constructing sanitized Finding models with linked Evidence, masked diff summaries, and copy-paste curl PoCs with `$TOKEN` placeholders.
+- `cleanup_created(ctx: ScanContext) -> None`: Best-effort cleanup deleting scanner-created objects in a `finally` block to leave zero scan residue behind.
+
+Core Rules:
+- Checks return Findings with provisional severity; Phase 7 owns final severity and confidence.
+- Write-method BOLA tests (PUT/PATCH/DELETE) run strictly on scanner-created objects, never on pre-existing seed data, and are cleaned up in `finally`.
+- `rate_limit` runs last and alone to prevent request bursts from skewing or locking out concurrent test personas.
+- All requests flow strictly through `Executor.execute`.
+- Zero cleartext tokens or SSNs in serialized findings or evidence.
+
+
