@@ -79,4 +79,49 @@ pip install -r backend/requirements.txt
 ```bash
 cd backend
 pytest -v
+
+cd ../target_api
+pytest -v
 ```
+
+---
+
+## OpenAPI Attack Surface Parser (CLI)
+
+SentinelAPI provides an automated attack surface mapper that loads OpenAPI 3.x specifications (from local files or allow-listed sandboxed URLs), dereferences internal schemas, and scores endpoints by risk exposure.
+
+### CLI Usage
+
+```bash
+cd backend
+python -m app.cli surface --spec http://localhost:9000/openapi.json
+# Or against a local file:
+python -m app.cli surface --spec tests/fixtures/target_openapi.json
+```
+
+### Sample Output
+
+```text
+                              SentinelAPI Attack Surface Mapping                
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┓
+┃ METHOD   ┃ PATH                      ┃  AUTH  ┃  OBJECT  ┃  PRIV  ┃ RESOURCE  ┃ SCORE ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━┩
+│ PUT      │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +65 │
+│ DELETE   │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +65 │
+│ GET      │ /admin/users              │  YES   │    NO    │  YES   │ user      │   +60 │
+│ GET      │ /users/{id}               │  YES   │   YES    │   NO   │ user      │   +55 │
+│ GET      │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +55 │
+│ POST     │ /orders                   │  YES   │    NO    │   NO   │ order     │   +50 │
+│ GET      │ /users/me                 │  YES   │    NO    │   NO   │ me        │   +15 │
+│ GET      │ /orders                   │  YES   │    NO    │   NO   │ order     │   +15 │
+│ GET      │ /reports/summary          │  YES   │    NO    │   NO   │ summary   │   +15 │
+│ GET      │ /products/{id}            │   NO   │   YES    │   NO   │ product   │   +10 │
+│ POST     │ /auth/login               │   NO   │    NO    │   NO   │ -         │   -20 │
+│ GET      │ /products                 │   NO   │    NO    │   NO   │ product   │   -30 │
+│ GET      │ /health                   │   NO   │    NO    │   NO   │ -         │  -130 │
+│ POST     │ /_reset                   │   NO   │    NO    │   NO   │ -         │  -130 │
+└──────────┴───────────────────────────┴────────┴──────────┴────────┴───────────┴───────┘
+
+Surface Summary: Total: 14 | Auth Required: 9 | Object Level: 5 | Privileged: 1 | Public: 5
+```
+
