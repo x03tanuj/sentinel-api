@@ -1,13 +1,3 @@
-/**
- * SentinelAPI — Pitch Deck PDF & Slide Preview Generator
- *
- * Uses Playwright to render scripts/deck_slides.html into:
- *   1. slides/SentinelAPI_Pitch.pdf (multi-page 16:9 widescreen PDF)
- *   2. slides/preview_slide_1.png (Title & Pitch)
- *   3. slides/preview_slide_4.png (System Architecture)
- *   4. slides/preview_slide_7.png (Live Product Demo)
- */
-
 const path = require('path');
 const fs = require('fs');
 
@@ -36,7 +26,6 @@ async function main() {
   await page.goto(`file://${htmlPath}`);
   await page.waitForLoadState('networkidle');
 
-  // Ensure fonts and images are completely loaded
   await page.evaluate(async () => {
     await document.fonts.ready;
     const images = Array.from(document.querySelectorAll('img'));
@@ -52,7 +41,7 @@ async function main() {
 
   await page.waitForTimeout(1000);
 
-  // 1. Export Multi-Page Widescreen 16:9 PDF
+  // 1. Export PDF
   const pdfPath = path.resolve(__dirname, '../slides/SentinelAPI_Pitch.pdf');
   console.log('Rendering 16:9 widescreen PDF...');
   await page.pdf({
@@ -64,28 +53,20 @@ async function main() {
   });
   console.log(`✅ PDF successfully generated: ${pdfPath}`);
 
-  // 2. Capture preview screenshots of key slides for visual inspection
-  const preview1 = path.resolve(__dirname, '../slides/preview_slide_1.png');
-  const preview4 = path.resolve(__dirname, '../slides/preview_slide_4.png');
-  const preview7 = path.resolve(__dirname, '../slides/preview_slide_7.png');
-
-  const s1 = page.locator('#slide-1');
-  await s1.screenshot({ path: preview1 });
-  console.log(`📸 Preview captured: ${preview1}`);
-
-  const s4 = page.locator('#slide-4');
-  await s4.screenshot({ path: preview4 });
-  console.log(`📸 Preview captured: ${preview4}`);
-
-  const s7 = page.locator('#slide-7');
-  await s7.screenshot({ path: preview7 });
-  console.log(`📸 Preview captured: ${preview7}`);
+  // 2. Previews of key requested slides
+  const slidesToCapture = [1, 2, 3, 4, 8];
+  for (const num of slidesToCapture) {
+    const pPath = path.resolve(__dirname, `../slides/preview_slide_${num}.png`);
+    const loc = page.locator(`#slide-${num}`);
+    await loc.screenshot({ path: pPath });
+    console.log(`📸 Preview captured: ${pPath}`);
+  }
 
   await browser.close();
   console.log('Export complete.');
 }
 
 main().catch((err) => {
-  console.error('Error generating pitch deck PDF/previews:', err);
+  console.error('Error:', err);
   process.exit(1);
 });

@@ -1,60 +1,50 @@
 #!/usr/bin/env python3
 """
 SentinelAPI — Hackathon Pitch Deck Generator (python-pptx)
-Builds slides/SentinelAPI_Pitch.pptx programmatically using design tokens from
-frontend/design/DESIGN_SYSTEM.md and real assets from docs/screenshots/ & docs/architecture.png.
+Matches Section 6.2 Presentation Deliverables (Max 8-10 slides).
+New high-contrast cyber-tech aesthetic with larger, bolder typography.
 """
 
-import os
-import sys
 from pathlib import Path
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.dml.color import RGBColor
 
-# ── Paths ───────────────────────────────────────────────────────────────────
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SLIDES_DIR = ROOT_DIR / "slides"
 DOCS_DIR = ROOT_DIR / "docs"
 SCREENSHOTS_DIR = DOCS_DIR / "screenshots"
 OUTPUT_PPTX = SLIDES_DIR / "SentinelAPI_Pitch.pptx"
 
-# ── Design Tokens (from frontend/design/DESIGN_SYSTEM.md) ───────────────────
-COLOR_CANVAS_BASE    = RGBColor(6, 8, 15)       # #06080F
-COLOR_SURFACE_PANEL  = RGBColor(13, 17, 28)     # #0D111C
-COLOR_SURFACE_ELEV   = RGBColor(21, 27, 43)     # #151B2B
-COLOR_SURFACE_HIGH   = RGBColor(24, 32, 51)     # #182033
-COLOR_BORDER_STRUCT  = RGBColor(35, 45, 66)     # #232D42
-COLOR_BORDER_LIGHT   = RGBColor(51, 65, 85)     # #334155
+# ── High-Contrast Cyber-Tech Design Tokens ─────────────────────────────────
+COLOR_CANVAS_BASE    = RGBColor(7, 9, 19)       # #070913 (Deep obsidian)
+COLOR_CARD_BG        = RGBColor(14, 19, 38)     # #0E1326 (Card background)
+COLOR_CARD_ELEV      = RGBColor(19, 26, 54)     # #131A36 (Raised card)
+COLOR_BORDER         = RGBColor(32, 41, 69)     # #202945 (Border)
+COLOR_BORDER_CYAN    = RGBColor(56, 189, 248)   # #38BDF8 (Glow border)
 
-COLOR_BRAND_PRIMARY  = RGBColor(56, 189, 248)   # #38BDF8 (Sky blue)
-COLOR_BRAND_ACCENT   = RGBColor(99, 102, 241)   # #6366F1 (Indigo)
-COLOR_BRAND_HOVER    = RGBColor(125, 211, 252)  # #7DD3FC
+COLOR_CYAN           = RGBColor(56, 189, 248)   # #38BDF8 (Electric Cyan)
+COLOR_INDIGO         = RGBColor(129, 140, 248)  # #818CF8 (Electric Violet)
+COLOR_EMERALD        = RGBColor(52, 211, 153)   # #34D399 (Emerald Green)
+COLOR_RED            = RGBColor(248, 113, 113)  # #F87171 (Critical Red)
+COLOR_ORANGE         = RGBColor(251, 146, 60)   # #FB923C (High Orange)
+COLOR_AMBER          = RGBColor(251, 191, 36)   # #FBBF24 (Medium Amber)
+COLOR_PURPLE         = RGBColor(192, 132, 252)  # #C084FC (Purple)
 
+COLOR_WHITE          = RGBColor(255, 255, 255)  # #FFFFFF (Crisp White)
 COLOR_TEXT_PRIMARY   = RGBColor(248, 250, 252)  # #F8FAFC
-COLOR_TEXT_SECONDARY = RGBColor(148, 163, 184)  # #94A3B8
-COLOR_TEXT_MUTED     = RGBColor(100, 116, 139)  # #64748B
+COLOR_TEXT_MUTED     = RGBColor(148, 163, 184)  # #94A3B8 (High-contrast slate)
+COLOR_TEXT_DIM       = RGBColor(100, 116, 139)  # #64748B
 
-COLOR_CRITICAL       = RGBColor(239, 68, 68)    # #EF4444
-COLOR_HIGH           = RGBColor(249, 115, 22)   # #F97316
-COLOR_MEDIUM         = RGBColor(245, 158, 11)   # #F59E0B
-COLOR_SECURE         = RGBColor(16, 185, 129)   # #10B981
-COLOR_PURPLE         = RGBColor(168, 85, 247)   # #A855F7
-
-FONT_HEADING = "Inter"
-FONT_BODY    = "Inter"
-FONT_CODE    = "JetBrains Mono"
+FONT_HEADING = "Trebuchet MS"  # Highly readable on all projectors/systems
+FONT_BODY    = "Calibri"
+FONT_CODE    = "Consolas"
 
 
 def create_blank_slide(prs):
-    """Creates a slide with dark background #06080F."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    # Set full-screen background
-    bg = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height
-    )
+    bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
     bg.fill.solid()
     bg.fill.fore_color.rgb = COLOR_CANVAS_BASE
     bg.line.color.rgb = COLOR_CANVAS_BASE
@@ -63,35 +53,32 @@ def create_blank_slide(prs):
 
 
 def add_header(slide, title, category, slide_num, total_slides=10):
-    """Adds a standardized top header bar and bottom footer."""
-    # Top Header Box
-    header_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.9))
+    # Header text box
+    header_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.733), Inches(1.1))
     tf = header_box.text_frame
     tf.word_wrap = True
     tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
 
     p_cat = tf.paragraphs[0]
-    p_cat.text = category.upper()
+    p_cat.text = f"● {category.upper()}"
     p_cat.font.name = FONT_HEADING
-    p_cat.font.size = Pt(10)
+    p_cat.font.size = Pt(11)
     p_cat.font.bold = True
-    p_cat.font.color.rgb = COLOR_BRAND_PRIMARY
+    p_cat.font.color.rgb = COLOR_CYAN
     p_cat.space_after = Pt(2)
 
     p_title = tf.add_paragraph()
     p_title.text = title
     p_title.font.name = FONT_HEADING
-    p_title.font.size = Pt(22)
+    p_title.font.size = Pt(26)
     p_title.font.bold = True
-    p_title.font.color.rgb = COLOR_TEXT_PRIMARY
+    p_title.font.color.rgb = COLOR_WHITE
 
-    # Header Divider Line
-    line = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.35), Inches(11.733), Pt(1.5)
-    )
+    # Divider bar
+    line = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.5), Inches(11.733), Pt(2))
     line.fill.solid()
-    line.fill.fore_color.rgb = COLOR_BORDER_STRUCT
-    line.line.color.rgb = COLOR_BORDER_STRUCT
+    line.fill.fore_color.rgb = COLOR_BORDER
+    line.line.color.rgb = COLOR_BORDER
 
     # Footer
     footer_box = slide.shapes.add_textbox(Inches(0.8), Inches(7.0), Inches(11.733), Inches(0.35))
@@ -100,12 +87,12 @@ def add_header(slide, title, category, slide_num, total_slides=10):
     fp = ftf.paragraphs[0]
     fp.text = f"SentinelAPI · AmiHacks 2026 (Track C: Cybersecurity)                                                           Slide {slide_num} of {total_slides}"
     fp.font.name = FONT_BODY
-    fp.font.size = Pt(9)
-    fp.font.color.rgb = COLOR_TEXT_MUTED
+    fp.font.size = Pt(10)
+    fp.font.bold = True
+    fp.font.color.rgb = COLOR_TEXT_DIM
 
 
-def add_card(slide, left, top, width, height, bg_color=COLOR_SURFACE_PANEL, border_color=COLOR_BORDER_STRUCT, border_width=Pt(1)):
-    """Draws a tactical container card."""
+def add_card(slide, left, top, width, height, bg_color=COLOR_CARD_BG, border_color=COLOR_BORDER, border_width=Pt(1.5)):
     card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
     card.fill.solid()
     card.fill.fore_color.rgb = bg_color
@@ -114,195 +101,188 @@ def add_card(slide, left, top, width, height, bg_color=COLOR_SURFACE_PANEL, bord
     return card
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SLIDE BUILDERS
-# ─────────────────────────────────────────────────────────────────────────────
-
-def build_slide_1_title(prs):
-    """Slide 1: Title & Pitch"""
+# ── Slide 1: Track Selection & Cover ─────────────────────────────────────────
+def build_slide_1_cover(prs):
     slide = create_blank_slide(prs)
 
-    # Tactical grid background accent line
-    top_bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(0.6), Inches(1.8), Pt(4))
-    top_bar.fill.solid()
-    top_bar.fill.fore_color.rgb = COLOR_BRAND_PRIMARY
-    top_bar.line.color.rgb = COLOR_BRAND_PRIMARY
+    # Track Badge
+    badge = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(0.6), Inches(5.6), Inches(0.5))
+    badge.fill.solid()
+    badge.fill.fore_color.rgb = COLOR_CARD_ELEV
+    badge.line.color.rgb = COLOR_CYAN
+    badge.line.width = Pt(2)
+    btf = badge.text_frame
+    bp = btf.paragraphs[0]
+    bp.text = "★ AMIHACKS 2026 · TRACK C: CYBERSECURITY & API SECURITY"
+    bp.font.name = FONT_HEADING
+    bp.font.size = Pt(11)
+    bp.font.bold = True
+    bp.font.color.rgb = COLOR_CYAN
 
-    # Main Hero Box
-    hero_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.1), Inches(11.7), Inches(3.2))
+    # Hero Titles
+    hero_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.3), Inches(11.733), Inches(3.0))
     tf = hero_box.text_frame
     tf.word_wrap = True
 
-    p0 = tf.paragraphs[0]
-    p0.text = "TRACK C — CYBERSECURITY & API SECURITY"
-    p0.font.name = FONT_HEADING
-    p0.font.size = Pt(12)
-    p0.font.bold = True
-    p0.font.color.rgb = COLOR_BRAND_PRIMARY
-    p0.space_after = Pt(8)
-
-    p1 = tf.add_paragraph()
+    p1 = tf.paragraphs[0]
     p1.text = "SentinelAPI"
     p1.font.name = FONT_HEADING
-    p1.font.size = Pt(46)
+    p1.font.size = Pt(56)
     p1.font.bold = True
-    p1.font.color.rgb = COLOR_TEXT_PRIMARY
-    p1.space_after = Pt(8)
+    p1.font.color.rgb = COLOR_WHITE
+    p1.space_after = Pt(4)
 
     p2 = tf.add_paragraph()
     p2.text = "Autonomous Differential API Security Testing"
     p2.font.name = FONT_HEADING
-    p2.font.size = Pt(22)
+    p2.font.size = Pt(24)
     p2.font.bold = True
-    p2.font.color.rgb = COLOR_BRAND_ACCENT
-    p2.space_after = Pt(14)
+    p2.font.color.rgb = COLOR_INDIGO
+    p2.space_after = Pt(16)
 
     p3 = tf.add_paragraph()
-    p3.text = "Ingesting OpenAPI 3.x specifications, dynamically authenticating multiple test personas, learning ground-truth resource ownership without brute-forcing, and executing differential response analysis to eliminate authorization blindspots before production."
+    p3.text = "While 200 teams build generic AI wrappers or test basic SQLi/XSS, SentinelAPI solves the #1 blindspot in modern cloud software: Broken Object Level Authorization (BOLA/IDOR)."
     p3.font.name = FONT_BODY
-    p3.font.size = Pt(13)
-    p3.font.color.rgb = COLOR_TEXT_SECONDARY
+    p3.font.size = Pt(16)
+    p3.font.bold = True
+    p3.font.color.rgb = COLOR_TEXT_PRIMARY
 
-    # Highlights Row (3 cards)
-    cards_data = [
-        ("OWASP API TOP 10", "Automated detection of BOLA/IDOR, BFLA, and excessive data exposure."),
-        ("EMPIRICAL PROOF", "Zero false positives via live attack reproduction and reproducible cURL PoCs."),
-        ("ENTERPRISE GUARDRAILS", "Strict scope guards, 20 RPS rate cap, zero secrets leaked, evidence-only AI.")
+    # 3 High-Impact Pillars
+    pillars = [
+        ("WHAT TRACK C DEMANDS", COLOR_CYAN, "OWASP API #1 Focus", "Automated detection of authorization logic flaws across multi-tenant boundaries that traditional scanners miss completely."),
+        ("HOW WE SOLVE IT", COLOR_EMERALD, "Ground-Truth Matrix", "Learns real resource ownership without guessing IDs, then compares cross-user responses using weighted Jaccard differential distance."),
+        ("WHY WE WIN", COLOR_PURPLE, "Zero False Positives", "Empirical live re-probes verify 100% reproducibility, generating shell-safe copy-paste cURL PoCs with zero cleartext token leaks.")
     ]
-    for i, (title, desc) in enumerate(cards_data):
+    for i, (tag, color, headline, desc) in enumerate(pillars):
         c_left = Inches(0.8 + i * 4.0)
         c_top = Inches(4.5)
-        add_card(slide, c_left, c_top, Inches(3.733), Inches(1.3), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
-        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.15), Inches(3.333), Inches(1.0))
+        add_card(slide, c_left, c_top, Inches(3.733), Inches(1.4), COLOR_CARD_BG, color, Pt(1.5))
+        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.12), Inches(3.333), Inches(1.15))
         ctf = tb.text_frame
         ctf.word_wrap = True
         cp0 = ctf.paragraphs[0]
-        cp0.text = title
+        cp0.text = f"{tag} · {headline}"
         cp0.font.name = FONT_HEADING
         cp0.font.size = Pt(11)
         cp0.font.bold = True
-        cp0.font.color.rgb = COLOR_BRAND_PRIMARY
+        cp0.font.color.rgb = color
         cp0.space_after = Pt(4)
+
         cp1 = ctf.add_paragraph()
         cp1.text = desc
         cp1.font.name = FONT_BODY
-        cp1.font.size = Pt(10)
-        cp1.font.color.rgb = COLOR_TEXT_SECONDARY
+        cp1.font.size = Pt(11)
+        cp1.font.color.rgb = COLOR_TEXT_MUTED
 
-    # Team & Links Footer Card
-    add_card(slide, Inches(0.8), Inches(6.0), Inches(11.733), Inches(0.75), COLOR_SURFACE_ELEV, COLOR_BRAND_ACCENT, Pt(1))
-    meta_box = slide.shapes.add_textbox(Inches(1.0), Inches(6.1), Inches(11.333), Inches(0.55))
+    # Footer Card
+    add_card(slide, Inches(0.8), Inches(6.1), Inches(11.733), Inches(0.65), COLOR_CARD_ELEV, COLOR_CYAN, Pt(1.5))
+    meta_box = slide.shapes.add_textbox(Inches(1.0), Inches(6.18), Inches(11.333), Inches(0.45))
     mtf = meta_box.text_frame
-    mtf.word_wrap = True
     mp = mtf.paragraphs[0]
-    mp.text = "Lead Architect: Tanuj  |  Event: AmiHacks 2026  |  GitHub: https://github.com/x03tanuj/sentinel-api"
+    mp.text = "Lead Security Architect: Tanuj  |  Full-Stack & Security Engineering  |  GitHub: https://github.com/x03tanuj/sentinel-api"
     mp.font.name = FONT_HEADING
     mp.font.size = Pt(11)
     mp.font.bold = True
-    mp.font.color.rgb = COLOR_TEXT_PRIMARY
+    mp.font.color.rgb = COLOR_WHITE
 
 
+# ── Slide 2: Problem Statement ───────────────────────────────────────────────
 def build_slide_2_problem(prs):
-    """Slide 2: Problem Statement"""
     slide = create_blank_slide(prs)
-    add_header(slide, "The API Authorization Blindspot in Modern Software", "Problem Statement", 2)
+    add_header(slide, "The Multi-Billion Dollar API Authorization Blindspot", "What It Is Solving (Problem Statement)", 2)
 
-    pillars = [
-        ("OWASP API #1 THREAT", COLOR_CRITICAL,
-         "Broken Object Level Authorization (BOLA / IDOR)",
-         "BOLA remains the undisputed #1 critical vulnerability on the OWASP API Security Top 10. A user simply replaces id=101 with id=102 in an API request and immediately reads or alters another customer's private data, invoices, or medical records without authorization."),
+    # Big Alert Banner
+    add_card(slide, Inches(0.8), Inches(1.7), Inches(11.733), Inches(0.9), COLOR_CARD_ELEV, COLOR_RED, Pt(2))
+    alert_tb = slide.shapes.add_textbox(Inches(1.0), Inches(1.78), Inches(11.333), Inches(0.7))
+    atf = alert_tb.text_frame
+    atf.word_wrap = True
+    ap = atf.paragraphs[0]
+    ap.text = "⚠️ OWASP API Security #1 Threat (API1:2023): Over 40% of cloud API breaches stem from Broken Object Level Authorization (BOLA/IDOR) — yet 99% of automated security scanners cannot detect it."
+    ap.font.name = FONT_HEADING
+    ap.font.size = Pt(13)
+    ap.font.bold = True
+    ap.font.color.rgb = COLOR_WHITE
+
+    # 3 Large Pillars
+    threats = [
+        ("THE CORE FLAW", COLOR_RED, "Changing id=101 to id=102",
+         "An authenticated user simply changes an ID parameter in an API request and directly reads, modifies, or deletes another customer's private invoices, patient medical charts, or banking records."),
         
-        ("TRADITIONAL SCANNERS ARE BLIND", COLOR_HIGH,
-         "DAST & SAST Cannot Understand Multi-User Business Logic",
-         "Traditional security tools test for syntax injection (SQLi, XSS) and missing headers. They operate in a single-user sandbox and have zero understanding of object ownership, tenant boundaries, or role privileges across multiple user accounts."),
+        ("TRADITIONAL TOOLS FAIL", COLOR_ORANGE, "DAST & SAST Are Blind to Auth",
+         "Conventional scanners only test for syntax injection like SQLi or XSS. Operating in single-user isolation, they have zero understanding of multi-tenant ownership, role privileges, or cross-account access boundaries."),
         
-        ("MANUAL AUDITS MISS REGRESSIONS", COLOR_MEDIUM,
-         "Fast Agile CI/CD Cycles Outpace Manual Penetration Testing",
-         "Engineering teams ship dozens of API changes weekly. Manual penetration tests are expensive, infrequent (quarterly/annual), and produce point-in-time reports that miss day-to-day authorization regressions introduced during active development."),
-        
-        ("HIGH BLAST RADIUS & DATA LEAKS", COLOR_BRAND_PRIMARY,
-         "Silent Exploitation Leads to Severe Regulatory & Financial Fallout",
-         "Authorization flaws are completely silent—firewalls and WAFs see valid HTTP 200 OK responses with legitimate JSON formatting. Flaws evade perimeter defenses, causing catastrophic GDPR, HIPAA, and data-breach compliance violations.")
+        ("SILENT EXPLOITATION", COLOR_AMBER, "Flaws Evade Firewalls & WAFs",
+         "Because BOLA requests use valid JWT tokens and legitimate JSON formats, target APIs respond with standard 200 OK payloads. WAFs see completely normal traffic, leaving breaches undetected for months.")
     ]
 
-    for i, (tag, tag_color, headline, body) in enumerate(pillars):
-        top_offset = Inches(1.6 + i * 1.3)
-        add_card(slide, Inches(0.8), top_offset, Inches(11.733), Inches(1.15), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+    for i, (tag, color, headline, body) in enumerate(threats):
+        c_left = Inches(0.8 + i * 4.0)
+        c_top = Inches(2.8)
+        c_w = Inches(3.733)
+        c_h = Inches(3.9)
 
-        # Left Accent Strip
-        strip = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), top_offset, Inches(0.12), Inches(1.15))
-        strip.fill.solid()
-        strip.fill.fore_color.rgb = tag_color
-        strip.line.color.rgb = tag_color
+        add_card(slide, c_left, c_top, c_w, c_h, COLOR_CARD_BG, color, Pt(2))
 
-        tb = slide.shapes.add_textbox(Inches(1.1), top_offset + Inches(0.12), Inches(11.2), Inches(0.9))
+        tb = slide.shapes.add_textbox(c_left + Inches(0.25), c_top + Inches(0.25), c_w - Inches(0.5), c_h - Inches(0.5))
         tf = tb.text_frame
         tf.word_wrap = True
 
         p0 = tf.paragraphs[0]
-        p0.text = f"{tag}  —  {headline}"
+        p0.text = tag
         p0.font.name = FONT_HEADING
-        p0.font.size = Pt(13)
+        p0.font.size = Pt(12)
         p0.font.bold = True
-        p0.font.color.rgb = tag_color
-        p0.space_after = Pt(3)
+        p0.font.color.rgb = color
+        p0.space_after = Pt(4)
 
         p1 = tf.add_paragraph()
-        p1.text = body
-        p1.font.name = FONT_BODY
-        p1.font.size = Pt(10.5)
-        p1.font.color.rgb = COLOR_TEXT_SECONDARY
+        p1.text = headline
+        p1.font.name = FONT_HEADING
+        p1.font.size = Pt(18)
+        p1.font.bold = True
+        p1.font.color.rgb = COLOR_WHITE
+        p1.space_after = Pt(14)
+
+        p2 = tf.add_paragraph()
+        p2.text = body
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(13)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
 
 
+# ── Slide 3: Proposed Solution ───────────────────────────────────────────────
 def build_slide_3_solution(prs):
-    """Slide 3: Proposed Solution"""
     slide = create_blank_slide(prs)
-    add_header(slide, "Autonomous Differential API Security Testing", "Proposed Solution", 3)
+    add_header(slide, "The 4-Step Autonomous Differential Security Pipeline", "How It Is Solving It (Proposed Solution)", 3)
 
-    # Core Value Prop Banner
-    add_card(slide, Inches(0.8), Inches(1.6), Inches(11.733), Inches(0.9), COLOR_SURFACE_ELEV, COLOR_BRAND_ACCENT, Pt(1))
-    banner_tb = slide.shapes.add_textbox(Inches(1.0), Inches(1.68), Inches(11.333), Inches(0.75))
-    btf = banner_tb.text_frame
-    btf.word_wrap = True
-    bp = btf.paragraphs[0]
-    bp.text = "SentinelAPI solves the authorization blindspot by reading OpenAPI contracts, orchestrating multi-persona credentials, discovering legitimate resource ownership, and proving access violations mathematically via differential response comparison."
-    bp.font.name = FONT_BODY
-    bp.font.size = Pt(12)
-    bp.font.bold = True
-    bp.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    # 4 Solution Pillars (2x2 Grid)
-    grid_items = [
-        ("1. SPEC-DRIVEN ATTACK SURFACE MAPPING", COLOR_BRAND_PRIMARY,
-         "Ingests OpenAPI 3.x contracts from URLs or JSON/YAML. Automatically validates schemas, resolves complex circular $ref pointers, and prioritizes endpoints based on state-changing operations and authentication requirements."),
+    steps = [
+        ("STEP 1", COLOR_CYAN, "Spec Ingestion & Mapping",
+         "Ingests OpenAPI 3.x contracts from URLs or files. Validates schemas, dereferences circular $ref pointers, and prioritizes endpoints by state-changing methods and authorization requirements."),
         
-        ("2. MULTI-PERSONA GROUND-TRUTH MATRIX", COLOR_SECURE,
-         "Logs in distinct test personas (userA, userB, admin) via JWT/OAuth2. Without guessing random IDs, it queries legitimate endpoints to learn owned resources and compiles a mathematical Allow/Deny expectation matrix."),
+        ("STEP 2", COLOR_EMERALD, "Ownership Discovery",
+         "Authenticates multiple distinct personas (userA, userB, admin). Automatically queries legitimate profile & collection endpoints to discover owned resources without guessing IDs."),
         
-        ("3. DIFFERENTIAL RESPONSE ANALYSIS", COLOR_MEDIUM,
-         "Executes rate-limited cross-user attack probes. Analyzes baseline vs attack responses using weighted Jaccard similarity distance, status code shifts, and sensitive field leakage to detect unauthorized access."),
+        ("STEP 3", COLOR_INDIGO, "Differential Analysis",
+         "Compiles a ground-truth Allow/Deny expectation matrix. Dispatches rate-limited cross-user probes and mathematically measures response divergence using weighted Jaccard distance and schema shifts."),
         
-        ("4. EMPIRICAL PROOF & REPRODUCIBLE POCS", COLOR_CRITICAL,
-         "Re-executes top findings against the live API to empirically prove reproducibility and eliminate false positives. Generates copy-pasteable, shell-safe cURL PoCs with masked tokens for immediate developer remediation.")
+        ("STEP 4", COLOR_RED, "Empirical Proof & cURL",
+         "Actively re-probes live findings to prove reproducibility (boosting confidence to 100%). Generates copy-paste shell-safe cURL PoCs with masked $TOKEN placeholders for instant remediation.")
     ]
 
-    for idx, (title, color, text) in enumerate(grid_items):
-        col = idx % 2
-        row = idx // 2
-        c_left = Inches(0.8 + col * 5.966)
-        c_top = Inches(2.7 + row * 2.05)
-        c_width = Inches(5.766)
-        c_height = Inches(1.9)
+    for i, (tag, color, headline, desc) in enumerate(steps):
+        c_left = Inches(0.8 + i * 2.983)
+        c_top = Inches(1.8)
+        c_w = Inches(2.783)
+        c_h = Inches(4.2)
 
-        add_card(slide, c_left, c_top, c_width, c_height, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+        add_card(slide, c_left, c_top, c_w, c_h, COLOR_CARD_BG, color, Pt(2))
 
-        # Header tag
-        tb = slide.shapes.add_textbox(c_left + Inches(0.25), c_top + Inches(0.18), c_width - Inches(0.5), c_height - Inches(0.36))
+        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.2), c_w - Inches(0.4), c_h - Inches(0.4))
         tf = tb.text_frame
         tf.word_wrap = True
 
         p0 = tf.paragraphs[0]
-        p0.text = title
+        p0.text = tag
         p0.font.name = FONT_HEADING
         p0.font.size = Pt(12)
         p0.font.bold = True
@@ -310,93 +290,129 @@ def build_slide_3_solution(prs):
         p0.space_after = Pt(6)
 
         p1 = tf.add_paragraph()
-        p1.text = text
-        p1.font.name = FONT_BODY
-        p1.font.size = Pt(10.5)
-        p1.font.color.rgb = COLOR_TEXT_SECONDARY
+        p1.text = headline
+        p1.font.name = FONT_HEADING
+        p1.font.size = Pt(17)
+        p1.font.bold = True
+        p1.font.color.rgb = COLOR_WHITE
+        p1.space_after = Pt(12)
+
+        p2 = tf.add_paragraph()
+        p2.text = desc
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(12)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
+
+    # Bottom summary
+    add_card(slide, Inches(0.8), Inches(6.2), Inches(11.733), Inches(0.6), COLOR_CARD_ELEV, COLOR_CYAN, Pt(1))
+    sum_tb = slide.shapes.add_textbox(Inches(1.0), Inches(6.25), Inches(11.333), Inches(0.5))
+    stf = sum_tb.text_frame
+    sp = stf.paragraphs[0]
+    sp.text = "Core Advantage: Entirely autonomous from spec to PoC. No manual test scripting, no synthetic dummy payloads, and zero secrets leaked."
+    sp.font.name = FONT_HEADING
+    sp.font.size = Pt(11)
+    sp.font.bold = True
+    sp.font.color.rgb = COLOR_WHITE
 
 
-def build_slide_4_architecture(prs):
-    """Slide 4: System Architecture"""
+# ── Slide 4: Unique Differentiator vs 200 Teams ──────────────────────────────
+def build_slide_4_unique(prs):
     slide = create_blank_slide(prs)
-    add_header(slide, "Decoupled Architecture & Enforced Safety Boundaries", "System Architecture", 4)
+    add_header(slide, "Why SentinelAPI Wins: Standing Out Against 200 Teams", "What Is Unique About This", 4)
 
-    # Embed High-Res Architecture Diagram
-    arch_png = DOCS_DIR / "architecture.png"
-    if arch_png.exists():
-        # Place the diagram centered and framed
-        img_left = Inches(0.8)
-        img_top = Inches(1.55)
-        img_width = Inches(11.733)
-        img_height = Inches(4.7)
+    # Comparison Table
+    add_card(slide, Inches(0.8), Inches(1.7), Inches(11.733), Inches(5.0), COLOR_CARD_BG, COLOR_BORDER, Pt(1.5))
 
-        # Frame backing
-        add_card(slide, img_left - Inches(0.04), img_top - Inches(0.04), img_width + Inches(0.08), img_height + Inches(0.08), COLOR_CANVAS_BASE, COLOR_BORDER_LIGHT, Pt(1))
-        slide.shapes.add_picture(str(arch_png), img_left, img_top, img_width, img_height)
-
-    # Caption / Invariants Bar
-    caption_top = Inches(6.35)
-    add_card(slide, Inches(0.8), caption_top, Inches(11.733), Inches(0.55), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
-    cap_tb = slide.shapes.add_textbox(Inches(0.95), caption_top + Inches(0.08), Inches(11.4), Inches(0.4))
-    ctf = cap_tb.text_frame
-    ctf.word_wrap = True
-    cp = ctf.paragraphs[0]
-    cp.text = "Core Invariant: Deterministic Security Engine is strictly decoupled from presentation and storage. The AI Analyst is an evidence-only side-branch with zero raw data egress."
-    cp.font.name = FONT_HEADING
-    cp.font.size = Pt(9.5)
-    cp.font.bold = True
-    cp.font.color.rgb = COLOR_BRAND_PRIMARY
-
-
-def build_slide_5_core_engine(prs):
-    """Slide 5: Core Technologies & Security Engine"""
-    slide = create_blank_slide(prs)
-    add_header(slide, "Proprietary Judged IP: 6 Core Engineering Engines", "Key Technologies", 5)
-
-    engines = [
-        ("ATTACK SURFACE MAPPER", COLOR_BRAND_PRIMARY,
-         "Parses and dereferences OpenAPI 3.x contracts with circular $ref isolation. Extracts parameters, routes, auth constraints, and calculates preliminary risk prioritization scores."),
-        
-        ("IDENTITY & EXECUTION ENGINE", COLOR_SECURE,
-         "Orchestrates multi-user persona sessions via JWT/Bearer auth. Dispatches probes through token-bucket rate limiter (20 RPS) and immutable host allowlists (assert_in_scope)."),
-        
-        ("GROUND-TRUTH MATRIX COMPILER", COLOR_BRAND_ACCENT,
-         "Queries legitimate profile & collection GET endpoints to dynamically discover resources owned by each persona, constructing an explicit mathematical Allow/Deny expectation matrix."),
-        
-        ("DIFFERENTIAL ANALYSIS ENGINE", COLOR_MEDIUM,
-         "Compares attack vs legitimate baseline responses using weighted Jaccard similarity distance, status-code divergence, and sensitive-field classification."),
-        
-        ("6 MODULAR SECURITY CHECKS", COLOR_CRITICAL,
-         "Extensible check suite testing BOLA/IDOR (API1), Broken Authentication (API2), Excessive Data Exposure (API3), Rate Limiting (API4), BFLA Privileges (API5), and Input Handling (API8)."),
-        
-        ("EXPLAINABLE RISK & CONFIDENCE", COLOR_PURPLE,
-         "Replaces arbitrary CVSS guesswork with a transparent 4-part score: Impact (0-40) + Exploitability (0-25) + Sensitivity (0-30) + Evidence Strength (0-15) plus empirical reproduction.")
+    rows_data = [
+        ("EVALUATION CRITERIA", "TYPICAL HACKATHON TEAMS (200 TEAMS)", "SENTINELAPI (OUR SOLUTION)"),
+        ("Vulnerability Focus", "Generic SQLi, XSS, or syntax input fuzzing", "Complex Multi-User Authorization (BOLA, BFLA, Data Exposure)"),
+        ("Detection Engine", "Asks an LLM 'is this vulnerable?' (Hallucinations & Flaky)", "100% Deterministic Differential Engine (Weighted Jaccard Distance)"),
+        ("Ownership Knowledge", "Random ID guessing or hardcoded IDs in test scripts", "Autonomous Resource Ownership Discovery from Legitimate APIs"),
+        ("Accuracy & Evidence", "Vague warnings with high false positive rates", "Empirically Proven Live Reproduction + Copy-Paste cURL PoCs"),
+        ("Safety & Egress", "Unrestricted flood requests; sends raw tokens to AI", "Scope Guard, 20 RPS Rate Cap, Budget Cap, Zero Egress PII Guard"),
+        ("Production Readiness", "Mock scripts or static Figma UI concept", "FastAPI Backend + React 19 HUD + Headless CI Gate + Docker Stack")
     ]
 
-    for idx, (title, color, desc) in enumerate(engines):
+    for i, (col1, col2, col3) in enumerate(rows_data):
+        y_pos = Inches(1.85 + i * 0.65)
+        # Background bar for header
+        if i == 0:
+            hdr_bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.9), y_pos - Inches(0.05), Inches(11.533), Inches(0.45))
+            hdr_bg.fill.solid()
+            hdr_bg.fill.fore_color.rgb = COLOR_CARD_ELEV
+            hdr_bg.line.width = Pt(0)
+
+        tb1 = slide.shapes.add_textbox(Inches(1.0), y_pos, Inches(2.6), Inches(0.55))
+        tf1 = tb1.text_frame
+        p1 = tf1.paragraphs[0]
+        p1.text = col1
+        p1.font.name = FONT_HEADING
+        p1.font.size = Pt(11)
+        p1.font.bold = True
+        p1.font.color.rgb = COLOR_WHITE if i > 0 else COLOR_CYAN
+
+        tb2 = slide.shapes.add_textbox(Inches(3.8), y_pos, Inches(4.3), Inches(0.55))
+        tf2 = tb2.text_frame
+        p2 = tf2.paragraphs[0]
+        p2.text = col2
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(11)
+        p2.font.bold = (i == 0)
+        p2.font.color.rgb = COLOR_TEXT_MUTED if i > 0 else COLOR_RED
+
+        tb3 = slide.shapes.add_textbox(Inches(8.3), y_pos, Inches(4.1), Inches(0.55))
+        tf3 = tb3.text_frame
+        p3 = tf3.paragraphs[0]
+        p3.text = col3
+        p3.font.name = FONT_BODY
+        p3.font.size = Pt(11)
+        p3.font.bold = True
+        p3.font.color.rgb = COLOR_CYAN if i > 0 else COLOR_EMERALD
+
+
+# ── Slide 5: Key Features & Proprietary Security Engine ──────────────────────
+def build_slide_5_core_engine(prs):
+    slide = create_blank_slide(prs)
+    add_header(slide, "The Core Security Engine: 6 Proprietary Deep-Tech Engines", "Key Features (Proprietary IP)", 5)
+
+    engines = [
+        ("ENGINE 1", COLOR_CYAN, "Attack Surface Mapper",
+         "Parses OpenAPI 3.x specifications with circular $ref resolution. Extracts query/path parameters and scores initial endpoint risk based on state-changing methods."),
+        
+        ("ENGINE 2", COLOR_EMERALD, "Identity & HTTP Executor",
+         "Multi-persona JWT session manager enforcing 20 RPS token-bucket rate limits, 1,000 req budgets, and strict host allowlists (assert_in_scope)."),
+        
+        ("ENGINE 3", COLOR_INDIGO, "Matrix Compiler",
+         "Discovers legitimate resource ownership per user and compiles a mathematical Allow/Deny expectation matrix for every endpoint and object ID."),
+        
+        ("ENGINE 4", COLOR_AMBER, "Differential Analyzer",
+         "Computes weighted Jaccard payload similarity, HTTP status divergence, and detects leaked sensitive PII fields outside the documented schema."),
+        
+        ("ENGINE 5", COLOR_RED, "6 Security Checks",
+         "Dedicated detection suites for BOLA/IDOR (API1), Broken Auth (API2), Data Exposure (API3), Rate Limiting (API4), BFLA Privileges (API5), and Input Anomalies (API8)."),
+        
+        ("ENGINE 6", COLOR_PURPLE, "Explainable Risk Scorer",
+         "Replaces CVSS guesswork with a 4-part score: Impact (40) + Exploitability (25) + Sensitivity (30) + Evidence (15) with live empirical reproduction.")
+    ]
+
+    for idx, (tag, color, title, desc) in enumerate(engines):
         col = idx % 3
         row = idx // 3
         c_left = Inches(0.8 + col * 4.0)
-        c_top = Inches(1.6 + row * 2.55)
-        c_width = Inches(3.733)
-        c_height = Inches(2.35)
+        c_top = Inches(1.8 + row * 2.5)
+        c_w = Inches(3.733)
+        c_h = Inches(2.25)
 
-        add_card(slide, c_left, c_top, c_width, c_height, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+        add_card(slide, c_left, c_top, c_w, c_h, COLOR_CARD_BG, color, Pt(2))
 
-        # Color bar top
-        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, c_left, c_top, c_width, Pt(3))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = color
-        bar.line.color.rgb = color
-
-        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.18), c_width - Inches(0.4), c_height - Inches(0.3))
+        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.18), c_w - Inches(0.4), c_h - Inches(0.36))
         tf = tb.text_frame
         tf.word_wrap = True
 
         p0 = tf.paragraphs[0]
-        p0.text = title
+        p0.text = f"{tag} · {title}"
         p0.font.name = FONT_HEADING
-        p0.font.size = Pt(11)
+        p0.font.size = Pt(13)
         p0.font.bold = True
         p0.font.color.rgb = color
         p0.space_after = Pt(8)
@@ -404,334 +420,256 @@ def build_slide_5_core_engine(prs):
         p1 = tf.add_paragraph()
         p1.text = desc
         p1.font.name = FONT_BODY
-        p1.font.size = Pt(10)
-        p1.font.color.rgb = COLOR_TEXT_SECONDARY
+        p1.font.size = Pt(11)
+        p1.font.color.rgb = COLOR_TEXT_MUTED
 
 
-def build_slide_6_tech_highlights(prs):
-    """Slide 6: Technical Highlights & Safety Design"""
+# ── Slide 6: System Architecture ─────────────────────────────────────────────
+def build_slide_6_architecture(prs):
     slide = create_blank_slide(prs)
-    add_header(slide, "Production Safety Guardrails & Zero-Trust Design", "Technical Highlights", 6)
+    add_header(slide, "Decoupled Architecture & Enforced Safety Boundaries", "System Architecture", 6)
 
-    # Left Column: Enforced Safety Guardrails
-    left_x = Inches(0.8)
-    col_w = Inches(5.766)
-    add_card(slide, left_x, Inches(1.6), col_w, Inches(5.1), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+    arch_png = DOCS_DIR / "architecture.png"
+    if arch_png.exists():
+        img_left = Inches(0.8)
+        img_top = Inches(1.65)
+        img_w = Inches(11.733)
+        img_h = Inches(4.45)
+        add_card(slide, img_left - Inches(0.03), img_top - Inches(0.03), img_w + Inches(0.06), img_h + Inches(0.06), COLOR_CANVAS_BASE, COLOR_BORDER, Pt(1))
+        slide.shapes.add_picture(str(arch_png), img_left, img_top, img_w, img_h)
 
-    tb_left = slide.shapes.add_textbox(left_x + Inches(0.3), Inches(1.8), col_w - Inches(0.6), Inches(4.7))
-    tfl = tb_left.text_frame
-    tfl.word_wrap = True
-
-    p_lh = tfl.paragraphs[0]
-    p_lh.text = "ENFORCED SAFETY & AUDIT BOUNDARIES"
-    p_lh.font.name = FONT_HEADING
-    p_lh.font.size = Pt(13)
-    p_lh.font.bold = True
-    p_lh.font.color.rgb = COLOR_BRAND_PRIMARY
-    p_lh.space_after = Pt(10)
-
-    guardrails = [
-        ("Scope Guard (assert_in_scope)", "Hardcoded validation against explicit ALLOWED_HOSTS. Any probe dispatch to third-party domains or unauthorized IPs raises ScopeViolationError immediately."),
-        ("Token-Bucket Rate Limiter", "Restricts scanning speed to 20 RPS to prevent denial-of-service, API degradation, or accidental infrastructure lockout on target services."),
-        ("Strict Request Budget Cap", "Hard maximum of 1,000 requests per scan prevents infinite loops, recursive endpoint traps, and runaway probe generation."),
-        ("Defense-in-Depth Redaction", "Tokens, Authorization headers, and passwords are permanently scrubbed before disk storage, API responses, or UI rendering. PoCs use $TOKEN."),
-        ("Shielded State Cleanup", "Objects created during tests are deleted in shielded finally blocks, ensuring zero residual artifacts remain on target APIs.")
-    ]
-    for title, desc in guardrails:
-        p_t = tfl.add_paragraph()
-        p_t.text = f"• {title}: "
-        p_t.font.name = FONT_HEADING
-        p_t.font.size = Pt(10)
-        p_t.font.bold = True
-        p_t.font.color.rgb = COLOR_TEXT_PRIMARY
-        
-        # Add desc
-        run = p_t.add_run()
-        run.text = desc
-        run.font.name = FONT_BODY
-        run.font.bold = False
-        run.font.color.rgb = COLOR_TEXT_SECONDARY
-        p_t.space_after = Pt(6)
-
-    # Right Column: AI Egress Boundary & Modern Stack
-    right_x = Inches(6.766)
-    add_card(slide, right_x, Inches(1.6), col_w, Inches(5.1), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
-
-    tb_right = slide.shapes.add_textbox(right_x + Inches(0.3), Inches(1.8), col_w - Inches(0.6), Inches(4.7))
-    tfr = tb_right.text_frame
-    tfr.word_wrap = True
-
-    p_rh = tfr.paragraphs[0]
-    p_rh.text = "ZERO-LEAK AI ANALYST & MODERN TECH STACK"
-    p_rh.font.name = FONT_HEADING
-    p_rh.font.size = Pt(13)
-    p_rh.font.bold = True
-    p_rh.font.color.rgb = COLOR_BRAND_ACCENT
-    p_rh.space_after = Pt(10)
-
-    ai_stack = [
-        ("Evidence-Only AI Analyst", "Optional side-branch (Groq, OpenRouter, Gemini). The LLM NEVER detects vulnerabilities, modifies severity, or influences scan outcomes."),
-        ("Pre-Flight Egress Assertion", "assert_payload_safe() runs regex scans on outgoing payloads. Egress is terminated if tokens, SSNs, credit cards, or internal IPs are detected."),
-        ("Deterministic Fallback", "If the LLM provider times out, returns malformed JSON, or exceeds rate limits, pre-compiled deterministic remediation templates activate seamlessly."),
-        ("High-Performance Backend", "Python 3.11/3.14 with FastAPI async orchestrator, Pydantic v2 schemas, in-memory atomic JSON store (scans.json), and real-time SSE telemetry."),
-        ("Tactical Developer UI", "React 19, Vite, Tailwind CSS with tactical design system tokens, WCAG AA contrast standards, and responsive desktop dashboards.")
-    ]
-    for title, desc in ai_stack:
-        p_t = tfr.add_paragraph()
-        p_t.text = f"• {title}: "
-        p_t.font.name = FONT_HEADING
-        p_t.font.size = Pt(10)
-        p_t.font.bold = True
-        p_t.font.color.rgb = COLOR_TEXT_PRIMARY
-        
-        run = p_t.add_run()
-        run.text = desc
-        run.font.name = FONT_BODY
-        run.font.bold = False
-        run.font.color.rgb = COLOR_TEXT_SECONDARY
-        p_t.space_after = Pt(6)
+    # Invariant Caption
+    add_card(slide, Inches(0.8), Inches(6.25), Inches(11.733), Inches(0.55), COLOR_CARD_ELEV, COLOR_CYAN, Pt(1.5))
+    cap_tb = slide.shapes.add_textbox(Inches(1.0), Inches(6.3), Inches(11.333), Inches(0.45))
+    ctf = cap_tb.text_frame
+    cp = ctf.paragraphs[0]
+    cp.text = "Core Safety Invariant: The deterministic security engine runs 100% offline. Zero credentials or tokens are ever persisted or exposed. The AI Analyst is strictly an evidence-only side-branch with zero raw data egress."
+    cp.font.name = FONT_HEADING
+    cp.font.size = Pt(10)
+    cp.font.bold = True
+    cp.font.color.rgb = COLOR_WHITE
 
 
-def build_slide_7_screenshots(prs):
-    """Slide 7: Demo Screenshots"""
+# ── Slide 7: Shift-Left CI/CD Quality Gate ───────────────────────────────────
+def build_slide_7_ci_cd(prs):
     slide = create_blank_slide(prs)
-    add_header(slide, "Developer-First Tactical Triage & Differential Inspector", "Live Product Demo", 7)
+    add_header(slide, "Shift-Left Automated Security Quality Gate for CI/CD", "Key Features (DevSecOps Integration)", 7)
 
-    # Left Screenshot: Triage Workspace
+    features = [
+        ("HEADLESS CI GATE CLI", COLOR_CYAN, "Fails Builds on Violations",
+         "Integrates directly into GitHub Actions or GitLab CI. Breaks pull request builds with exit code 1 when CRITICAL or HIGH authorization vulnerabilities are detected."),
+        
+        ("SARIF CODE SCANNING", COLOR_EMERALD, "Native GitHub Security Alerts",
+         "Exports deterministic SARIF, Markdown, and JSON audit reports. Findings appear directly inside GitHub PR code review diffs with line-level remediation hints."),
+        
+        ("HERMETIC TEST SANDBOX", COLOR_INDIGO, "Verified Zero-Trust Baseline",
+         "Ships with realistic vulnerable sandboxes (Retail Store, Healthcare, FinTech). When SECURE_MODE=true is enabled, SentinelAPI verifies 100% controls pass.")
+    ]
+
+    for i, (tag, color, headline, desc) in enumerate(features):
+        c_left = Inches(0.8 + i * 4.0)
+        c_top = Inches(1.8)
+        c_w = Inches(3.733)
+        c_h = Inches(2.6)
+
+        add_card(slide, c_left, c_top, c_w, c_h, COLOR_CARD_BG, color, Pt(2))
+
+        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.18), c_w - Inches(0.4), c_h - Inches(0.36))
+        tf = tb.text_frame
+        tf.word_wrap = True
+
+        p0 = tf.paragraphs[0]
+        p0.text = tag
+        p0.font.name = FONT_HEADING
+        p0.font.size = Pt(11)
+        p0.font.bold = True
+        p0.font.color.rgb = color
+        p0.space_after = Pt(4)
+
+        p1 = tf.add_paragraph()
+        p1.text = headline
+        p1.font.name = FONT_HEADING
+        p1.font.size = Pt(17)
+        p1.font.bold = True
+        p1.font.color.rgb = COLOR_WHITE
+        p1.space_after = Pt(10)
+
+        p2 = tf.add_paragraph()
+        p2.text = desc
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(11)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
+
+    # Real CI Command Card
+    add_card(slide, Inches(0.8), Inches(4.7), Inches(11.733), Inches(2.0), COLOR_CARD_ELEV, COLOR_CYAN, Pt(1.5))
+    code_tb = slide.shapes.add_textbox(Inches(1.1), Inches(4.85), Inches(11.133), Inches(1.7))
+    ctf = code_tb.text_frame
+    ctf.word_wrap = True
+
+    cp0 = ctf.paragraphs[0]
+    cp0.text = "GITHUB ACTIONS WORKFLOW INTEGRATION (.github/workflows/ci.yml):"
+    cp0.font.name = FONT_HEADING
+    cp0.font.size = Pt(11)
+    cp0.font.bold = True
+    cp0.font.color.rgb = COLOR_CYAN
+    cp0.space_after = Pt(6)
+
+    cp1 = ctf.add_paragraph()
+    cp1.text = "# 1. Trigger automated security scan against PR environment\npython -m app.cli scan --spec http://api:8000/openapi.json --base-url http://api:8000 --json-out findings.json\n\n# 2. Enforce quality gate (fails build on CRITICAL / HIGH findings with confidence >= 0.70)\npython scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.70"
+    cp1.font.name = FONT_CODE
+    cp1.font.size = Pt(11)
+    cp1.font.color.rgb = COLOR_WHITE
+
+
+# ── Slide 8: Demo Screenshots & Prototype ────────────────────────────────────
+def build_slide_8_screenshots(prs):
+    slide = create_blank_slide(prs)
+    add_header(slide, "Live Tactical Dashboard & Mathematical Differential Inspector", "Demo Screenshots (Working Prototype)", 8)
+
     img1_path = SCREENSHOTS_DIR / "triage-workspace.png"
     img2_path = SCREENSHOTS_DIR / "finding-inspector.png"
 
     card_w = Inches(5.766)
-    card_h = Inches(4.3)
-    top_y = Inches(1.6)
+    card_h = Inches(4.4)
+    top_y = Inches(1.7)
 
-    # Frame 1
-    add_card(slide, Inches(0.8), top_y, card_w, card_h, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+    # Frame 1: Triage Workspace
+    add_card(slide, Inches(0.8), top_y, card_w, card_h, COLOR_CARD_BG, COLOR_BORDER, Pt(1.5))
     if img1_path.exists():
-        slide.shapes.add_picture(str(img1_path), Inches(0.9), top_y + Inches(0.1), card_w - Inches(0.2), Inches(3.2))
+        slide.shapes.add_picture(str(img1_path), Inches(0.9), top_y + Inches(0.1), card_w - Inches(0.2), Inches(3.3))
     
-    tb1 = slide.shapes.add_textbox(Inches(0.9), top_y + Inches(3.4), card_w - Inches(0.2), Inches(0.8))
+    tb1 = slide.shapes.add_textbox(Inches(0.9), top_y + Inches(3.45), card_w - Inches(0.2), Inches(0.85))
     tf1 = tb1.text_frame
     tf1.word_wrap = True
     p1 = tf1.paragraphs[0]
-    p1.text = "Results Triage Workspace: Real-Time Findings Stream"
+    p1.text = "Results Triage Workspace: Real-Time Stream"
     p1.font.name = FONT_HEADING
-    p1.font.size = Pt(11)
+    p1.font.size = Pt(13)
     p1.font.bold = True
-    p1.font.color.rgb = COLOR_BRAND_PRIMARY
+    p1.font.color.rgb = COLOR_CYAN
     p1_sub = tf1.add_paragraph()
-    p1_sub.text = "Live telemetry HUD with verified control counts, severity badges, and one-click filtering by OWASP category, status, and path."
+    p1_sub.text = "Live telemetry HUD with verified control counts, severity badges, and one-click filtering across OWASP categories, status codes, and paths."
     p1_sub.font.name = FONT_BODY
-    p1_sub.font.size = Pt(9.5)
-    p1_sub.font.color.rgb = COLOR_TEXT_SECONDARY
+    p1_sub.font.size = Pt(10)
+    p1_sub.font.color.rgb = COLOR_TEXT_MUTED
 
-    # Frame 2
-    add_card(slide, Inches(6.766), top_y, card_w, card_h, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+    # Frame 2: Finding Inspector
+    add_card(slide, Inches(6.766), top_y, card_w, card_h, COLOR_CARD_BG, COLOR_BORDER, Pt(1.5))
     if img2_path.exists():
-        slide.shapes.add_picture(str(img2_path), Inches(6.866), top_y + Inches(0.1), card_w - Inches(0.2), Inches(3.2))
+        slide.shapes.add_picture(str(img2_path), Inches(6.866), top_y + Inches(0.1), card_w - Inches(0.2), Inches(3.3))
     
-    tb2 = slide.shapes.add_textbox(Inches(6.866), top_y + Inches(3.4), card_w - Inches(0.2), Inches(0.8))
+    tb2 = slide.shapes.add_textbox(Inches(6.866), top_y + Inches(3.45), card_w - Inches(0.2), Inches(0.85))
     tf2 = tb2.text_frame
     tf2.word_wrap = True
     p2 = tf2.paragraphs[0]
-    p2.text = "Differential Finding Inspector: Mathematical Evidence"
+    p2.text = "Differential Inspector: Side-by-Side Proof"
     p2.font.name = FONT_HEADING
-    p2.font.size = Pt(11)
+    p2.font.size = Pt(13)
     p2.font.bold = True
-    p2.font.color.rgb = COLOR_CRITICAL
+    p2.font.color.rgb = COLOR_RED
     p2_sub = tf2.add_paragraph()
     p2_sub.text = "Side-by-side baseline vs attack diff showing BOLA breach (200 OK vs 403), leaked PII fields, 4-factor risk breakdown, and copy-paste cURL PoC."
     p2_sub.font.name = FONT_BODY
-    p2_sub.font.size = Pt(9.5)
-    p2_sub.font.color.rgb = COLOR_TEXT_SECONDARY
+    p2_sub.font.size = Pt(10)
+    p2_sub.font.color.rgb = COLOR_TEXT_MUTED
 
     # Bottom summary callout
-    add_card(slide, Inches(0.8), Inches(6.1), Inches(11.733), Inches(0.65), COLOR_SURFACE_ELEV, COLOR_SECURE, Pt(1))
-    sum_tb = slide.shapes.add_textbox(Inches(1.0), Inches(6.18), Inches(11.333), Inches(0.5))
+    add_card(slide, Inches(0.8), Inches(6.25), Inches(11.733), Inches(0.55), COLOR_CARD_ELEV, COLOR_EMERALD, Pt(1.5))
+    sum_tb = slide.shapes.add_textbox(Inches(1.0), Inches(6.3), Inches(11.333), Inches(0.45))
     stf = sum_tb.text_frame
-    stf.word_wrap = True
     sp = stf.paragraphs[0]
-    sp.text = "Zero Guesswork: Every finding includes empirical reproduction status (100% verified), exact response diffs, and reproducible curl PoCs."
+    sp.text = "Empirical Evidence: Zero guesswork. Developers receive exact response diffs, 100% verified reproduction badges, and copy-paste shell commands."
     sp.font.name = FONT_HEADING
-    sp.font.size = Pt(10)
+    sp.font.size = Pt(11)
     sp.font.bold = True
-    sp.font.color.rgb = COLOR_TEXT_PRIMARY
+    sp.font.color.rgb = COLOR_WHITE
 
 
-def build_slide_8_ci_cd_gate(prs):
-    """Slide 8: CI/CD Security Quality Gate"""
-    slide = create_blank_slide(prs)
-    add_header(slide, "Shift-Left Automated Security Quality Gate for CI/CD", "CI/CD & Integration", 8)
-
-    # 3 Cards Layout
-    items = [
-        ("HEADLESS CI GATE CLI", COLOR_BRAND_PRIMARY,
-         "scripts/ci_gate.py",
-         "Runs headlessly in any CI/CD pipeline (GitHub Actions, GitLab CI, CircleCI). Evaluates exported scan findings against configurable policy thresholds (--fail-on CRITICAL,HIGH --min-confidence 0.70) and breaks builds with exit code 1 on policy breaches."),
-        
-        ("AUTOMATED SARIF & AUDIT EXPORTS", COLOR_SECURE,
-         "GitHub Security Tab Integration",
-         "Automatically renders and exports deterministic SARIF, Markdown, and JSON audit reports. Findings appear natively in GitHub Security code scanning alerts, enabling instant developer triage inside pull requests."),
-        
-        ("HERMETIC MULTI-TARGET SANDBOX", COLOR_BRAND_ACCENT,
-         "Turnkey Docker Compose Testbed",
-         "Ships with realistic vulnerable sandboxes (Retail Store, MedPulse Healthcare, FinTech API) on ports 9000-9003. When SECURE_MODE=true is toggled, SentinelAPI verifies 100% access controls pass with zero false positives.")
-    ]
-
-    for idx, (title, color, tag, desc) in enumerate(items):
-        c_left = Inches(0.8 + idx * 4.0)
-        c_top = Inches(1.6)
-        c_width = Inches(3.733)
-        c_height = Inches(3.8)
-
-        add_card(slide, c_left, c_top, c_width, c_height, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
-
-        # Header tag strip
-        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, c_left, c_top, c_width, Pt(3))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = color
-        bar.line.color.rgb = color
-
-        tb = slide.shapes.add_textbox(c_left + Inches(0.2), c_top + Inches(0.2), c_width - Inches(0.4), c_height - Inches(0.4))
-        tf = tb.text_frame
-        tf.word_wrap = True
-
-        p0 = tf.paragraphs[0]
-        p0.text = title
-        p0.font.name = FONT_HEADING
-        p0.font.size = Pt(12)
-        p0.font.bold = True
-        p0.font.color.rgb = color
-        p0.space_after = Pt(2)
-
-        ptag = tf.add_paragraph()
-        ptag.text = tag
-        ptag.font.name = FONT_CODE
-        ptag.font.size = Pt(9)
-        ptag.font.color.rgb = COLOR_TEXT_MUTED
-        ptag.space_after = Pt(10)
-
-        p1 = tf.add_paragraph()
-        p1.text = desc
-        p1.font.name = FONT_BODY
-        p1.font.size = Pt(10.5)
-        p1.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Bottom Code Snippet Card
-    add_card(slide, Inches(0.8), Inches(5.6), Inches(11.733), Inches(1.2), COLOR_SURFACE_ELEV, COLOR_BORDER_STRUCT)
-    code_tb = slide.shapes.add_textbox(Inches(1.0), Inches(5.68), Inches(11.333), Inches(1.0))
-    ctf = code_tb.text_frame
-    ctf.word_wrap = True
-    
-    cp0 = ctf.paragraphs[0]
-    cp0.text = "GitHub Actions Workflow Integration (ci.yml):"
-    cp0.font.name = FONT_HEADING
-    cp0.font.size = Pt(10)
-    cp0.font.bold = True
-    cp0.font.color.rgb = COLOR_BRAND_PRIMARY
-    cp0.space_after = Pt(4)
-
-    cp1 = ctf.add_paragraph()
-    cp1.text = "python -m app.cli scan --spec http://api:8000/openapi.json --base-url http://api:8000 --json-out findings.json\npython scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.70"
-    cp1.font.name = FONT_CODE
-    cp1.font.size = Pt(9.5)
-    cp1.font.color.rgb = COLOR_BRAND_HOVER
-
-
+# ── Slide 9: Future Scope & SaaS Roadmap ─────────────────────────────────────
 def build_slide_9_future_roadmap(prs):
-    """Slide 9: Future Scope & SaaS Commercial Roadmap"""
     slide = create_blank_slide(prs)
-    add_header(slide, "Commercial Roadmap: Beyond the Hackathon", "Future Scope & SaaS Vision", 9)
+    add_header(slide, "Beyond the Hackathon: Path to an Enterprise SaaS Platform", "Future Scope (Commercial Roadmap)", 9)
 
     pillars = [
-        ("OPEN-SOURCE CLI + PAID CLOUD SAAS", COLOR_BRAND_PRIMARY,
-         "Freemium Enterprise Model",
-         "Maintain open-source CLI for individual developers and local CI gates. Commercialize a hosted, multi-tenant SaaS dashboard for engineering teams with centralized RBAC, historical risk trending, and vulnerability triage workflows."),
+        ("PHASE A · COMMERCIAL SAAS", COLOR_CYAN, "Open-Source CLI + Paid Cloud Dashboard",
+         "Maintain open-source CLI runner for individual developers and CI gates. Commercialize a hosted, multi-tenant SaaS dashboard for engineering organizations with centralized RBAC, historical risk trending, team collaboration, and vulnerability triage workflows."),
         
-        ("ENTERPRISE OAUTH2 & SSO NEGOTIATION", COLOR_SECURE,
-         "Automated Identity Orchestration",
-         "Extend beyond static JWTs to automated OAuth2 / OIDC PKCE flow negotiation, SAML handshakes, and mTLS client-certificate authentication for complex enterprise banking and healthcare environments."),
+        ("PHASE B · ENTERPRISE AUTH", COLOR_EMERALD, "Enterprise OAuth2 & SSO Negotiation",
+         "Extend beyond static JWTs to automated OAuth2 / OIDC PKCE flow negotiation, SAML handshakes, and mTLS client-certificate authentication for complex enterprise banking, fintech, and healthcare environments."),
         
-        ("CUSTOM REGULATORY COMPLIANCE ENGINES", COLOR_MEDIUM,
-         "Declarative Compliance Frameworks",
+        ("PHASE C · COMPLIANCE MAPPINGS", COLOR_AMBER, "Custom Regulatory Policy Engines",
          "Provide declarative YAML policy mappings translating authorization findings directly into HIPAA, PCI-DSS, SOC 2, and ISO 27001 audit deliverables with automated executive PDF sign-off reports."),
         
-        ("DISTRIBUTED SCAN MESH & PERSISTENCE", COLOR_PURPLE,
-         "Scalable Microservice Architecture",
+        ("PHASE D · DISTRIBUTED MESH", COLOR_PURPLE, "Distributed Scanner Mesh & Persistence",
          "Deploy distributed Kubernetes scanner workers capable of concurrently auditing large microservice meshes, backed by MongoDB and PostgreSQL persistence adapters for multi-year enterprise audit archiving.")
     ]
 
-    for idx, (title, color, tag, desc) in enumerate(pillars):
+    for idx, (tag, color, title, desc) in enumerate(pillars):
         col = idx % 2
         row = idx // 2
         c_left = Inches(0.8 + col * 5.966)
-        c_top = Inches(1.6 + row * 2.5)
-        c_width = Inches(5.766)
-        c_height = Inches(2.25)
+        c_top = Inches(1.8 + row * 2.45)
+        c_w = Inches(5.766)
+        c_h = Inches(2.25)
 
-        add_card(slide, c_left, c_top, c_width, c_height, COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+        add_card(slide, c_left, c_top, c_w, c_h, COLOR_CARD_BG, color, Pt(2))
 
-        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, c_left, c_top, c_width, Pt(3))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = color
-        bar.line.color.rgb = color
-
-        tb = slide.shapes.add_textbox(c_left + Inches(0.25), c_top + Inches(0.2), c_width - Inches(0.5), c_height - Inches(0.4))
+        tb = slide.shapes.add_textbox(c_left + Inches(0.25), c_top + Inches(0.2), c_w - Inches(0.5), c_h - Inches(0.4))
         tf = tb.text_frame
         tf.word_wrap = True
 
         p0 = tf.paragraphs[0]
-        p0.text = title
+        p0.text = tag
         p0.font.name = FONT_HEADING
-        p0.font.size = Pt(11.5)
+        p0.font.size = Pt(11)
         p0.font.bold = True
         p0.font.color.rgb = color
         p0.space_after = Pt(2)
 
-        ptag = tf.add_paragraph()
-        ptag.text = tag
-        ptag.font.name = FONT_HEADING
-        ptag.font.size = Pt(9.5)
-        ptag.font.bold = True
-        ptag.font.color.rgb = COLOR_TEXT_MUTED
-        ptag.space_after = Pt(6)
-
         p1 = tf.add_paragraph()
-        p1.text = desc
-        p1.font.name = FONT_BODY
-        p1.font.size = Pt(10)
-        p1.font.color.rgb = COLOR_TEXT_SECONDARY
+        p1.text = title
+        p1.font.name = FONT_HEADING
+        p1.font.size = Pt(16)
+        p1.font.bold = True
+        p1.font.color.rgb = COLOR_WHITE
+        p1.space_after = Pt(8)
+
+        p2 = tf.add_paragraph()
+        p2.text = desc
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(11.5)
+        p2.font.color.rgb = COLOR_TEXT_MUTED
 
 
-def build_slide_10_team_summary(prs):
-    """Slide 10: Team, Summary & Q&A"""
+# ── Slide 10: Team, Summary & Live Demo ──────────────────────────────────────
+def build_slide_10_team(prs):
     slide = create_blank_slide(prs)
     add_header(slide, "Team & Project Summary — Questions & Live Demo", "Conclusion & Q&A", 10)
 
-    # Left Card: Team Ownership & Contributions
+    # Left: Team Ownership
     left_x = Inches(0.8)
     col_w = Inches(5.766)
-    add_card(slide, left_x, Inches(1.6), col_w, Inches(5.1), COLOR_SURFACE_PANEL, COLOR_BORDER_STRUCT)
+    add_card(slide, left_x, Inches(1.8), col_w, Inches(4.9), COLOR_CARD_BG, COLOR_CYAN, Pt(2))
 
-    tb_left = slide.shapes.add_textbox(left_x + Inches(0.3), Inches(1.8), col_w - Inches(0.6), Inches(4.7))
+    tb_left = slide.shapes.add_textbox(left_x + Inches(0.3), Inches(2.0), col_w - Inches(0.6), Inches(4.5))
     tfl = tb_left.text_frame
     tfl.word_wrap = True
 
     p_th = tfl.paragraphs[0]
-    p_th.text = "CORE TEAM & CONTRIBUTIONS"
+    p_th.text = "CORE TEAM & ARCHITECTURAL CONTRIBUTIONS"
     p_th.font.name = FONT_HEADING
-    p_th.font.size = Pt(13)
+    p_th.font.size = Pt(14)
     p_th.font.bold = True
-    p_th.font.color.rgb = COLOR_BRAND_PRIMARY
-    p_th.space_after = Pt(10)
+    p_th.font.color.rgb = COLOR_CYAN
+    p_th.space_after = Pt(6)
 
     p_lead = tfl.add_paragraph()
     p_lead.text = "Tanuj — Lead Security Architect & Full-Stack Engineer"
     p_lead.font.name = FONT_HEADING
-    p_lead.font.size = Pt(11)
+    p_lead.font.size = Pt(13)
     p_lead.font.bold = True
-    p_lead.font.color.rgb = COLOR_TEXT_PRIMARY
-    p_lead.space_after = Pt(6)
+    p_lead.font.color.rgb = COLOR_WHITE
+    p_lead.space_after = Pt(12)
 
     contribs = [
         "Core Security Engine: Differential response analyzer, ground-truth authorization matrix compiler, and 6 modular OWASP security checks.",
@@ -744,107 +682,84 @@ def build_slide_10_team_summary(prs):
         pc = tfl.add_paragraph()
         pc.text = f"• {c}"
         pc.font.name = FONT_BODY
-        pc.font.size = Pt(9.5)
-        pc.font.color.rgb = COLOR_TEXT_SECONDARY
-        pc.space_after = Pt(4)
+        pc.font.size = Pt(11)
+        pc.font.color.rgb = COLOR_TEXT_MUTED
+        pc.space_after = Pt(6)
 
-    # Right Card: Conclusion, Links, Q&A
+    # Right: Summary & Links
     right_x = Inches(6.766)
-    add_card(slide, right_x, Inches(1.6), col_w, Inches(5.1), COLOR_SURFACE_PANEL, COLOR_BRAND_ACCENT, Pt(1))
+    add_card(slide, right_x, Inches(1.8), col_w, Inches(4.9), COLOR_CARD_BG, COLOR_INDIGO, Pt(2))
 
-    tb_right = slide.shapes.add_textbox(right_x + Inches(0.3), Inches(1.8), col_w - Inches(0.6), Inches(4.7))
+    tb_right = slide.shapes.add_textbox(right_x + Inches(0.3), Inches(2.0), col_w - Inches(0.6), Inches(4.5))
     tfr = tb_right.text_frame
     tfr.word_wrap = True
 
     p_qh = tfr.paragraphs[0]
-    p_qh.text = "PROJECT SUMMARY & DEMO ACCESS"
+    p_qh.text = "PROJECT SUMMARY & LIVE ACCESS"
     p_qh.font.name = FONT_HEADING
-    p_qh.font.size = Pt(13)
+    p_qh.font.size = Pt(14)
     p_qh.font.bold = True
-    p_qh.font.color.rgb = COLOR_BRAND_ACCENT
-    p_qh.space_after = Pt(14)
+    p_qh.font.color.rgb = COLOR_INDIGO
+    p_qh.space_after = Pt(10)
 
     p_quote = tfr.add_paragraph()
     p_quote.text = "“SentinelAPI stops API authorization breaches before code hits production — fully autonomous, mathematically verified, with reproducible evidence and zero secrets leaked.”"
     p_quote.font.name = FONT_HEADING
-    p_quote.font.size = Pt(12)
+    p_quote.font.size = Pt(13)
     p_quote.font.bold = True
-    p_quote.font.color.rgb = COLOR_TEXT_PRIMARY
-    p_quote.space_after = Pt(18)
+    p_quote.font.color.rgb = COLOR_WHITE
+    p_quote.space_after = Pt(16)
 
     links = [
         ("GitHub Repository", "https://github.com/x03tanuj/sentinel-api"),
-        ("Live Tactical Dashboard", "http://localhost:8080"),
-        ("Interactive Demo Script", "bash scripts/demo.sh"),
-        ("Architecture Diagram", "docs/architecture.png (2400x1400)")
+        ("Live Web Dashboard", "http://localhost:8080"),
+        ("Automated Demo Script", "bash scripts/demo.sh"),
+        ("Architecture Diagram", "docs/architecture.png (2400×1400)")
     ]
     for label, val in links:
         pl = tfr.add_paragraph()
         pl.text = f"{label}: "
         pl.font.name = FONT_HEADING
-        pl.font.size = Pt(10)
+        pl.font.size = Pt(11)
         pl.font.bold = True
-        pl.font.color.rgb = COLOR_BRAND_PRIMARY
+        pl.font.color.rgb = COLOR_CYAN
         
         run = pl.add_run()
         run.text = val
         run.font.name = FONT_CODE
         run.font.bold = False
-        run.font.color.rgb = COLOR_BRAND_HOVER
+        run.font.color.rgb = COLOR_WHITE
         pl.space_after = Pt(6)
 
     p_ask = tfr.add_paragraph()
-    p_ask.text = "\nThank You! We are now open for Q&A."
+    p_ask.text = "\nThank You! We are now open for Q&A and Live Demo."
     p_ask.font.name = FONT_HEADING
-    p_ask.font.size = Pt(14)
+    p_ask.font.size = Pt(15)
     p_ask.font.bold = True
-    p_ask.font.color.rgb = COLOR_SECURE
+    p_ask.font.color.rgb = COLOR_EMERALD
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MAIN GENERATOR
-# ─────────────────────────────────────────────────────────────────────────────
-
+# ── Main ─────────────────────────────────────────────────────────────────────
 def main():
     SLIDES_DIR.mkdir(parents=True, exist_ok=True)
-    print("Initializing PowerPoint presentation (16:9 widescreen)...")
+    print("Generating PPTX pitch deck matching Section 6.2 deliverables...")
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
 
-    print("Building Slide 1: Title & Pitch...")
-    build_slide_1_title(prs)
-
-    print("Building Slide 2: Problem Statement...")
+    build_slide_1_cover(prs)
     build_slide_2_problem(prs)
-
-    print("Building Slide 3: Proposed Solution...")
     build_slide_3_solution(prs)
-
-    print("Building Slide 4: System Architecture...")
-    build_slide_4_architecture(prs)
-
-    print("Building Slide 5: Key Technologies & Security Engine...")
+    build_slide_4_unique(prs)
     build_slide_5_core_engine(prs)
-
-    print("Building Slide 6: Technical Highlights & Safety...")
-    build_slide_6_tech_highlights(prs)
-
-    print("Building Slide 7: Live Product Demo...")
-    build_slide_7_screenshots(prs)
-
-    print("Building Slide 8: CI/CD Quality Gate...")
-    build_slide_8_ci_cd_gate(prs)
-
-    print("Building Slide 9: Future Scope & SaaS Roadmap...")
+    build_slide_6_architecture(prs)
+    build_slide_7_ci_cd(prs)
+    build_slide_8_screenshots(prs)
     build_slide_9_future_roadmap(prs)
+    build_slide_10_team(prs)
 
-    print("Building Slide 10: Team, Summary & Q&A...")
-    build_slide_10_team_summary(prs)
-
-    print(f"Saving PPTX to: {OUTPUT_PPTX}")
     prs.save(str(OUTPUT_PPTX))
-    print(f"✅ Successfully generated {len(prs.slides)} slides in {OUTPUT_PPTX}")
+    print(f"✅ Generated {len(prs.slides)} slides in {OUTPUT_PPTX}")
 
 
 if __name__ == "__main__":

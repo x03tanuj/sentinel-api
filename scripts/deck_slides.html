@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SentinelAPI — Pitch Deck</title>
+  <title>SentinelAPI — Hackathon Pitch Deck</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     @page {
@@ -13,9 +13,9 @@
       margin: 0;
     }
     html, body {
-      background-color: #06080F;
+      background-color: #070913;
       color: #F8FAFC;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       margin: 0; padding: 0;
       -webkit-font-smoothing: antialiased;
     }
@@ -25,17 +25,18 @@
       position: relative;
       page-break-after: always;
       break-after: page;
-      background-color: #06080F;
+      background-color: #070913;
       background-image: 
-        radial-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-        radial-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-      background-size: 32px 32px, 64px 64px;
-      background-position: 0 0, 16px 16px;
+        radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 56px 80px 40px;
+      padding: 50px 84px 40px;
     }
 
     /* Common Header */
@@ -43,46 +44,58 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      border-bottom: 2px solid #232D42;
-      padding-bottom: 20px;
-      margin-bottom: 28px;
+      border-bottom: 2px solid rgba(56, 189, 248, 0.25);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
     }
     .header-cat {
-      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
       font-weight: 800;
       letter-spacing: 1.5px;
       color: #38BDF8;
       text-transform: uppercase;
       margin-bottom: 6px;
     }
+    .header-cat .dot {
+      width: 9px;
+      height: 9px;
+      background: #38BDF8;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #38BDF8;
+    }
     .header-title {
-      font-size: 32px;
+      font-size: 40px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #F8FAFC;
+      letter-spacing: -0.8px;
+      color: #FFFFFF;
+      line-height: 1.15;
     }
     .header-meta {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
-    .badge-pill {
-      font-size: 13px;
+    .badge-track {
+      font-size: 14px;
+      font-weight: 800;
+      color: #070913;
+      background: linear-gradient(135deg, #38BDF8, #818CF8);
+      padding: 8px 18px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+    .badge-counter {
+      font-size: 14px;
       font-weight: 700;
-      color: #38BDF8;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1.5px solid rgba(56, 189, 248, 0.3);
-      padding: 6px 14px;
-      border-radius: 6px;
-    }
-    .badge-gray {
-      font-size: 13px;
-      font-weight: 600;
       color: #94A3B8;
-      background: #151B2B;
-      border: 1px solid #232D42;
-      padding: 6px 14px;
-      border-radius: 6px;
+      background: #11162B;
+      border: 1.5px solid #232D4E;
+      padding: 8px 18px;
+      border-radius: 8px;
     }
 
     /* Common Footer */
@@ -90,48 +103,46 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-top: 1px solid #232D42;
-      padding-top: 16px;
-      font-size: 13px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 14px;
+      font-size: 14px;
       color: #64748B;
-      font-weight: 500;
+      font-weight: 600;
     }
 
-    /* Cards & Grids */
+    /* Cards & Containers */
     .card {
-      background: #0D111C;
-      border: 1.5px solid #232D42;
-      border-radius: 10px;
-      padding: 24px 28px;
+      background: #0E1326;
+      border: 1.5px solid #202945;
+      border-radius: 14px;
+      padding: 26px 30px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       position: relative;
     }
-    .card-elevated {
-      background: #151B2B;
-      border: 1.5px solid #232D42;
-      border-radius: 10px;
-      padding: 24px 28px;
+    .card-highlight {
+      background: linear-gradient(180deg, #131A36 0%, #0E1326 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      border-radius: 14px;
+      padding: 24px 30px;
+      box-shadow: 0 8px 30px rgba(56, 189, 248, 0.12);
     }
 
-    /* Code */
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Colors */
+    /* Typography */
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
     .text-sky { color: #38BDF8; }
     .text-indigo { color: #818CF8; }
-    .text-critical { color: #EF4444; }
-    .text-high { color: #F97316; }
-    .text-medium { color: #F59E0B; }
-    .text-secure { color: #10B981; }
+    .text-critical { color: #F87171; }
+    .text-high { color: #FB923C; }
+    .text-medium { color: #FBBF24; }
+    .text-secure { color: #34D399; }
     .text-purple { color: #C084FC; }
-    .text-dim { color: #94A3B8; }
-    .text-muted { color: #64748B; }
+    .text-muted { color: #94A3B8; }
+    .text-dim { color: #64748B; }
 
-    /* Layout utilities */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
-    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+    /* Layout Grids */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 22px; }
     .flex-col { display: flex; flex-direction: column; }
     .flex-1 { flex: 1; }
   </style>
@@ -139,51 +150,58 @@
 <body>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 1: Title & Pitch -->
+  <!-- SLIDE 1: Track Selection & The Big Hook -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-1">
-    <div style="margin-top: 40px;">
-      <div style="display: inline-flex; align-items: center; gap: 10px; background: rgba(56, 189, 248, 0.12); border: 1.5px solid #38BDF8; padding: 6px 16px; border-radius: 6px; margin-bottom: 24px;">
-        <span style="width: 8px; height: 8px; background: #38BDF8; border-radius: 50%; display: inline-block;"></span>
-        <span style="font-size: 14px; font-weight: 800; color: #38BDF8; letter-spacing: 1px;">AMIHACKS 2026 · TRACK C: CYBERSECURITY & API SECURITY</span>
+    <div style="margin-top: 16px;">
+      <!-- Track Badge Callout -->
+      <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(56, 189, 248, 0.15); border: 2px solid #38BDF8; padding: 10px 24px; border-radius: 10px; margin-bottom: 26px;">
+        <span style="width: 10px; height: 10px; background: #38BDF8; border-radius: 50%; box-shadow: 0 0 12px #38BDF8; display: inline-block;"></span>
+        <span style="font-size: 16px; font-weight: 800; color: #38BDF8; letter-spacing: 1.5px;">AMIHACKS 2026 · TRACK C: CYBERSECURITY & API SECURITY</span>
       </div>
 
-      <h1 style="font-size: 72px; font-weight: 800; letter-spacing: -2px; line-height: 1.1; margin-bottom: 12px; color: #F8FAFC;">
+      <h1 style="font-size: 84px; font-weight: 800; letter-spacing: -2px; line-height: 1.05; margin-bottom: 12px; color: #FFFFFF;">
         Sentinel<span style="color: #38BDF8;">API</span>
       </h1>
-      <h2 style="font-size: 32px; font-weight: 700; color: #818CF8; letter-spacing: -0.5px; margin-bottom: 24px;">
+      <h2 style="font-size: 38px; font-weight: 700; color: #818CF8; letter-spacing: -0.5px; margin-bottom: 24px;">
         Autonomous Differential API Security Testing
       </h2>
-      <p style="font-size: 20px; line-height: 1.6; color: #94A3B8; max-width: 1400px; margin-bottom: 48px;">
-        Ingesting OpenAPI 3.x specifications, dynamically authenticating multiple test personas, learning ground-truth resource ownership without brute-forcing, and executing differential response analysis to eliminate authorization blindspots before production.
-      </p>
+      
+      <!-- Big Clear Core Pitch -->
+      <div style="background: rgba(14, 19, 38, 0.85); border-left: 6px solid #38BDF8; border-radius: 0 12px 12px 0; padding: 22px 32px; margin-bottom: 36px; max-width: 1600px;">
+        <p style="font-size: 24px; line-height: 1.5; color: #E2E8F0; font-weight: 600;">
+          While 200 teams build generic AI wrappers or test basic SQLi/XSS, SentinelAPI solves the single most dangerous vulnerability in cloud software: <span style="color: #38BDF8; font-weight: 800;">Broken Object Level Authorization (BOLA/IDOR)</span>.
+        </p>
+      </div>
 
-      <div class="grid-3" style="margin-bottom: 40px;">
-        <div class="card">
-          <div style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 8px;">OWASP API #1 COVERAGE</div>
-          <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">BOLA / IDOR & BFLA Detection</div>
-          <div style="font-size: 14px; color: #94A3B8; line-height: 1.4;">Automated cross-user access tests across multi-tenant boundaries with zero manual test script creation.</div>
+      <!-- 3 Key Pillars -->
+      <div class="grid-3" style="margin-bottom: 28px;">
+        <div class="card" style="border-top: 4px solid #38BDF8;">
+          <div style="font-size: 14px; font-weight: 800; color: #38BDF8; letter-spacing: 1.5px; margin-bottom: 8px;">WHAT TRACK C DEMANDS</div>
+          <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 8px;">OWASP API #1 Focus</div>
+          <div style="font-size: 17px; color: #94A3B8; line-height: 1.5;">Automated detection of authorization logic flaws across multi-tenant boundaries that traditional scanners miss completely.</div>
         </div>
-        <div class="card">
-          <div style="font-size: 13px; font-weight: 800; color: #10B981; letter-spacing: 1px; margin-bottom: 8px;">EMPIRICAL EVIDENCE</div>
-          <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Live Reproduction & cURL PoCs</div>
-          <div style="font-size: 14px; color: #94A3B8; line-height: 1.4;">Zero false positives. Active live re-probes verify 100% reproducibility with shell-safe curl PoCs.</div>
+        <div class="card" style="border-top: 4px solid #34D399;">
+          <div style="font-size: 14px; font-weight: 800; color: #34D399; letter-spacing: 1.5px; margin-bottom: 8px;">HOW WE SOLVE IT</div>
+          <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 8px;">Ground-Truth Matrix</div>
+          <div style="font-size: 17px; color: #94A3B8; line-height: 1.5;">Learns real resource ownership without guessing IDs, then compares cross-user responses using weighted Jaccard differential distance.</div>
         </div>
-        <div class="card">
-          <div style="font-size: 13px; font-weight: 800; color: #A855F7; letter-spacing: 1px; margin-bottom: 8px;">ENTERPRISE SAFETY</div>
-          <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Strict Scope Guards & Egress Filter</div>
-          <div style="font-size: 14px; color: #94A3B8; line-height: 1.4;">20 RPS rate caps, zero secrets stored, and an evidence-only AI boundary that never accesses raw credentials.</div>
+        <div class="card" style="border-top: 4px solid #C084FC;">
+          <div style="font-size: 14px; font-weight: 800; color: #C084FC; letter-spacing: 1.5px; margin-bottom: 8px;">WHY WE WIN</div>
+          <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 8px;">Zero False Positives</div>
+          <div style="font-size: 17px; color: #94A3B8; line-height: 1.5;">Empirical live re-probes verify 100% reproducibility, generating shell-safe copy-paste cURL PoCs with zero cleartext token leaks.</div>
         </div>
       </div>
     </div>
 
-    <div class="card-elevated" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 28px; border-color: #38BDF8;">
+    <!-- Creator Banner -->
+    <div class="card-highlight" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 34px;">
       <div style="display: flex; align-items: center; gap: 24px;">
-        <span style="font-size: 15px; font-weight: 700; color: #F8FAFC;">Lead Security Architect: <span style="color: #38BDF8;">Tanuj</span></span>
+        <span style="font-size: 19px; font-weight: 800; color: #FFFFFF;">Lead Security Architect: <span style="color: #38BDF8;">Tanuj</span></span>
         <span style="color: #334155;">|</span>
-        <span style="font-size: 14px; color: #94A3B8;">Full-Stack & Security Engineering</span>
+        <span style="font-size: 17px; color: #94A3B8;">Full-Stack & Security Engineering</span>
       </div>
-      <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #38BDF8; font-weight: 600;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 17px; color: #38BDF8; font-weight: 700;">
         https://github.com/x03tanuj/sentinel-api
       </div>
     </div>
@@ -195,555 +213,570 @@
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 2: Problem Statement -->
+  <!-- SLIDE 2: What It Is Solving -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-2">
     <div class="slide-header">
       <div>
-        <div class="header-cat">PROBLEM STATEMENT</div>
-        <div class="header-title">The API Authorization Blindspot in Modern Software</div>
+        <div class="header-cat"><span class="dot"></span> WHAT IT IS SOLVING</div>
+        <div class="header-title">The Multi-Billion Dollar API Authorization Blindspot</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill" style="border-color: #EF4444; color: #EF4444; background: rgba(239, 68, 68, 0.1);">OWASP API1:2023</span>
-        <span class="badge-gray">Slide 2 / 10</span>
+        <span class="badge-track" style="background: #EF4444; color: #FFFFFF;">OWASP API1:2023</span>
+        <span class="badge-counter">Slide 2 / 10</span>
       </div>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 20px;" class="flex-1">
-      <div class="card" style="border-left: 6px solid #EF4444; display: flex; gap: 24px; align-items: flex-start;">
-        <div style="font-size: 32px; line-height: 1;">🚨</div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-            <span style="font-size: 13px; font-weight: 800; color: #EF4444; letter-spacing: 1px;">OWASP #1 CRITICAL THREAT</span>
-            <span style="font-size: 20px; font-weight: 700; color: #F8FAFC;">Broken Object Level Authorization (BOLA / IDOR)</span>
-          </div>
-          <div style="font-size: 15px; color: #94A3B8; line-height: 1.5;">
-            BOLA remains the most rampant and catastrophic flaw in cloud APIs. An authenticated attacker merely alters a numeric ID (<code class="font-mono text-sky">/orders/101</code> → <code class="font-mono text-sky">/orders/102</code>) to view, modify, or delete another customer's confidential financial, identity, or medical records.
-          </div>
+    <!-- Big Stat Banner -->
+    <div class="card-highlight" style="margin-bottom: 24px; padding: 22px 32px; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">
+      <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; line-height: 1.4;">
+        ⚠️ Over 40% of all cloud API data breaches originate from <span style="color: #F87171;">Broken Object Level Authorization (BOLA/IDOR)</span> — yet 99% of automated security scanners cannot detect it.
+      </div>
+    </div>
+
+    <!-- 3 Big Problem Columns -->
+    <div class="grid-3 flex-1">
+      <div class="card" style="border-top: 5px solid #F87171; display: flex; flex-direction: column;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🔓</div>
+        <div style="font-size: 15px; font-weight: 800; color: #F87171; letter-spacing: 1px; margin-bottom: 6px;">THE CORE FLAW</div>
+        <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Changing <span class="font-mono text-sky">id=101</span> to <span class="font-mono text-sky">id=102</span></div>
+        <div style="font-size: 18px; color: #94A3B8; line-height: 1.65;">
+          An authenticated user simply changes an ID parameter in an API request and directly reads, modifies, or deletes another customer's private invoices, patient medical charts, or banking records.
         </div>
       </div>
 
-      <div class="card" style="border-left: 6px solid #F97316; display: flex; gap: 24px; align-items: flex-start;">
-        <div style="font-size: 32px; line-height: 1;">🛡️</div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-            <span style="font-size: 13px; font-weight: 800; color: #F97316; letter-spacing: 1px;">CONVENTIONAL TOOLS FAIL</span>
-            <span style="font-size: 20px; font-weight: 700; color: #F8FAFC;">DAST & SAST Are Blind to Multi-User Business Logic</span>
-          </div>
-          <div style="font-size: 15px; color: #94A3B8; line-height: 1.5;">
-            Traditional scanners search for syntax anomalies like SQL injection and XSS payloads. They operate in a single-user sandbox and have zero contextual understanding of multi-tenant authorization boundaries, role hierarchies, or cross-account access rules.
-          </div>
+      <div class="card" style="border-top: 5px solid #FB923C; display: flex; flex-direction: column;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🙈</div>
+        <div style="font-size: 15px; font-weight: 800; color: #FB923C; letter-spacing: 1px; margin-bottom: 6px;">TRADITIONAL TOOLS FAIL</div>
+        <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">DAST & SAST Are Blind to Auth</div>
+        <div style="font-size: 18px; color: #94A3B8; line-height: 1.65;">
+          Conventional scanners only test for syntax injection like SQLi or XSS. Operating in single-user isolation, they have <strong>zero understanding of multi-tenant ownership, role privileges, or cross-account access boundaries</strong>.
         </div>
       </div>
 
-      <div class="card" style="border-left: 6px solid #F59E0B; display: flex; gap: 24px; align-items: flex-start;">
-        <div style="font-size: 32px; line-height: 1;">⏱️</div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-            <span style="font-size: 13px; font-weight: 800; color: #F59E0B; letter-spacing: 1px;">VELOCITY GAP</span>
-            <span style="font-size: 20px; font-weight: 700; color: #F8FAFC;">Manual Penetration Testing Doesn't Scale in Agile CI/CD</span>
-          </div>
-          <div style="font-size: 15px; color: #94A3B8; line-height: 1.5;">
-            Engineering teams deploy microservices dozens of times weekly. Manual security audits are expensive, quarterly, and too slow to catch day-to-day authorization regressions before code hits production environments.
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="border-left: 6px solid #38BDF8; display: flex; gap: 24px; align-items: flex-start;">
-        <div style="font-size: 32px; line-height: 1;">🔥</div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-            <span style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px;">SILENT EXPLOITATION</span>
-            <span style="font-size: 20px; font-weight: 700; color: #F8FAFC;">Flaws Evade WAFs and Perimeter Defenses</span>
-          </div>
-          <div style="font-size: 15px; color: #94A3B8; line-height: 1.5;">
-            Because BOLA requests use valid HTTP formats and legitimate credentials, target APIs respond with standard <code class="font-mono text-secure">200 OK</code> payloads. Web Application Firewalls (WAFs) see normal traffic, resulting in undetected leaks and severe GDPR / HIPAA compliance penalties.
-          </div>
+      <div class="card" style="border-top: 5px solid #FBBF24; display: flex; flex-direction: column;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🛡️</div>
+        <div style="font-size: 15px; font-weight: 800; color: #FBBF24; letter-spacing: 1px; margin-bottom: 6px;">SILENT EXPLOITATION</div>
+        <div style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Flaws Evade Firewalls & WAFs</div>
+        <div style="font-size: 18px; color: #94A3B8; line-height: 1.65;">
+          Because BOLA requests use valid JWT tokens and legitimate JSON formats, target APIs respond with standard <span class="font-mono text-secure">200 OK</span> payloads. WAFs see completely normal traffic, leaving breaches undetected for months.
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Track C: Cybersecurity</span>
+      <span>SentinelAPI · What It Is Solving</span>
       <span>Slide 2 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 3: Proposed Solution -->
+  <!-- SLIDE 3: How It Is Solving It -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-3">
     <div class="slide-header">
       <div>
-        <div class="header-cat">PROPOSED SOLUTION</div>
-        <div class="header-title">Autonomous Differential API Security Testing</div>
+        <div class="header-cat"><span class="dot"></span> HOW IT IS SOLVING IT</div>
+        <div class="header-title">The 4-Step Autonomous Differential Security Pipeline</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">Autonomous Engine</span>
-        <span class="badge-gray">Slide 3 / 10</span>
+        <span class="badge-track">Autonomous Engine</span>
+        <span class="badge-counter">Slide 3 / 10</span>
       </div>
     </div>
 
-    <div class="card-elevated" style="margin-bottom: 24px; border-color: #38BDF8;">
-      <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; line-height: 1.5;">
-        SentinelAPI automates end-to-end authorization security audits by ingesting OpenAPI contracts, discovering legitimate resource ownership across multiple authenticated personas, and executing differential response analysis to mathematically prove access violations.
+    <div class="grid-4 flex-1">
+      <!-- Step 1 -->
+      <div class="card" style="border-top: 5px solid #38BDF8; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 32px;">📄</span>
+          <span style="font-size: 14px; font-weight: 800; color: #38BDF8; background: rgba(56, 189, 248, 0.15); padding: 5px 12px; border-radius: 6px;">STEP 1</span>
+        </div>
+        <div style="font-size: 23px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Spec Ingestion & Mapping</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65; flex: 1;">
+          Ingests OpenAPI 3.x contracts from URLs or files. Validates schemas, dereferences circular <span class="font-mono text-sky">$ref</span> pointers, and prioritizes endpoints by state-changing methods.
+        </div>
+        <div style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #38BDF8; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px;">
+          ✓ Zero manual test writing
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="card" style="border-top: 5px solid #34D399; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 32px;">🔑</span>
+          <span style="font-size: 14px; font-weight: 800; color: #34D399; background: rgba(52, 211, 153, 0.15); padding: 5px 12px; border-radius: 6px;">STEP 2</span>
+        </div>
+        <div style="font-size: 23px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Ownership Discovery</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65; flex: 1;">
+          Authenticates multiple personas (<span class="font-mono text-sky">userA</span>, <span class="font-mono text-sky">userB</span>, <span class="font-mono text-sky">admin</span>). Queries legitimate profile & collection endpoints to discover owned resources without guessing IDs.
+        </div>
+        <div style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #34D399; background: rgba(52, 211, 153, 0.1); padding: 6px 12px; border-radius: 6px;">
+          ✓ No random brute-force
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="card" style="border-top: 5px solid #818CF8; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 32px;">⚡</span>
+          <span style="font-size: 14px; font-weight: 800; color: #818CF8; background: rgba(129, 140, 248, 0.15); padding: 5px 12px; border-radius: 6px;">STEP 3</span>
+        </div>
+        <div style="font-size: 23px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Differential Analysis</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65; flex: 1;">
+          Compiles a ground-truth Allow/Deny matrix. Dispatches rate-limited cross-user probes and mathematically measures response divergence using weighted Jaccard distance and schema shifts.
+        </div>
+        <div style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #818CF8; background: rgba(129, 140, 248, 0.1); padding: 6px 12px; border-radius: 6px;">
+          ✓ Mathematical ground truth
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="card" style="border-top: 5px solid #F87171; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 32px;">🎯</span>
+          <span style="font-size: 14px; font-weight: 800; color: #F87171; background: rgba(248, 113, 113, 0.15); padding: 5px 12px; border-radius: 6px;">STEP 4</span>
+        </div>
+        <div style="font-size: 23px; font-weight: 800; color: #FFFFFF; margin-bottom: 14px;">Empirical Proof & PoCs</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65; flex: 1;">
+          Actively re-probes live findings to prove reproducibility (boosting confidence to 100%). Generates copy-paste shell-safe cURL PoCs with masked <span class="font-mono text-sky">$TOKEN</span> placeholders for instant remediation.
+        </div>
+        <div style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #F87171; background: rgba(248, 113, 113, 0.1); padding: 6px 12px; border-radius: 6px;">
+          ✓ Zero false positive proof
+        </div>
       </div>
     </div>
 
-    <div class="grid-2 flex-1">
-      <div class="card" style="border-top: 4px solid #38BDF8;">
-        <div style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 6px;">1. SPEC-DRIVEN ATTACK SURFACE MAPPING</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Contract Validation & Risk Prioritization</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.6;">
-          Ingests OpenAPI 3.x contracts from URLs or JSON/YAML. Automatically validates schemas, dereferences complex circular <code class="font-mono text-sky">$ref</code> pointers, and assigns preliminary risk rankings to state-changing operations and privileged routes.
-        </div>
-      </div>
-
-      <div class="card" style="border-top: 4px solid #10B981;">
-        <div style="font-size: 13px; font-weight: 800; color: #10B981; letter-spacing: 1px; margin-bottom: 6px;">2. MULTI-PERSONA GROUND-TRUTH MATRIX</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Zero-Guesswork Ownership Discovery</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.6;">
-          Authenticates distinct test personas (<code class="font-mono text-sky">userA</code>, <code class="font-mono text-sky">userB</code>, <code class="font-mono text-sky">admin</code>) via JWT. Queries legitimate collection endpoints to learn owned resources without brute-force ID guessing, building a mathematical Allow/Deny expectation matrix.
-        </div>
-      </div>
-
-      <div class="card" style="border-top: 4px solid #F59E0B;">
-        <div style="font-size: 13px; font-weight: 800; color: #F59E0B; letter-spacing: 1px; margin-bottom: 6px;">3. DIFFERENTIAL RESPONSE ANALYSIS</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Mathematical Distance & Field Divergence</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.6;">
-          Dispatches rate-limited cross-user attack probes. Analyzes baseline vs attack responses using weighted Jaccard similarity distance, status-code divergence, and undeclared sensitive field classification to detect breaches.
-        </div>
-      </div>
-
-      <div class="card" style="border-top: 4px solid #EF4444;">
-        <div style="font-size: 13px; font-weight: 800; color: #EF4444; letter-spacing: 1px; margin-bottom: 6px;">4. EMPIRICAL PROOF & REPRODUCIBLE POCS</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Zero False Positives with cURL Evidence</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.6;">
-          Actively re-probes top findings against the live API to empirically prove reproducibility. Generates copy-pasteable, shell-safe cURL PoCs with masked <code class="font-mono text-sky">$TOKEN</code> placeholders for immediate engineering remediation.
-        </div>
+    <!-- Summary Box -->
+    <div class="card-highlight" style="margin-top: 20px; padding: 18px 30px;">
+      <div style="font-size: 18px; font-weight: 700; color: #FFFFFF;">
+        Core Differentiator: Entirely autonomous from spec to PoC. No manual test writing, no synthetic dummy payloads, and zero secrets leaked.
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Solution Overview</span>
+      <span>SentinelAPI · How It Is Solving It</span>
       <span>Slide 3 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 4: System Architecture -->
+  <!-- SLIDE 4: What Is Unique (SentinelAPI vs 200 Teams) -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-4">
     <div class="slide-header">
       <div>
-        <div class="header-cat">SYSTEM ARCHITECTURE</div>
-        <div class="header-title">Decoupled Security Engine & Enforced Safety Boundaries</div>
+        <div class="header-cat"><span class="dot"></span> UNIQUE ABOUT THIS</div>
+        <div class="header-title">Why SentinelAPI Wins: Standing Out Against 200 Teams</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">2400×1400 Architecture</span>
-        <span class="badge-gray">Slide 4 / 10</span>
+        <span class="badge-track">Our Unfair Advantage</span>
+        <span class="badge-counter">Slide 4 / 10</span>
       </div>
     </div>
 
-    <div class="card" style="padding: 10px; display: flex; align-items: center; justify-content: center; background: #06080F; border-color: #334155; margin-bottom: 18px; height: 680px;">
-      <img src="file:///Users/tanuj/Downloads/Amity/docs/architecture.png" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px;" alt="SentinelAPI Architecture Diagram">
+    <!-- Subtitle Banner -->
+    <div style="margin-bottom: 16px; padding: 12px 24px; background: rgba(14, 19, 38, 0.9); border-left: 4px solid #38BDF8; border-radius: 0 8px 8px 0;">
+      <span style="font-size: 17px; color: #CBD5E1; font-weight: 600;">Judges will evaluate 200 teams on Track C. Most will submit simple prompt wrappers or basic injection fuzzers. Here is why SentinelAPI stands alone:</span>
     </div>
 
-    <div class="card-elevated" style="padding: 14px 24px; border-color: #38BDF8;">
-      <div style="font-size: 14px; font-weight: 700; color: #38BDF8;">
-        Architecture Invariant: Deterministic Security Engine (our proprietary judged IP) operates autonomously with strict scope guards and rate caps. The AI Analyst is strictly an evidence-only side-branch with zero raw data egress.
+    <!-- High-Impact Comparison Table -->
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+      <!-- Table Header Row -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; padding: 10px 24px; font-size: 14px; font-weight: 800; letter-spacing: 1.5px;">
+        <div style="color: #94A3B8;">EVALUATION CRITERIA</div>
+        <div style="color: #F87171;">TYPICAL HACKATHON TEAMS (200 TEAMS)</div>
+        <div style="color: #38BDF8;">SENTINELAPI (OUR SOLUTION)</div>
+      </div>
+
+      <!-- Row 1 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Vulnerability Focus</div>
+        <div style="font-size: 16px; color: #94A3B8;">Generic SQLi, XSS, or syntax input fuzzing</div>
+        <div style="font-size: 17px; font-weight: 800; color: #38BDF8;">Complex Multi-User Authorization (BOLA, BFLA, Data Exposure)</div>
+      </div>
+
+      <!-- Row 2 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Detection Engine</div>
+        <div style="font-size: 16px; color: #94A3B8;">Asks an LLM "is this vulnerable?" (Hallucinations & Flaky)</div>
+        <div style="font-size: 17px; font-weight: 800; color: #34D399;">100% Deterministic Differential Engine (Weighted Jaccard Distance)</div>
+      </div>
+
+      <!-- Row 3 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Ownership Knowledge</div>
+        <div style="font-size: 16px; color: #94A3B8;">Random ID guessing or hardcoded IDs in test scripts</div>
+        <div style="font-size: 17px; font-weight: 800; color: #38BDF8;">Autonomous Resource Ownership Discovery from Legitimate APIs</div>
+      </div>
+
+      <!-- Row 4 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Accuracy & Evidence</div>
+        <div style="font-size: 16px; color: #94A3B8;">Vague warnings with high false positive rates</div>
+        <div style="font-size: 17px; font-weight: 800; color: #34D399;">Empirically Proven Live Reproduction + Copy-Paste cURL PoCs</div>
+      </div>
+
+      <!-- Row 5 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Safety & Guardrails</div>
+        <div style="font-size: 16px; color: #94A3B8;">Unrestricted flood requests; sends raw tokens to AI</div>
+        <div style="font-size: 17px; font-weight: 800; color: #FBBF24;">Scope Guard, 20 RPS Rate Cap, Budget Cap, Zero Egress PII Guard</div>
+      </div>
+
+      <!-- Row 6 -->
+      <div style="display: grid; grid-template-columns: 240px 1fr 1fr; gap: 16px; background: #0E1326; border: 1.5px solid #202945; border-radius: 12px; padding: 20px 24px; align-items: center;">
+        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF;">Production Readiness</div>
+        <div style="font-size: 16px; color: #94A3B8;">Mock scripts or static Figma UI</div>
+        <div style="font-size: 17px; font-weight: 800; color: #C084FC;">FastAPI Backend + React 19 HUD + Headless CI Gate + Docker</div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Architectural Layout</span>
+      <span>SentinelAPI · Competitive Differentiators</span>
       <span>Slide 4 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 5: Key Technologies -->
+  <!-- SLIDE 5: Proprietary Security Engine -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-5">
     <div class="slide-header">
       <div>
-        <div class="header-cat">KEY TECHNOLOGIES</div>
-        <div class="header-title">Proprietary Judged IP: 6 Core Engineering Engines</div>
+        <div class="header-cat"><span class="dot"></span> PROPRIETARY TECHNOLOGY</div>
+        <div class="header-title">The Core Security Engine: 6 Proprietary Deep-Tech Engines</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">Proprietary IP</span>
-        <span class="badge-gray">Slide 5 / 10</span>
+        <span class="badge-track">Proprietary IP</span>
+        <span class="badge-counter">Slide 5 / 10</span>
       </div>
     </div>
 
     <div class="grid-3 flex-1" style="gap: 24px;">
-      <div class="card" style="border-top: 4px solid #38BDF8;">
+      <div class="card" style="border-top: 5px solid #38BDF8;">
         <div style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 1</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Attack Surface Mapper</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Parses and dereferences OpenAPI 3.x contracts with circular <code class="font-mono text-sky">$ref</code> protection. Extracts parameters, endpoints, and auth constraints, computing preliminary risk scores for targeted probing.
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Attack Surface Mapper</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Parses OpenAPI 3.x specifications with circular <span class="font-mono text-sky">$ref</span> resolution. Extracts query/path parameters and scores initial endpoint risk based on state-changing operations.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #10B981;">
-        <div style="font-size: 13px; font-weight: 800; color: #10B981; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 2</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Identity & Execution Engine</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Orchestrates multi-user persona sessions via JWT/Bearer auth. Dispatches probes through token-bucket rate limiter (20 RPS) and immutable host allowlists (<code class="font-mono text-sky">assert_in_scope</code>).
+      <div class="card" style="border-top: 5px solid #34D399;">
+        <div style="font-size: 13px; font-weight: 800; color: #34D399; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 2</div>
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Identity & HTTP Executor</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Multi-persona JWT session manager enforcing 20 RPS token-bucket rate limits, 1,000 req budgets, and strict host allowlists (<span class="font-mono text-sky">assert_in_scope</span>).
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #818CF8;">
+      <div class="card" style="border-top: 5px solid #818CF8;">
         <div style="font-size: 13px; font-weight: 800; color: #818CF8; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 3</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Matrix Compiler</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Queries legitimate profile & collection GET endpoints to dynamically discover resources owned by each persona, compiling an explicit mathematical Allow/Deny expectation matrix.
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Matrix Compiler</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Discovers legitimate resource ownership per user and compiles a mathematical Allow/Deny expectation matrix for every endpoint and object ID.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #F59E0B;">
-        <div style="font-size: 13px; font-weight: 800; color: #F59E0B; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 4</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Differential Analyzer</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Compares attack vs legitimate baseline responses using weighted Jaccard similarity distance, status-code divergence, and undeclared sensitive field leakage classification.
+      <div class="card" style="border-top: 5px solid #FBBF24;">
+        <div style="font-size: 13px; font-weight: 800; color: #FBBF24; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 4</div>
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Differential Analyzer</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Computes weighted Jaccard payload similarity, HTTP status divergence, and detects leaked sensitive PII fields outside the documented schema.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #EF4444;">
-        <div style="font-size: 13px; font-weight: 800; color: #EF4444; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 5</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">6 Security Checks</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Dedicated detection modules for BOLA/IDOR (API1), Broken Authentication (API2), Excessive Data Exposure (API3), Rate Limiting (API4), BFLA Privileges (API5), and Input Handling (API8).
+      <div class="card" style="border-top: 5px solid #F87171;">
+        <div style="font-size: 13px; font-weight: 800; color: #F87171; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 5</div>
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">6 Security Checks</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Dedicated detection suites for BOLA/IDOR (API1), Broken Auth (API2), Data Exposure (API3), Rate Limiting (API4), BFLA Privileges (API5), and Input Anomalies (API8).
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #C084FC;">
+      <div class="card" style="border-top: 5px solid #C084FC;">
         <div style="font-size: 13px; font-weight: 800; color: #C084FC; letter-spacing: 1px; margin-bottom: 6px;">ENGINE 6</div>
-        <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 10px;">Explainable Risk & Confidence</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Replaces CVSS guesswork with a transparent 4-part score: Impact (40) + Exploitability (25) + Sensitivity (30) + Evidence Strength (15), augmented with empirical live reproduction.
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Explainable Risk Scorer</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Replaces CVSS guesswork with a 4-part score: <span class="text-sky">Impact (40)</span> + <span class="text-high">Exploitability (25)</span> + <span class="text-critical">Sensitivity (30)</span> + <span class="text-secure">Evidence (15)</span>.
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Core Security Engine</span>
+      <span>SentinelAPI · Proprietary Security Engine</span>
       <span>Slide 5 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 6: Technical Highlights & Safety -->
+  <!-- SLIDE 6: System Architecture -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-6">
     <div class="slide-header">
       <div>
-        <div class="header-cat">TECHNICAL HIGHLIGHTS</div>
-        <div class="header-title">Enterprise Safety Guardrails & Zero-Trust Design</div>
+        <div class="header-cat"><span class="dot"></span> SYSTEM ARCHITECTURE</div>
+        <div class="header-title">Decoupled Architecture & Enforced Safety Boundaries</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">Safety & Guardrails</span>
-        <span class="badge-gray">Slide 6 / 10</span>
+        <span class="badge-track">2400×1400 Architecture</span>
+        <span class="badge-counter">Slide 6 / 10</span>
       </div>
     </div>
 
-    <div class="grid-2 flex-1">
-      <div class="card" style="border-color: #38BDF8;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-          <span style="font-size: 22px;">🛡️</span>
-          <span style="font-size: 18px; font-weight: 800; color: #38BDF8; letter-spacing: 0.5px;">ENFORCED SAFETY & EXECUTION BOUNDARIES</span>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Scope Guard (<code class="font-mono text-sky">assert_in_scope</code>)</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">Hardcoded validation against explicit <code class="font-mono text-sky">ALLOWED_HOSTS</code>. Probes to external domains or unauthorized IPs are terminated immediately with ScopeViolationError.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Token-Bucket Rate Limiter (20 RPS)</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">Strictly throttles outbound probes to 20 requests/sec, preventing target denial-of-service, API degradation, or accidental lockout of customer services.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Strict Request Budget Cap (1,000 req)</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">Hard cap prevents recursive endpoint traps, circular crawler loops, and runaway test case generation during automated audits.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Defense-in-Depth Token Scrubbing</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">JWT tokens, passwords, and Authorization headers are permanently redacted before persistence or UI rendering. PoCs use <code class="font-mono text-sky">$TOKEN</code> placeholders.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Shielded State Cleanup</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">Scanner-created test records are tracked and deleted in shielded <code class="font-mono text-sky">finally</code> blocks, leaving zero test artifacts behind on target APIs.</div>
-          </div>
-        </div>
-      </div>
+    <div class="card" style="padding: 10px; display: flex; align-items: center; justify-content: center; background: #070913; border-color: #232D4E; margin-bottom: 18px; height: 680px;">
+      <img src="file:///Users/tanuj/Downloads/Amity/docs/architecture.png" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" alt="SentinelAPI Architecture Diagram">
+    </div>
 
-      <div class="card" style="border-color: #818CF8;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-          <span style="font-size: 22px;">✨</span>
-          <span style="font-size: 18px; font-weight: 800; color: #818CF8; letter-spacing: 0.5px;">EVIDENCE-ONLY AI & ARCHITECTURAL STACK</span>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Strict AI Separation of Concerns</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">The LLM (Groq, OpenRouter, Gemini) provides natural-language remediation and code fixes. The model NEVER participates in vulnerability detection or severity scoring.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Pre-Flight Data Egress Assertion</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;"><code class="font-mono text-sky">assert_payload_safe()</code> regex scans every outgoing prompt. Egress is immediately aborted if tokens, SSNs, credit cards, or internal IPs are detected.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Deterministic Offline Fallbacks</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">If the LLM provider times out, returns malformed JSON, or exceeds rate limits, pre-compiled deterministic remediation templates activate seamlessly.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• FastAPI Async Backend & Atomic Storage</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">Python 3.11/3.14 with FastAPI async orchestrator, Pydantic v2 validation, in-memory atomic JSON store (<code class="font-mono text-sky">scans.json</code>), and real-time SSE streaming.</div>
-          </div>
-          <div>
-            <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">• Tactical Developer UI</div>
-            <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">React 19, Vite, Tailwind CSS with tactical tokens, WCAG AA contrast compliance, and responsive dark-mode developer dashboards.</div>
-          </div>
-        </div>
+    <div class="card-highlight" style="padding: 16px 28px;">
+      <div style="font-size: 16px; font-weight: 700; color: #FFFFFF;">
+        Core Safety Invariant: The deterministic security engine runs 100% offline. Zero credentials or tokens are ever persisted or exposed. The AI Analyst is strictly an evidence-only side-branch with zero raw data egress.
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Safety Guardrails & Stack</span>
+      <span>SentinelAPI · Architectural Layout</span>
       <span>Slide 6 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 7: Live Product Demo -->
+  <!-- SLIDE 7: Shift-Left CI/CD Quality Gate -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-7">
     <div class="slide-header">
       <div>
-        <div class="header-cat">LIVE PRODUCT DEMO</div>
-        <div class="header-title">Developer-First Tactical Triage & Differential Inspector</div>
-      </div>
-      <div class="header-meta">
-        <span class="badge-pill">Live Tactical UI</span>
-        <span class="badge-gray">Slide 7 / 10</span>
-      </div>
-    </div>
-
-    <div class="grid-2 flex-1" style="gap: 28px;">
-      <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
-        <div style="height: 480px; background: #06080F; border: 1px solid #232D42; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-          <img src="file:///Users/tanuj/Downloads/Amity/docs/screenshots/triage-workspace.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Results Triage Workspace">
-        </div>
-        <div style="font-size: 18px; font-weight: 700; color: #38BDF8; margin-bottom: 6px;">Results Triage Workspace: Real-Time Stream</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.4;">
-          Live telemetry HUD with verified control counts, severity badges, and one-click filtering by OWASP category, status, and path template.
-        </div>
-      </div>
-
-      <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
-        <div style="height: 480px; background: #06080F; border: 1px solid #232D42; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-          <img src="file:///Users/tanuj/Downloads/Amity/docs/screenshots/finding-inspector.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Differential Finding Inspector">
-        </div>
-        <div style="font-size: 18px; font-weight: 700; color: #EF4444; margin-bottom: 6px;">Differential Finding Inspector: Mathematical Evidence</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.4;">
-          Side-by-side baseline vs attack diff showing BOLA breach (<code class="font-mono text-sky">200 OK</code> vs <code class="font-mono text-critical">403 Forbidden</code>), leaked PII fields, 4-factor risk breakdown, and copy-paste cURL PoC.
-        </div>
-      </div>
-    </div>
-
-    <div class="card-elevated" style="margin-top: 18px; padding: 14px 24px; border-color: #10B981;">
-      <div style="font-size: 14px; font-weight: 700; color: #10B981;">
-        Zero Guesswork: Every finding includes empirical reproduction status (100% verified), exact response diffs, and reproducible curl commands.
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>SentinelAPI · Product Demonstration</span>
-      <span>Slide 7 of 10</span>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 8: CI/CD Quality Gate -->
-  <!-- ══════════════════════════════════════════════════════════════ -->
-  <div class="slide" id="slide-8">
-    <div class="slide-header">
-      <div>
-        <div class="header-cat">CI/CD & INTEGRATION</div>
+        <div class="header-cat"><span class="dot"></span> DEVSECOPS INTEGRATION</div>
         <div class="header-title">Shift-Left Automated Security Quality Gate for CI/CD</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">ci_gate.py</span>
-        <span class="badge-gray">Slide 8 / 10</span>
+        <span class="badge-track">scripts/ci_gate.py</span>
+        <span class="badge-counter">Slide 7 / 10</span>
       </div>
     </div>
 
     <div class="grid-3" style="margin-bottom: 24px;">
-      <div class="card" style="border-top: 4px solid #38BDF8;">
+      <div class="card" style="border-top: 5px solid #38BDF8;">
         <div style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 6px;">HEADLESS CI GATE CLI</div>
-        <div style="font-size: 14px; font-family: 'JetBrains Mono', monospace; color: #64748B; margin-bottom: 8px;">scripts/ci_gate.py</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Runs headlessly in any CI/CD pipeline (GitHub Actions, GitLab CI, CircleCI). Evaluates findings against configurable policy thresholds (<code class="font-mono text-sky">--fail-on CRITICAL,HIGH</code>) and breaks builds with exit code 1.
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Fails Builds on Violations</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Integrates directly into GitHub Actions or GitLab CI. Breaks pull request builds with exit code 1 when CRITICAL or HIGH authorization vulnerabilities are detected.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #10B981;">
-        <div style="font-size: 13px; font-weight: 800; color: #10B981; letter-spacing: 1px; margin-bottom: 6px;">AUTOMATED SARIF & EXPORTS</div>
-        <div style="font-size: 14px; font-family: 'JetBrains Mono', monospace; color: #64748B; margin-bottom: 8px;">GitHub Security Tab</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Automatically renders and exports deterministic SARIF, Markdown, and JSON audit reports. Findings appear natively in GitHub Security code scanning alerts inside pull requests.
+      <div class="card" style="border-top: 5px solid #34D399;">
+        <div style="font-size: 13px; font-weight: 800; color: #34D399; letter-spacing: 1px; margin-bottom: 6px;">SARIF CODE SCANNING</div>
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Native GitHub Security Alerts</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Exports deterministic SARIF, Markdown, and JSON audit reports. Findings appear directly inside GitHub PR code review diffs with line-level remediation hints.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #818CF8;">
+      <div class="card" style="border-top: 5px solid #818CF8;">
         <div style="font-size: 13px; font-weight: 800; color: #818CF8; letter-spacing: 1px; margin-bottom: 6px;">HERMETIC TEST SANDBOX</div>
-        <div style="font-size: 14px; font-family: 'JetBrains Mono', monospace; color: #64748B; margin-bottom: 8px;">Docker Compose Testbed</div>
-        <div style="font-size: 14px; color: #94A3B8; line-height: 1.5;">
-          Ships with realistic vulnerable sandboxes (Retail Store, MedPulse Healthcare, FinTech API) on ports 9000-9003. When <code class="font-mono text-secure">SECURE_MODE=true</code> is toggled, verifies 100% controls pass.
+        <div style="font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Verified Zero-Trust Baseline</div>
+        <div style="font-size: 16px; color: #94A3B8; line-height: 1.55;">
+          Ships with realistic vulnerable sandboxes (Retail Store, Healthcare, FinTech). When <span class="font-mono text-secure">SECURE_MODE=true</span> is enabled, SentinelAPI verifies 100% controls pass.
         </div>
       </div>
     </div>
 
-    <div class="card-elevated flex-1" style="display: flex; flex-direction: column; justify-content: center;">
-      <div style="font-size: 14px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 12px;">GITHUB ACTIONS WORKFLOW INTEGRATION (.github/workflows/ci.yml)</div>
-      <div style="background: #06080F; border: 1.5px solid #232D42; border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.6; color: #38BDF8;">
-        <span style="color: #64748B;"># 1. Trigger automated security scan against PR test environment</span><br>
+    <!-- Live CI Workflow Command Banner -->
+    <div class="card-highlight flex-1" style="display: flex; flex-direction: column; justify-content: center; padding: 24px 32px;">
+      <div style="font-size: 15px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 12px;">GITHUB ACTIONS INTEGRATION (.github/workflows/ci.yml)</div>
+      <div style="background: #070913; border: 1.5px solid #232D4E; border-radius: 8px; padding: 20px 24px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.7; color: #38BDF8;">
+        <span style="color: #64748B;"># 1. Trigger automated security scan against PR environment</span><br>
         python -m app.cli scan --spec http://api:8000/openapi.json --base-url http://api:8000 --json-out findings.json<br><br>
         <span style="color: #64748B;"># 2. Enforce quality gate (fails build on CRITICAL / HIGH findings with confidence >= 0.70)</span><br>
-        <span style="color: #F8FAFC;">python scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.70</span>
+        <span style="color: #FFFFFF; font-weight: 700;">python scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.70</span>
       </div>
     </div>
 
     <div class="slide-footer">
       <span>SentinelAPI · CI/CD Security Gate</span>
+      <span>Slide 7 of 10</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 8: Live Prototype & Screenshots -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-header">
+      <div>
+        <div class="header-cat"><span class="dot"></span> WORKING PROTOTYPE</div>
+        <div class="header-title">Live Tactical Dashboard & Mathematical Differential Inspector</div>
+      </div>
+      <div class="header-meta">
+        <span class="badge-track">Real Production UI</span>
+        <span class="badge-counter">Slide 8 / 10</span>
+      </div>
+    </div>
+
+    <div class="grid-2 flex-1" style="gap: 28px;">
+      <!-- Screenshot 1 -->
+      <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
+        <div style="height: 480px; background: #070913; border: 1.5px solid #232D4E; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+          <img src="file:///Users/tanuj/Downloads/Amity/docs/screenshots/triage-workspace.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Results Triage Workspace">
+        </div>
+        <div style="font-size: 21px; font-weight: 800; color: #38BDF8; margin-bottom: 4px;">Results Triage Workspace: Real-Time Stream</div>
+        <div style="font-size: 15px; color: #94A3B8; line-height: 1.45;">
+          Live telemetry HUD displaying verified control counts, severity badges, and one-click filtering across OWASP categories, status codes, and paths.
+        </div>
+      </div>
+
+      <!-- Screenshot 2 -->
+      <div class="card" style="padding: 16px; display: flex; flex-direction: column;">
+        <div style="height: 480px; background: #070913; border: 1.5px solid #232D4E; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+          <img src="file:///Users/tanuj/Downloads/Amity/docs/screenshots/finding-inspector.png" style="width: 100%; height: 100%; object-fit: cover;" alt="Differential Finding Inspector">
+        </div>
+        <div style="font-size: 21px; font-weight: 800; color: #F87171; margin-bottom: 4px;">Differential Inspector: Side-by-Side Proof</div>
+        <div style="font-size: 15px; color: #94A3B8; line-height: 1.45;">
+          Side-by-side baseline vs attack diff showing BOLA breach (<span class="font-mono text-sky">200 OK</span> vs <span class="font-mono text-critical">403</span>), leaked PII fields, 4-factor risk breakdown, and copy-paste cURL PoC.
+        </div>
+      </div>
+    </div>
+
+    <!-- Proof Banner -->
+    <div class="card-highlight" style="margin-top: 16px; padding: 16px 28px;">
+      <div style="font-size: 17px; font-weight: 700; color: #FFFFFF;">
+        Empirical Evidence: Zero guesswork. Developers receive exact response diffs, 100% verified reproduction badges, and copy-paste shell commands.
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>SentinelAPI · Product Prototype</span>
       <span>Slide 8 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 9: Future Scope & Roadmap -->
+  <!-- SLIDE 9: Commercial Roadmap -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-9">
     <div class="slide-header">
       <div>
-        <div class="header-cat">FUTURE SCOPE & COMMERCIAL ROADMAP</div>
-        <div class="header-title">Commercial Roadmap: Beyond the Hackathon</div>
+        <div class="header-cat"><span class="dot"></span> COMMERCIAL ROADMAP</div>
+        <div class="header-title">Beyond the Hackathon: Path to an Enterprise SaaS Platform</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill">SaaS Vision</span>
-        <span class="badge-gray">Slide 9 / 10</span>
+        <span class="badge-track">Commercial Vision</span>
+        <span class="badge-counter">Slide 9 / 10</span>
       </div>
     </div>
 
-    <div class="grid-2 flex-1">
-      <div class="card" style="border-top: 4px solid #38BDF8;">
-        <div style="font-size: 13px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 4px;">PHASE A · COMMERCIAL SAAS</div>
-        <div style="font-size: 20px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Open-Source CLI + Paid Cloud Dashboard</div>
-        <div style="font-size: 15px; color: #94A3B8; line-height: 1.6;">
-          Maintain open-source CLI runner for individual developers and local CI gates. Commercialize a hosted, multi-tenant SaaS dashboard for engineering organizations with centralized RBAC, historical risk trending, team collaboration, and vulnerability triage workflows.
+    <div class="grid-2 flex-1" style="gap: 28px;">
+      <div class="card" style="border-top: 5px solid #38BDF8;">
+        <div style="font-size: 14px; font-weight: 800; color: #38BDF8; letter-spacing: 1px; margin-bottom: 4px;">PHASE A · COMMERCIAL SAAS</div>
+        <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Open-Source CLI + Paid Cloud Dashboard</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65;">
+          Maintain open-source CLI runner for individual developers and CI gates. Commercialize a hosted, multi-tenant SaaS dashboard for engineering organizations with centralized RBAC, historical risk trending, team collaboration, and vulnerability triage workflows.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #10B981;">
-        <div style="font-size: 13px; font-weight: 800; color: #10B981; letter-spacing: 1px; margin-bottom: 4px;">PHASE B · ENTERPRISE AUTH</div>
-        <div style="font-size: 20px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Enterprise OAuth2 & SSO Negotiation</div>
-        <div style="font-size: 15px; color: #94A3B8; line-height: 1.6;">
+      <div class="card" style="border-top: 5px solid #34D399;">
+        <div style="font-size: 14px; font-weight: 800; color: #34D399; letter-spacing: 1px; margin-bottom: 4px;">PHASE B · ENTERPRISE AUTH</div>
+        <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Enterprise OAuth2 & SSO Negotiation</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65;">
           Extend beyond static JWTs to automated OAuth2 / OIDC PKCE flow negotiation, SAML handshakes, and mTLS client-certificate authentication for complex enterprise banking, fintech, and healthcare environments.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #F59E0B;">
-        <div style="font-size: 13px; font-weight: 800; color: #F59E0B; letter-spacing: 1px; margin-bottom: 4px;">PHASE C · COMPLIANCE ENGINES</div>
-        <div style="font-size: 20px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Custom Regulatory Policy Mappings</div>
-        <div style="font-size: 15px; color: #94A3B8; line-height: 1.6;">
+      <div class="card" style="border-top: 5px solid #FBBF24;">
+        <div style="font-size: 14px; font-weight: 800; color: #FBBF24; letter-spacing: 1px; margin-bottom: 4px;">PHASE C · COMPLIANCE MAPPINGS</div>
+        <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Custom Regulatory Policy Engines</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65;">
           Provide declarative YAML policy mappings translating authorization findings directly into HIPAA, PCI-DSS, SOC 2, and ISO 27001 audit deliverables with automated executive PDF sign-off reports.
         </div>
       </div>
 
-      <div class="card" style="border-top: 4px solid #C084FC;">
-        <div style="font-size: 13px; font-weight: 800; color: #C084FC; letter-spacing: 1px; margin-bottom: 4px;">PHASE D · DISTRIBUTED MESH</div>
-        <div style="font-size: 20px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Distributed Scanner Mesh & Cloud Storage</div>
-        <div style="font-size: 15px; color: #94A3B8; line-height: 1.6;">
+      <div class="card" style="border-top: 5px solid #C084FC;">
+        <div style="font-size: 14px; font-weight: 800; color: #C084FC; letter-spacing: 1px; margin-bottom: 4px;">PHASE D · DISTRIBUTED MESH</div>
+        <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">Distributed Scanner Mesh & Persistence</div>
+        <div style="font-size: 17px; color: #94A3B8; line-height: 1.65;">
           Deploy distributed Kubernetes scanner workers capable of concurrently auditing large microservice meshes, backed by MongoDB and PostgreSQL persistence adapters for multi-year enterprise audit archiving.
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>SentinelAPI · Future Scope & Roadmap</span>
+      <span>SentinelAPI · Commercial Roadmap</span>
       <span>Slide 9 of 10</span>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- SLIDE 10: Team, Summary & Q&A -->
+  <!-- SLIDE 10: Team, Summary & Live Demo -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-10">
     <div class="slide-header">
       <div>
-        <div class="header-cat">CONCLUSION & Q&A</div>
+        <div class="header-cat"><span class="dot"></span> CONCLUSION & Q&A</div>
         <div class="header-title">Team & Project Summary — Questions & Live Demo</div>
       </div>
       <div class="header-meta">
-        <span class="badge-pill" style="border-color: #10B981; color: #10B981; background: rgba(16, 185, 129, 0.1);">Hackathon Ready</span>
-        <span class="badge-gray">Slide 10 / 10</span>
+        <span class="badge-track" style="background: #34D399; color: #070913;">100% Hackathon Ready</span>
+        <span class="badge-counter">Slide 10 / 10</span>
       </div>
     </div>
 
-    <div class="grid-2 flex-1">
-      <div class="card" style="border-color: #38BDF8;">
-        <div style="font-size: 18px; font-weight: 800; color: #38BDF8; letter-spacing: 0.5px; margin-bottom: 12px;">CORE TEAM & ARCHITECTURAL CONTRIBUTIONS</div>
-        <div style="font-size: 16px; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Tanuj — Lead Security Architect & Full-Stack Engineer</div>
-        <div style="font-size: 13px; color: #64748B; margin-bottom: 16px;">Amity University · AmiHacks 2026 (Track C: Cybersecurity)</div>
+    <div class="grid-2 flex-1" style="gap: 32px;">
+      <!-- Left Card: Team Ownership -->
+      <div class="card" style="border-color: #38BDF8; display: flex; flex-direction: column;">
+        <div style="font-size: 21px; font-weight: 800; color: #38BDF8; letter-spacing: 0.5px; margin-bottom: 10px;">CORE TEAM & ARCHITECTURAL CONTRIBUTIONS</div>
+        <div style="font-size: 19px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">Tanuj — Lead Security Architect & Full-Stack Engineer</div>
+        <div style="font-size: 15px; color: #64748B; margin-bottom: 18px;">Amity University · AmiHacks 2026 (Track C: Cybersecurity)</div>
 
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">
-            <strong style="color: #F8FAFC;">• Core Security Engine:</strong> Differential response analyzer, ground-truth authorization matrix compiler, and 6 modular OWASP security checks.
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="font-size: 16px; color: #CBD5E1; line-height: 1.55;">
+            <strong style="color: #FFFFFF;">• Core Security Engine:</strong> Differential response analyzer, ground-truth authorization matrix compiler, and 6 modular OWASP security checks.
           </div>
-          <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">
-            <strong style="color: #F8FAFC;">• Execution & Safety:</strong> Token-bucket HTTP executor, strict immutable scope guard, rate/budget caps, and multi-persona JWT orchestrator.
+          <div style="font-size: 16px; color: #CBD5E1; line-height: 1.55;">
+            <strong style="color: #FFFFFF;">• Execution & Safety:</strong> Token-bucket HTTP executor, strict immutable scope guard, rate/budget caps, and multi-persona JWT orchestrator.
           </div>
-          <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">
-            <strong style="color: #F8FAFC;">• Backend & Storage:</strong> FastAPI async orchestrator, real-time SSE telemetry stream, and atomic JSON store with secret leak guards.
+          <div style="font-size: 16px; color: #CBD5E1; line-height: 1.55;">
+            <strong style="color: #FFFFFF;">• Backend & Storage:</strong> FastAPI async orchestrator, real-time SSE telemetry stream, and atomic JSON store with secret leak guards.
           </div>
-          <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">
-            <strong style="color: #F8FAFC;">• Tactical Web UI:</strong> React 19/Vite dashboard, Results Triage Workspace, Authorization Heatmap, and Differential Inspector.
+          <div style="font-size: 16px; color: #CBD5E1; line-height: 1.55;">
+            <strong style="color: #FFFFFF;">• Tactical Web UI:</strong> React 19/Vite dashboard, Results Triage Workspace, Authorization Heatmap, and Differential Inspector.
           </div>
-          <div style="font-size: 13.5px; color: #94A3B8; line-height: 1.4;">
-            <strong style="color: #F8FAFC;">• CI Quality Gate:</strong> Headless <code class="font-mono text-sky">ci_gate.py</code>, Docker Compose testbed, live empirical reproduction, and zero-egress AI analyst boundary.
+          <div style="font-size: 16px; color: #CBD5E1; line-height: 1.55;">
+            <strong style="color: #FFFFFF;">• CI Quality Gate:</strong> Headless <span class="font-mono text-sky">ci_gate.py</span>, Docker Compose testbed, live empirical reproduction, and zero-egress AI analyst boundary.
           </div>
         </div>
       </div>
 
+      <!-- Right Card: Project Links & Q&A Call to Action -->
       <div class="card" style="border-color: #818CF8; display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-          <div style="font-size: 18px; font-weight: 800; color: #818CF8; letter-spacing: 0.5px; margin-bottom: 16px;">PROJECT SUMMARY & LIVE ACCESS</div>
+          <div style="font-size: 21px; font-weight: 800; color: #818CF8; letter-spacing: 0.5px; margin-bottom: 16px;">PROJECT SUMMARY & LIVE ACCESS</div>
 
-          <div style="font-size: 18px; font-weight: 700; color: #F8FAFC; line-height: 1.5; margin-bottom: 24px; padding: 16px; background: #151B2B; border-radius: 8px; border-left: 4px solid #38BDF8;">
+          <div style="font-size: 21px; font-weight: 700; color: #FFFFFF; line-height: 1.5; margin-bottom: 22px; padding: 18px 24px; background: rgba(19, 26, 54, 0.8); border-radius: 10px; border-left: 5px solid #38BDF8;">
             “SentinelAPI stops API authorization breaches before code hits production — fully autonomous, mathematically verified, with reproducible evidence and zero secrets leaked.”
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232D42; padding-bottom: 8px;">
-              <span style="font-size: 14px; font-weight: 700; color: #94A3B8;">GitHub Repository</span>
-              <span class="font-mono text-sky" style="font-size: 13px;">https://github.com/x03tanuj/sentinel-api</span>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #202945; padding-bottom: 10px;">
+              <span style="font-size: 16px; font-weight: 700; color: #94A3B8;">GitHub Repository</span>
+              <span class="font-mono text-sky" style="font-size: 15px; font-weight: 700;">https://github.com/x03tanuj/sentinel-api</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232D42; padding-bottom: 8px;">
-              <span style="font-size: 14px; font-weight: 700; color: #94A3B8;">Live Web Dashboard</span>
-              <span class="font-mono text-sky" style="font-size: 13px;">http://localhost:8080</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #202945; padding-bottom: 10px;">
+              <span style="font-size: 16px; font-weight: 700; color: #94A3B8;">Live Web Dashboard</span>
+              <span class="font-mono text-sky" style="font-size: 15px; font-weight: 700;">http://localhost:8080</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #232D42; padding-bottom: 8px;">
-              <span style="font-size: 14px; font-weight: 700; color: #94A3B8;">Automated Demo Script</span>
-              <span class="font-mono text-sky" style="font-size: 13px;">bash scripts/demo.sh</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #202945; padding-bottom: 10px;">
+              <span style="font-size: 16px; font-weight: 700; color: #94A3B8;">Automated Demo Script</span>
+              <span class="font-mono text-sky" style="font-size: 15px; font-weight: 700;">bash scripts/demo.sh</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px;">
-              <span style="font-size: 14px; font-weight: 700; color: #94A3B8;">Architecture Diagram</span>
-              <span class="font-mono text-sky" style="font-size: 13px;">docs/architecture.png (2400×1400)</span>
+              <span style="font-size: 16px; font-weight: 700; color: #94A3B8;">Architecture Diagram</span>
+              <span class="font-mono text-sky" style="font-size: 15px; font-weight: 700;">docs/architecture.png (2400×1400)</span>
             </div>
           </div>
         </div>
 
-        <div style="text-align: center; padding: 14px; background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10B981; border-radius: 8px; margin-top: 16px;">
-          <div style="font-size: 20px; font-weight: 800; color: #10B981;">Thank You! We are now open for Q&A.</div>
+        <div style="text-align: center; padding: 18px; background: rgba(52, 211, 153, 0.12); border: 2px solid #34D399; border-radius: 10px; margin-top: 18px;">
+          <div style="font-size: 23px; font-weight: 800; color: #34D399;">Thank You! We are now open for Q&A and Live Demo.</div>
         </div>
       </div>
     </div>
