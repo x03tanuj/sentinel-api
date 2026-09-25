@@ -177,5 +177,46 @@ describe('Component & UI Forensics Tests', () => {
       expect(sessionStorage.getItem('sentinel_api_key')).toBe('test_secret_api_key_123');
       expect(localStorage.getItem('sentinel_api_key')).toBeNull();
     });
+
+    it('allows user to select sample target via radio buttons one at a time and auto-fills target details', async () => {
+      const user = userEvent.setup();
+      render(<NewScanPage />, { wrapper: createWrapper() });
+
+      const ecomRadio = screen.getByRole('radio', { name: /ShopSentinel/i });
+      const healthRadio = screen.getByRole('radio', { name: /MedPulse/i });
+      const fintechRadio = screen.getByRole('radio', { name: /ApexBank/i });
+      const secureRadio = screen.getByRole('radio', { name: /Aegis Zero-Trust/i });
+
+      expect(ecomRadio).toBeInTheDocument();
+      expect(healthRadio).toBeInTheDocument();
+      expect(fintechRadio).toBeInTheDocument();
+      expect(secureRadio).toBeInTheDocument();
+
+      // Click Healthcare radio
+      await user.click(healthRadio);
+      expect(healthRadio).toBeChecked();
+      expect(ecomRadio).not.toBeChecked();
+      expect(fintechRadio).not.toBeChecked();
+      expect(secureRadio).not.toBeChecked();
+
+      const urlInput = screen.getByLabelText(/Base Target URL/i) as HTMLInputElement;
+      expect(urlInput.value).toBe('http://health_api:9001');
+
+      // Click FinTech radio (one at a time)
+      await user.click(fintechRadio);
+      expect(fintechRadio).toBeChecked();
+      expect(healthRadio).not.toBeChecked();
+      expect(ecomRadio).not.toBeChecked();
+      expect(secureRadio).not.toBeChecked();
+      expect(urlInput.value).toBe('http://fintech_api:9002');
+
+      // Click Aegis Zero-Trust radio (one at a time)
+      await user.click(secureRadio);
+      expect(secureRadio).toBeChecked();
+      expect(fintechRadio).not.toBeChecked();
+      expect(healthRadio).not.toBeChecked();
+      expect(ecomRadio).not.toBeChecked();
+      expect(urlInput.value).toBe('http://secure_api:9003');
+    });
   });
 });

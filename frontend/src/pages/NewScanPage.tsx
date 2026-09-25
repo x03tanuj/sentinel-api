@@ -358,61 +358,196 @@ export const NewScanPage: React.FC = () => {
                 Set target schema, multi-persona authorization matrix, test suites, and execution limits
               </p>
             </div>
+          </div>
 
-            {/* Target Presets Bar */}
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Sample Target Environment Selector with Radio Buttons */}
+          <div className="p-4 rounded-panel bg-canvas-panel border border-border-structural space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-subdued pb-2.5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles size={14} className="text-brand" />
+                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-200">
+                    Load Sample Target Environment
+                  </h3>
+                  {isDemoPresetActive && (
+                    <span className="px-1.5 py-0.5 rounded bg-brand/20 border border-brand/50 text-brand font-mono text-[10px] font-semibold">
+                      PRESET ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p className="font-sans text-xs text-slate-400 mt-0.5">
+                  Select a live sample sandbox below (one at a time) to auto-fill its URL, OpenAPI schema, and personas for testing:
+                </p>
+              </div>
+
               <button
                 type="button"
                 onClick={handleLoadDemoTarget}
                 aria-label="Load demo target"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical bg-brand/10 border border-brand/40 text-brand hover:bg-brand/20 font-mono text-xs font-semibold transition-all shadow-glow-primary focus:ring-2 focus:ring-brand focus:outline-none shrink-0"
+              >
+                <Sparkles size={13} />
+                <span>Load demo target</span>
+              </button>
+            </div>
+
+            {/* Radio Buttons Grid (Select One at a Time) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="radiogroup" aria-label="Sample Target URL selection">
+              {/* Target 1: E-Commerce */}
+              <label
+                htmlFor="target-ecommerce"
+                onClick={() => handleSelectPreset('ecommerce')}
+                className={`relative flex items-start gap-3 p-3 rounded-tactical border cursor-pointer transition-all ${
                   activePreset === 'ecommerce' || (!activePreset && isDemoPresetActive)
-                    ? 'bg-brand/30 border border-brand text-brand ring-1 ring-brand'
-                    : 'bg-brand/10 border border-brand/40 text-brand hover:bg-brand/20'
+                    ? 'bg-brand/15 border-brand ring-1 ring-brand/60 shadow-glow-primary'
+                    : 'bg-canvas-base/60 border-border-structural hover:border-slate-600 hover:bg-canvas-base'
                 }`}
               >
-                <Sparkles size={14} />
-                <span>🛒 Target 1: E-Commerce (:9000)</span>
-              </button>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="target-ecommerce"
+                    type="radio"
+                    name="sample_target_selection"
+                    value="ecommerce"
+                    checked={activePreset === 'ecommerce' || (!activePreset && isDemoPresetActive)}
+                    onChange={() => handleSelectPreset('ecommerce')}
+                    className="w-4 h-4 text-brand bg-canvas-base border-border-structural focus:ring-brand focus:ring-offset-0 focus:ring-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-sans text-xs font-bold text-slate-200 truncate">
+                      🛒 ShopSentinel Retail Store
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/40 shrink-0">
+                      PORT 9000
+                    </span>
+                  </div>
+                  <div className="font-mono text-[11px] text-brand truncate mt-0.5">
+                    http://target_api:9000
+                  </div>
+                  <p className="font-sans text-[11px] text-slate-400 mt-1 line-clamp-1">
+                    E-commerce orders, customer profiles &amp; administrative records (8 Flaws)
+                  </p>
+                </div>
+              </label>
 
-              <button
-                type="button"
+              {/* Target 2: Healthcare */}
+              <label
+                htmlFor="target-healthcare"
                 onClick={() => handleSelectPreset('healthcare')}
-                aria-label="Load Healthcare target"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                className={`relative flex items-start gap-3 p-3 rounded-tactical border cursor-pointer transition-all ${
                   activePreset === 'healthcare'
-                    ? 'bg-teal-500/30 border border-teal-400 text-teal-300 ring-1 ring-teal-400'
-                    : 'bg-teal-500/10 border border-teal-500/40 text-teal-300 hover:bg-teal-500/20'
+                    ? 'bg-teal-500/15 border-teal-400 ring-1 ring-teal-400/60 shadow-[0_0_12px_rgba(20,184,166,0.3)]'
+                    : 'bg-canvas-base/60 border-border-structural hover:border-slate-600 hover:bg-canvas-base'
                 }`}
               >
-                <span>🏥 Target 2: Healthcare (:9001)</span>
-              </button>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="target-healthcare"
+                    type="radio"
+                    name="sample_target_selection"
+                    value="healthcare"
+                    checked={activePreset === 'healthcare'}
+                    onChange={() => handleSelectPreset('healthcare')}
+                    className="w-4 h-4 text-teal-400 bg-canvas-base border-border-structural focus:ring-teal-400 focus:ring-offset-0 focus:ring-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-sans text-xs font-bold text-slate-200 truncate">
+                      🏥 MedPulse Healthcare Portal
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40 shrink-0">
+                      PORT 9001
+                    </span>
+                  </div>
+                  <div className="font-mono text-[11px] text-teal-300 truncate mt-0.5">
+                    http://health_api:9001
+                  </div>
+                  <p className="font-sans text-[11px] text-slate-400 mt-1 line-clamp-1">
+                    Clinical EHR charts, patient SSNs, prescription bypass &amp; trial leaks (10 Flaws)
+                  </p>
+                </div>
+              </label>
 
-              <button
-                type="button"
+              {/* Target 3: FinTech */}
+              <label
+                htmlFor="target-fintech"
                 onClick={() => handleSelectPreset('fintech')}
-                aria-label="Load FinTech target"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                className={`relative flex items-start gap-3 p-3 rounded-tactical border cursor-pointer transition-all ${
                   activePreset === 'fintech'
-                    ? 'bg-emerald-500/30 border border-emerald-400 text-emerald-300 ring-1 ring-emerald-400'
-                    : 'bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20'
+                    ? 'bg-emerald-500/15 border-emerald-400 ring-1 ring-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                    : 'bg-canvas-base/60 border-border-structural hover:border-slate-600 hover:bg-canvas-base'
                 }`}
               >
-                <span>💳 Target 3: FinTech Banking (:9002)</span>
-              </button>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="target-fintech"
+                    type="radio"
+                    name="sample_target_selection"
+                    value="fintech"
+                    checked={activePreset === 'fintech'}
+                    onChange={() => handleSelectPreset('fintech')}
+                    className="w-4 h-4 text-emerald-400 bg-canvas-base border-border-structural focus:ring-emerald-400 focus:ring-offset-0 focus:ring-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-sans text-xs font-bold text-slate-200 truncate">
+                      💳 ApexBank Digital Core
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                      PORT 9002
+                    </span>
+                  </div>
+                  <div className="font-mono text-[11px] text-emerald-300 truncate mt-0.5">
+                    http://fintech_api:9002
+                  </div>
+                  <p className="font-sans text-[11px] text-slate-400 mt-1 line-clamp-1">
+                    Bank accounts, balances, CVVs, wire transfer tampering &amp; AML logs (10 Flaws)
+                  </p>
+                </div>
+              </label>
 
-              <button
-                type="button"
+              {/* Target 4: Zero-Trust */}
+              <label
+                htmlFor="target-secure"
                 onClick={() => handleSelectPreset('secure')}
-                aria-label="Load Zero-Trust target"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                className={`relative flex items-start gap-3 p-3 rounded-tactical border cursor-pointer transition-all ${
                   activePreset === 'secure'
-                    ? 'bg-indigo-500/30 border border-indigo-400 text-indigo-300 ring-1 ring-indigo-400'
-                    : 'bg-indigo-500/10 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/20'
+                    ? 'bg-indigo-500/15 border-indigo-400 ring-1 ring-indigo-400/60 shadow-[0_0_12px_rgba(99,102,241,0.3)]'
+                    : 'bg-canvas-base/60 border-border-structural hover:border-slate-600 hover:bg-canvas-base'
                 }`}
               >
-                <span>🛡️ Target 4: Zero-Trust (:9003 - Clean)</span>
-              </button>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="target-secure"
+                    type="radio"
+                    name="sample_target_selection"
+                    value="secure"
+                    checked={activePreset === 'secure'}
+                    onChange={() => handleSelectPreset('secure')}
+                    className="w-4 h-4 text-indigo-400 bg-canvas-base border-border-structural focus:ring-indigo-400 focus:ring-offset-0 focus:ring-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-sans text-xs font-bold text-slate-200 truncate">
+                      🛡️ Aegis Zero-Trust Cloud
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shrink-0">
+                      PORT 9003
+                    </span>
+                  </div>
+                  <div className="font-mono text-[11px] text-indigo-300 truncate mt-0.5">
+                    http://secure_api:9003
+                  </div>
+                  <p className="font-sans text-[11px] text-slate-400 mt-1 line-clamp-1">
+                    Fully hardened zero-trust baseline (0 Vulnerabilities - Clean Pass)
+                  </p>
+                </div>
+              </label>
             </div>
           </div>
 
