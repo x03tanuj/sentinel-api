@@ -34,7 +34,7 @@
 SentinelAPI's architecture separates the deterministic security engine (our core proprietary IP) from presentation, storage, and the optional evidence-only AI analysis boundary. 
 
 > [!TIP]
-> **Slide Deck / Presentation Deliverable**: A high-resolution 2400×1400 static export matching our dark tactical design tokens is available at [docs/architecture.png](docs/architecture.png) for PowerPoint / Keynote slides and offline review.
+> **Hackathon Pitch Deck Deliverables**: The official AmiHacks Track C presentation deck is available in both PowerPoint ([slides/SentinelAPI_Pitch.pptx](slides/SentinelAPI_Pitch.pptx)) and PDF ([slides/SentinelAPI_Pitch.pdf](slides/SentinelAPI_Pitch.pdf)) formats. High-resolution architecture assets are at [docs/architecture.png](docs/architecture.png) and [docs/architecture_flowchart.pdf](docs/architecture_flowchart.pdf).
 
 ```mermaid
 flowchart TB
