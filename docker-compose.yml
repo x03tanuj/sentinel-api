@@ -58,6 +58,51 @@ services:
     networks:
       - sentinel_net
 
+  health_api:
+    build:
+      context: ./sample_targets/health_api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:9001:9001"
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9001/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  fintech_api:
+    build:
+      context: ./sample_targets/fintech_api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:9002:9002"
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9002/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  secure_api:
+    build:
+      context: ./sample_targets/secure_api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:9003:9003"
+    networks:
+      - sentinel_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9003/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
 networks:
   sentinel_net:
     name: sentinel_net

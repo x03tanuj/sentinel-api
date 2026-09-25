@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     """Application configuration settings loaded from environment or defaults."""
 
     ALLOWED_HOSTS: list[str] = Field(
-        default=["localhost", "127.0.0.1", "target_api"],
+        default=["localhost", "127.0.0.1", "target_api", "health_api", "fintech_api", "secure_api"],
         description="Explicit allowlist of permitted scan target hostnames",
     )
     REQUEST_TIMEOUT: float = Field(

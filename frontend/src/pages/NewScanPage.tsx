@@ -115,22 +115,57 @@ export const NewScanPage: React.FC = () => {
     }
   };
 
-  // Load demo target preset
-  const handleLoadDemoTarget = () => {
+  const [activePreset, setActivePreset] = useState<'ecommerce' | 'healthcare' | 'fintech' | 'secure' | null>(null);
+
+  // Load target presets (e-commerce, healthcare, fintech, secure)
+  const handleSelectPreset = (preset: 'ecommerce' | 'healthcare' | 'fintech' | 'secure') => {
+    setActivePreset(preset);
     setSpecMode('url');
-    setSpecUrl('http://target_api:9000/openapi.json');
-    setBaseUrl('http://target_api:9000');
-    setIdentities([
-      { id: '1', name: 'userA', role: 'user', username: 'userA', password: 'passA123' },
-      { id: '2', name: 'userB', role: 'user', username: 'userB', password: 'passB123' },
-      { id: '3', name: 'admin', role: 'admin', username: 'admin', password: 'admin123' },
-    ]);
-    setSampleBodyJson('{\n  "item": "Standard Package",\n  "amount": 49.99\n}');
     setIsAuthorized(true);
     setIsDemoPresetActive(true);
     setValidationError(null);
     setServerError(null);
+
+    if (preset === 'ecommerce') {
+      setSpecUrl('http://target_api:9000/openapi.json');
+      setBaseUrl('http://target_api:9000');
+      setIdentities([
+        { id: '1', name: 'userA', role: 'user', username: 'userA', password: 'passA123' },
+        { id: '2', name: 'userB', role: 'user', username: 'userB', password: 'passB123' },
+        { id: '3', name: 'admin', role: 'admin', username: 'admin', password: 'admin123' },
+      ]);
+      setSampleBodyJson('{\n  "item": "Standard Package",\n  "amount": 49.99\n}');
+    } else if (preset === 'healthcare') {
+      setSpecUrl('http://health_api:9001/openapi.json');
+      setBaseUrl('http://health_api:9001');
+      setIdentities([
+        { id: '1', name: 'patientA', role: 'patient', username: 'patientA', password: 'passA123' },
+        { id: '2', name: 'patientB', role: 'patient', username: 'patientB', password: 'passB123' },
+        { id: '3', name: 'dr_smith', role: 'admin', username: 'dr_smith', password: 'doctor123' },
+      ]);
+      setSampleBodyJson('{\n  "notes": "Follow-up consultation notes",\n  "diagnosis": "Sinus Bradycardia"\n}');
+    } else if (preset === 'fintech') {
+      setSpecUrl('http://fintech_api:9002/openapi.json');
+      setBaseUrl('http://fintech_api:9002');
+      setIdentities([
+        { id: '1', name: 'clientA', role: 'user', username: 'clientA', password: 'passA123' },
+        { id: '2', name: 'clientB', role: 'user', username: 'clientB', password: 'passB123' },
+        { id: '3', name: 'auditor', role: 'admin', username: 'auditor', password: 'audit123' },
+      ]);
+      setSampleBodyJson('{\n  "recipient_name": "Cloud Infrastructure LLC",\n  "amount": 1250.00\n}');
+    } else if (preset === 'secure') {
+      setSpecUrl('http://secure_api:9003/openapi.json');
+      setBaseUrl('http://secure_api:9003');
+      setIdentities([
+        { id: '1', name: 'userA', role: 'user', username: 'userA', password: 'passA123' },
+        { id: '2', name: 'userB', role: 'user', username: 'userB', password: 'passB123' },
+        { id: '3', name: 'secadmin', role: 'admin', username: 'secadmin', password: 'admin123' },
+      ]);
+      setSampleBodyJson('{\n  "title": "Encrypted Security Policy",\n  "content": "Zero-trust verification strictly active."\n}');
+    }
   };
+
+  const handleLoadDemoTarget = () => handleSelectPreset('ecommerce');
 
   // Identity management
   const handleAddIdentity = () => {
@@ -324,21 +359,59 @@ export const NewScanPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Load Demo Target Button */}
-            <div className="flex items-center gap-2">
-              {isDemoPresetActive && (
-                <span className="px-2 py-0.5 rounded bg-brand/20 border border-brand/50 text-brand font-mono text-[11px] font-semibold flex items-center gap-1">
-                  <span>DEMO PRESET ACTIVE</span>
-                </span>
-              )}
+            {/* Target Presets Bar */}
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={handleLoadDemoTarget}
                 aria-label="Load demo target"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical bg-brand/10 border border-brand/40 text-brand hover:bg-brand/20 font-mono text-xs font-semibold transition-all shadow-glow-primary focus:ring-2 focus:ring-brand focus:outline-none"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                  activePreset === 'ecommerce' || (!activePreset && isDemoPresetActive)
+                    ? 'bg-brand/30 border border-brand text-brand ring-1 ring-brand'
+                    : 'bg-brand/10 border border-brand/40 text-brand hover:bg-brand/20'
+                }`}
               >
                 <Sparkles size={14} />
-                <span>Load demo target</span>
+                <span>🛒 Target 1: E-Commerce (:9000)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset('healthcare')}
+                aria-label="Load Healthcare target"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                  activePreset === 'healthcare'
+                    ? 'bg-teal-500/30 border border-teal-400 text-teal-300 ring-1 ring-teal-400'
+                    : 'bg-teal-500/10 border border-teal-500/40 text-teal-300 hover:bg-teal-500/20'
+                }`}
+              >
+                <span>🏥 Target 2: Healthcare (:9001)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset('fintech')}
+                aria-label="Load FinTech target"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                  activePreset === 'fintech'
+                    ? 'bg-emerald-500/30 border border-emerald-400 text-emerald-300 ring-1 ring-emerald-400'
+                    : 'bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20'
+                }`}
+              >
+                <span>💳 Target 3: FinTech Banking (:9002)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset('secure')}
+                aria-label="Load Zero-Trust target"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-tactical font-mono text-xs font-semibold transition-all ${
+                  activePreset === 'secure'
+                    ? 'bg-indigo-500/30 border border-indigo-400 text-indigo-300 ring-1 ring-indigo-400'
+                    : 'bg-indigo-500/10 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/20'
+                }`}
+              >
+                <span>🛡️ Target 4: Zero-Trust (:9003 - Clean)</span>
               </button>
             </div>
           </div>
@@ -347,8 +420,11 @@ export const NewScanPage: React.FC = () => {
           <div className="p-3 rounded-panel bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
             <Shield size={16} className="text-amber-400 shrink-0 mt-0.5" />
             <div className="font-mono text-xs text-amber-200">
-              <strong className="text-amber-300">SCOPE GUARD ACTIVE:</strong> Only allow-listed targets (
-              <code className="text-brand">http://target_api:9000</code>) can be audited. External or un-authorized targets are rejected by kernel policy.
+              <strong className="text-amber-300">LIVE LOCAL TESTING TARGETS:</strong> Audit ready on isolated sandbox ports:
+              <span className="text-brand"> :9000 (E-Commerce)</span>,{' '}
+              <span className="text-teal-300">:9001 (Healthcare)</span>,{' '}
+              <span className="text-emerald-300">:9002 (FinTech)</span>, and{' '}
+              <span className="text-indigo-300">:9003 (Hardened Zero-Trust)</span>.
             </div>
           </div>
         </div>
