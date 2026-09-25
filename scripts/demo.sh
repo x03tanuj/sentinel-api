@@ -57,7 +57,7 @@ else
     echo -e "${YELLOW}ℹ AI key not configured or set to placeholder. Scanner running in autonomous core mode.${RESET}"
 fi
 
-docker compose up -d --build scanner target_api frontend
+docker compose up -d --build scanner target_api health_api fintech_api secure_api frontend
 
 # Step 2: Health check polling
 subhead "[2/6] Waiting for service health checks..."
@@ -65,8 +65,11 @@ MAX_TRIES=30
 for i in $(seq 1 $MAX_TRIES); do
     if curl -s -f http://127.0.0.1:8000/health >/dev/null 2>&1 && \
        curl -s -f http://127.0.0.1:9000/health >/dev/null 2>&1 && \
+       curl -s -f http://127.0.0.1:9001/health >/dev/null 2>&1 && \
+       curl -s -f http://127.0.0.1:9002/health >/dev/null 2>&1 && \
+       curl -s -f http://127.0.0.1:9003/health >/dev/null 2>&1 && \
        curl -s -f http://127.0.0.1:8080/ >/dev/null 2>&1; then
-        echo -e "${GREEN}✓ All services are healthy (Scanner: 8000, Target API: 9000, Web UI: 8080)${RESET}"
+        echo -e "${GREEN}✓ All services are healthy (Scanner: 8000, Retail: 9000, Health: 9001, FinTech: 9002, Secure: 9003, Web UI: 8080)${RESET}"
         break
     fi
     if [ "$i" -eq "$MAX_TRIES" ]; then
@@ -80,8 +83,11 @@ done
 
 # Step 3: Reset target database state
 subhead "[3/6] Resetting target sandbox data to clean seed baseline..."
-curl -s -X POST http://127.0.0.1:9000/_reset >/dev/null
-echo -e "${GREEN}✓ Target API database reset (orders, users, inventory restored)${RESET}"
+curl -s -X POST http://127.0.0.1:9000/_reset >/dev/null || true
+curl -s -X POST http://127.0.0.1:9001/_reset >/dev/null || true
+curl -s -X POST http://127.0.0.1:9002/_reset >/dev/null || true
+curl -s -X POST http://127.0.0.1:9003/_reset >/dev/null || true
+echo -e "${GREEN}✓ Target API databases reset (all sandboxes restored to clean baseline)${RESET}"
 
 # Step 4: Run vulnerable scan
 banner "[4/6] EXECUTING SCAN AGAINST VULNERABLE TARGET (SECURE=false)"

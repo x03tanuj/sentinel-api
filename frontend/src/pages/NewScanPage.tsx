@@ -37,9 +37,9 @@ export const NewScanPage: React.FC = () => {
 
   // Identities (1 to 5)
   const [identities, setIdentities] = useState<IdentityFormState[]>([
-    { id: '1', name: 'userA', role: 'user', username: 'user_a', password: '' },
-    { id: '2', name: 'userB', role: 'user', username: 'user_b', password: '' },
-    { id: '3', name: 'admin', role: 'admin', username: 'admin_user', password: '' },
+    { id: '1', name: 'userA', role: 'user', username: 'userA', password: 'passA123' },
+    { id: '2', name: 'userB', role: 'user', username: 'userB', password: 'passB123' },
+    { id: '3', name: 'admin', role: 'admin', username: 'admin', password: 'admin123' },
   ]);
 
   // Check Suites
@@ -57,7 +57,7 @@ export const NewScanPage: React.FC = () => {
   const [maxRequests, setMaxRequests] = useState(300);
 
   // Sample body
-  const [sampleBodyJson, setSampleBodyJson] = useState('');
+  const [sampleBodyJson, setSampleBodyJson] = useState('{\n  "item": "Standard Package",\n  "amount": 49.99\n}');
 
   // Authorization gate
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -81,17 +81,6 @@ export const NewScanPage: React.FC = () => {
         if (parsed.testCaseBudget) setTestCaseBudget(parsed.testCaseBudget);
         if (parsed.maxRequests) setMaxRequests(parsed.maxRequests);
         if (parsed.enabledChecks) setEnabledChecks(parsed.enabledChecks);
-        if (Array.isArray(parsed.identityMeta)) {
-          setIdentities(
-            parsed.identityMeta.map((im: { name: string; role: string }, idx: number) => ({
-              id: String(idx + 1),
-              name: im.name,
-              role: im.role,
-              username: '',
-              password: '',
-            }))
-          );
-        }
       }
     } catch {
       // Ignore localStorage errors
@@ -398,7 +387,7 @@ export const NewScanPage: React.FC = () => {
                 htmlFor="target-ecommerce"
                 onClick={() => handleSelectPreset('ecommerce')}
                 className={`relative flex items-start gap-3 p-3 rounded-tactical border cursor-pointer transition-all ${
-                  activePreset === 'ecommerce' || (!activePreset && isDemoPresetActive)
+                  activePreset === 'ecommerce'
                     ? 'bg-brand/15 border-brand ring-1 ring-brand/60 shadow-glow-primary'
                     : 'bg-canvas-base/60 border-border-structural hover:border-slate-600 hover:bg-canvas-base'
                 }`}
@@ -409,7 +398,7 @@ export const NewScanPage: React.FC = () => {
                     type="radio"
                     name="sample_target_selection"
                     value="ecommerce"
-                    checked={activePreset === 'ecommerce' || (!activePreset && isDemoPresetActive)}
+                    checked={activePreset === 'ecommerce'}
                     onChange={() => handleSelectPreset('ecommerce')}
                     className="w-4 h-4 text-brand bg-canvas-base border-border-structural focus:ring-brand focus:ring-offset-0 focus:ring-1"
                   />

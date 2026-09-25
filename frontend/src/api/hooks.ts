@@ -25,21 +25,25 @@ export function useScans(limit = 50) {
       if (error || !data) {
         throw new ApiError(response.status, sanitizeErrorMessage(response.status, error));
       }
-      return (data as any[]).map((s) => ({
-        scan_id: s.id,
-        id: s.id,
-        status: s.status,
-        target_url: s.target_url || (s.config_public?.base_url as string) || 'http://target_api:9000',
-        spec_source: s.spec_source || (s.config_public?.spec_source as string) || 'openapi.json',
-        started_at: s.started_at || s.created_at,
-        duration_seconds: s.duration_seconds || 0,
-        total_findings: s.total_findings || 0,
-        critical: s.by_severity?.CRITICAL ?? s.by_severity?.critical ?? 0,
-        high: s.by_severity?.HIGH ?? s.by_severity?.high ?? 0,
-        medium: s.by_severity?.MEDIUM ?? s.by_severity?.medium ?? 0,
-        low: s.by_severity?.LOW ?? s.by_severity?.low ?? 0,
-        info: s.by_severity?.INFO ?? s.by_severity?.info ?? 0,
-      })) as ScanSummary[];
+      return (data as any[]).map((s) => {
+        const start = s.started_at || s.created_at;
+        const dur = s.duration_seconds || (s.finished_at && s.created_at ? Math.max(1, Math.round((new Date(s.finished_at).getTime() - new Date(s.created_at).getTime()) / 1000)) : 0);
+        return {
+          scan_id: s.id,
+          id: s.id,
+          status: s.status,
+          target_url: s.base_url || s.target_url || (s.config_public?.base_url as string) || 'http://target_api:9000',
+          spec_source: s.spec_source || (s.config_public?.spec_source as string) || 'openapi.json',
+          started_at: start,
+          duration_seconds: dur,
+          total_findings: s.total_findings || 0,
+          critical: s.by_severity?.CRITICAL ?? s.by_severity?.critical ?? 0,
+          high: s.by_severity?.HIGH ?? s.by_severity?.high ?? 0,
+          medium: s.by_severity?.MEDIUM ?? s.by_severity?.medium ?? 0,
+          low: s.by_severity?.LOW ?? s.by_severity?.low ?? 0,
+          info: s.by_severity?.INFO ?? s.by_severity?.info ?? 0,
+        };
+      }) as ScanSummary[];
     },
   });
 }

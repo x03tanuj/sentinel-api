@@ -24,6 +24,8 @@ export const App: React.FC = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HistoryPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/scans/history" element={<HistoryPage />} />
             <Route path="/scans/new" element={<NewScanPage />} />
             <Route path="/scans/:id/live" element={<LiveScanPage />} />
             <Route path="/scans/:id" element={<TriageWorkspacePage />} />
