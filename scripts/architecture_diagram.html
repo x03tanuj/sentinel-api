@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SentinelAPI Architecture Diagram</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #06080F;
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      width: 2400px;
+      height: 1400px;
+      overflow: hidden;
+      position: relative;
+      background-image: 
+        radial-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+        radial-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px, 64px 64px;
+      background-position: 0 0, 16px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 44px;
+    }
+
+    /* Header Bar */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #232D42;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .shield-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2));
+      border: 1px solid #38BDF8;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    }
+    .shield-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #38BDF8;
+    }
+    .title-group h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title-group h1 span.highlight {
+      color: #38BDF8;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+    .title-group p {
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #94A3B8;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .header-badges {
+      display: flex;
+      gap: 10px;
+    }
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .badge-cyan {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38BDF8;
+    }
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.4);
+      color: #C084FC;
+    }
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34D399;
+    }
+    .badge-amber {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #FBBF24;
+    }
+
+    /* Main Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 460px 1080px 720px;
+      gap: 28px;
+      flex: 1;
+      height: calc(100% - 160px);
+    }
+
+    /* Cards & Containers */
+    .card {
+      background: #0D111C;
+      border: 1px solid #232D42;
+      border-radius: 8px;
+      padding: 18px 20px;
+      position: relative;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(35, 45, 66, 0.6);
+    }
+    .card-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* Left Column: Inputs & Target */
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .input-box {
+      background: #151B2B;
+      border: 1px solid #232D42;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .input-box:last-child {
+      margin-bottom: 0;
+    }
+    .input-box h4 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .input-box p {
+      font-size: 11px;
+      color: #94A3B8;
+      line-height: 1.4;
+    }
+
+    .target-box {
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.04);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.1);
+    }
+    .target-pill {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #34D399;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .sandbox-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .sandbox-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 6px 10px;
+      background: #0D111C;
+      border: 1px solid #232D42;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #CBD5E1;
+    }
+    .sandbox-item span.port {
+      color: #38BDF8;
+      font-weight: 600;
+    }
+
+    /* Center Column: Core Security Engine */
+    .col-center {
+      background: #090D18;
+      border: 2px solid #38BDF8;
+      border-radius: 10px;
+      padding: 22px 24px;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .engine-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .engine-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .engine-badge {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid #38BDF8;
+      color: #38BDF8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Safety Banner inside Engine */
+    .safety-banner {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .safety-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .safety-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: #F59E0B;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .safety-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: #E2E8F0;
+    }
+
+    /* Engine Stages Pipeline */
+    .stages-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+      justify-content: space-around;
+    }
+    .stage-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .stage-card {
+      background: #151B2B;
+      border: 1px solid #232D42;
+      border-radius: 6px;
+      padding: 12px 14px;
+      transition: all 0.2s ease;
+    }
+    .stage-card:hover {
+      border-color: #38BDF8;
+    }
+    .stage-card.full-width {
+      grid-column: span 2;
+    }
+    .stage-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .stage-desc {
+      font-size: 11px;
+      color: #94A3B8;
+      line-height: 1.35;
+    }
+
+    /* 6 Security Checks Grid */
+    .checks-container {
+      background: #0E1424;
+      border: 1px solid #232D42;
+      border-radius: 6px;
+      padding: 12px 14px;
+      grid-column: span 2;
+    }
+    .checks-header {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #FBBF24;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .checks-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .check-item {
+      background: #151B2B;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 4px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .check-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .check-owasp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: #F59E0B;
+    }
+
+    /* Right Column: CI/CD Gate, AI Analyst, UI */
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      justify-content: space-between;
+    }
+
+    /* CI/CD Gate Card */
+    .ci-gate-card {
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.04);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.1);
+    }
+    .ci-gate-card .card-title {
+      color: #EF4444;
+    }
+    .gate-flow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .gate-step {
+      flex: 1;
+      background: #151B2B;
+      border: 1px solid #232D42;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      text-align: center;
+    }
+    .gate-step.failure {
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #EF4444;
+      font-weight: 700;
+    }
+
+    /* AI Analyst Card */
+    .ai-card {
+      border: 1px dashed #A855F7;
+      background: rgba(168, 85, 247, 0.04);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.12);
+    }
+    .ai-card .card-title {
+      color: #C084FC;
+    }
+    .ai-notice {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #E9D5FF;
+      font-weight: 600;
+      text-align: center;
+    }
+    .ai-features {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ai-feat-item {
+      font-size: 11px;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .ai-feat-item span.bullet {
+      color: #C084FC;
+    }
+
+    /* Presentation UI Card */
+    .ui-card {
+      border: 1px solid #38BDF8;
+      background: rgba(56, 189, 248, 0.03);
+    }
+    .ui-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .ui-item {
+      background: #151B2B;
+      border: 1px solid #232D42;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ui-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38BDF8;
+      box-shadow: 0 0 6px #38BDF8;
+    }
+
+    /* Connecting Arrows SVG Layer */
+    .arrow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #38BDF8;
+    }
+
+    /* Footer / Invariant Guarantees */
+    footer {
+      border-top: 1px solid #232D42;
+      padding-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .footer-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #38BDF8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-desc {
+      font-size: 11px;
+      color: #94A3B8;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo-container">
+      <div class="shield-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm-1 15.5l-4-4 1.41-1.41L11 14.67l6.59-6.59L19 9.5l-8 8z"/>
+        </svg>
+      </div>
+      <div class="title-group">
+        <h1>SENTINEL<span class="highlight">API</span> &mdash; ARCHITECTURE &amp; THREAT PIPELINE</h1>
+        <p>Autonomous REST DAST &bull; Ground-Truth Authorization Matrix &bull; Zero Secret Egress</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <div class="badge badge-cyan">OWASP API Security 2023</div>
+      <div class="badge badge-emerald">Deterministic Engine</div>
+      <div class="badge badge-purple">Evidence-Only AI</div>
+      <div class="badge badge-amber">CI/CD Gate</div>
+    </div>
+  </header>
+
+  <!-- Main Architecture Grid -->
+  <div class="main-grid">
+
+    <!-- Left Column: Inputs & Target -->
+    <div class="col-left">
+      <!-- 1. Input Specification -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">1. Input Ingestion</span>
+          <span class="tag badge-cyan">Contract</span>
+        </div>
+        <div class="input-box">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            OpenAPI Spec Contract
+          </h4>
+          <p>OpenAPI 3.x in JSON, YAML, or direct sandboxed URL endpoint. Validated and dereferenced via <code style="color:#7DD3FC">prance</code>.</p>
+        </div>
+        <div class="input-box">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Circular $ref Guard
+          </h4>
+          <p>Static analyzer breaks schema reference loops, enforcing a strict 10 MB payload ceiling.</p>
+        </div>
+      </div>
+
+      <!-- 2. Target Under Test -->
+      <div class="card target-box">
+        <div class="card-header" style="border-bottom-color: rgba(16, 185, 129, 0.4);">
+          <span class="card-title" style="color: #34D399;">2. Target Under Test</span>
+          <span class="target-pill">Allow-Listed Only</span>
+        </div>
+        <p style="font-size: 11.5px; color: #E2E8F0; line-height: 1.4; margin-bottom: 10px;">
+          Customer-owned API bounded strictly to <code style="color:#34D399">ALLOWED_HOSTS</code>. Probed exclusively on loopback and isolated test containers.
+        </p>
+        <ul class="sandbox-list">
+          <li class="sandbox-item">
+            <span>ShopSentinel E-Commerce</span>
+            <span class="port">:9000 &bull; 8 Vulns</span>
+          </li>
+          <li class="sandbox-item">
+            <span>MedPulse Healthcare</span>
+            <span class="port">:9001 &bull; 10 Vulns</span>
+          </li>
+          <li class="sandbox-item">
+            <span>ApexBank Digital Banking</span>
+            <span class="port">:9002 &bull; 10 Vulns</span>
+          </li>
+          <li class="sandbox-item">
+            <span>Aegis Zero-Trust Baseline</span>
+            <span class="port" style="color:#34D399;">:9003 &bull; Clean Pass</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 3. Multi-Persona Identity Manager -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">3. Identity Manager</span>
+          <span class="tag badge-cyan">Multi-Persona</span>
+        </div>
+        <p style="font-size: 11.5px; color: #CBD5E1; line-height: 1.4; margin-bottom: 10px;">
+          Orchestrates concurrent authentications for differential cross-tenant testing without storing cleartext credentials.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+          <div style="background:#151B2B; border:1px solid #232D42; border-radius:4px; padding:6px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:10px;">
+            <div style="color:#38BDF8; font-weight:700;">userA</div>
+            <div style="color:#94A3B8;">Victim</div>
+          </div>
+          <div style="background:#151B2B; border:1px solid #232D42; border-radius:4px; padding:6px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:10px;">
+            <div style="color:#EF4444; font-weight:700;">userB</div>
+            <div style="color:#94A3B8;">Attacker</div>
+          </div>
+          <div style="background:#151B2B; border:1px solid #232D42; border-radius:4px; padding:6px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:10px;">
+            <div style="color:#F59E0B; font-weight:700;">admin</div>
+            <div style="color:#94A3B8;">Privileged</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Column: Core Proprietary Security Engine -->
+    <div class="col-center">
+      <div class="engine-header">
+        <div class="engine-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          SENTINEL SECURITY ENGINE &mdash; CORE TECHNOLOGY (JUDGED IP)
+        </div>
+        <div class="engine-badge">Proprietary Deterministic Core</div>
+      </div>
+
+      <!-- Visible Safety Boundaries Banner -->
+      <div class="safety-banner">
+        <div class="safety-item">
+          <span class="safety-label">Scope Guard</span>
+          <span class="safety-val">assert_in_scope (Strict Allowlist)</span>
+        </div>
+        <div class="safety-item">
+          <span class="safety-label">Rate Limiter</span>
+          <span class="safety-val">Token Bucket (Max 20 RPS)</span>
+        </div>
+        <div class="safety-item">
+          <span class="safety-label">Budget Cap</span>
+          <span class="safety-val">Max Probes / Scan (Default 150)</span>
+        </div>
+        <div class="safety-item">
+          <span class="safety-label">Shielded Teardown</span>
+          <span class="safety-val">asyncio.shield (Zero Artifacts Left)</span>
+        </div>
+      </div>
+
+      <!-- Engine Stages Pipeline -->
+      <div class="stages-flow">
+        
+        <!-- Row 1: Surface & Matrix -->
+        <div class="stage-row">
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Attack Surface Mapper</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 3</span>
+            </div>
+            <div class="stage-desc">
+              Extracts operations, parameters, and auth requirements. Computes risk rank favoring state-changing writes and privileged routes.
+            </div>
+          </div>
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Ownership &amp; Matrix Compiler</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 5</span>
+            </div>
+            <div class="stage-desc">
+              Legitimate discovery queries compile ground-truth <code style="color:#38BDF8;">ALLOW</code> vs <code style="color:#EF4444;">DENY</code> expectation matrix per (resource, object, identity).
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Test Generator & Executor -->
+        <div class="stage-row">
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Prioritized Test Generator</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 5</span>
+            </div>
+            <div class="stage-desc">
+              Capped test cases across 6 vectors: CROSS_USER, PRIVILEGED, ADJACENT_ID, BOUNDARY, ANONYMOUS, and INVALID_TYPE.
+            </div>
+          </div>
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Guarded HTTP Executor</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 4</span>
+            </div>
+            <div class="stage-desc">
+              Throttled probe execution, streaming size truncation, and automatic token scrubbing (<code style="color:#7DD3FC;">$TOKEN</code> placeholders).
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: 6 Security Checks Grid -->
+        <div class="checks-container">
+          <div class="checks-header">
+            <span>6 MODULAR SECURITY CHECK SUITES (OWASP API TOP 10)</span>
+            <span style="font-size:10px; color:#94A3B8; font-weight:normal;">Parallel Execution with Timeout Isolation</span>
+          </div>
+          <div class="checks-grid">
+            <div class="check-item">
+              <span class="check-name">BOLA / IDOR</span>
+              <span class="check-owasp">OWASP API1:2023 &bull; Object Tampering</span>
+            </div>
+            <div class="check-item">
+              <span class="check-name">BFLA Privileges</span>
+              <span class="check-owasp">OWASP API5:2023 &bull; Role Usurpation</span>
+            </div>
+            <div class="check-item">
+              <span class="check-name">Data Exposure</span>
+              <span class="check-owasp">OWASP API3:2023 &bull; PII &amp; Secrets</span>
+            </div>
+            <div class="check-item">
+              <span class="check-name">Rate Limiting</span>
+              <span class="check-owasp">OWASP API4:2023 &bull; Brute-Force Runs Last</span>
+            </div>
+            <div class="check-item">
+              <span class="check-name">Unauth Access</span>
+              <span class="check-owasp">OWASP API2:2023 &bull; Broken Auth Guard</span>
+            </div>
+            <div class="check-item">
+              <span class="check-name">Input Handling</span>
+              <span class="check-owasp">OWASP API8:2023 &bull; Anomaly Mutation</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Differential Analysis & Evidence & Risk -->
+        <div class="stage-row">
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Differential Analysis Engine</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 6</span>
+            </div>
+            <div class="stage-desc">
+              Weighted Jaccard similarity distance, status-code divergence, and sensitive-field classification between attack &amp; baseline.
+            </div>
+          </div>
+          <div class="stage-card">
+            <div class="stage-title">
+              <span>Risk &amp; Empirical Reproduction</span>
+              <span style="font-size:10px; color:#94A3B8;">Phase 7</span>
+            </div>
+            <div class="stage-desc">
+              Transparent 4-part score (0-100) + live re-execution of top findings: confidence boosted to 1.00 on repeat, downgraded if unrepeatable.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Storage, CI/CD Gate, AI Analyst, UI -->
+    <div class="col-right">
+
+      <!-- 1. CI/CD Security Quality Gate -->
+      <div class="card ci-gate-card">
+        <div class="card-header" style="border-bottom-color: rgba(239, 68, 68, 0.4);">
+          <span class="card-title">CI/CD Quality Gate</span>
+          <span class="tag" style="background:rgba(239, 68, 68, 0.15); border:1px solid #EF4444; color:#FCA5A5;">Shift-Left</span>
+        </div>
+        <p style="font-size: 11px; color: #CBD5E1; line-height: 1.35; margin-bottom: 8px;">
+          Standalone CLI (<code style="color:#FCA5A5;">scripts/ci_gate.py</code>) running in GitHub Actions. Enforces security thresholds and fails pull request builds on policy violations.
+        </p>
+        <div class="gate-flow">
+          <div class="gate-step">Scan Findings JSON</div>
+          <div style="color:#EF4444; font-weight:bold;">&rarr;</div>
+          <div class="gate-step">Evaluate Policy</div>
+          <div style="color:#EF4444; font-weight:bold;">&rarr;</div>
+          <div class="gate-step failure">Fail on HIGH/CRIT</div>
+        </div>
+      </div>
+
+      <!-- 2. AI Analyst Boundary (Strictly One-Way) -->
+      <div class="card ai-card">
+        <div class="card-header" style="border-bottom-color: rgba(168, 85, 247, 0.4);">
+          <span class="card-title">AI Analyst Boundary</span>
+          <span class="tag badge-purple">Optional Egress</span>
+        </div>
+        <div class="ai-notice">
+          STRICT ONE-WAY FLOW &bull; NEVER FEEDS BACK INTO DETECTION
+        </div>
+        <p style="font-size: 11px; color: #CBD5E1; line-height: 1.35; margin-bottom: 8px;">
+          Sanitized finding fingerprints egress through pre-flight regex guards (zero secrets, zero hosts). Generates plaintext remediation guidance and executive summaries.
+        </p>
+        <div class="ai-features">
+          <div class="ai-feat-item"><span class="bullet">&bull;</span> Supported: Groq &bull; OpenRouter &bull; Google Gemini</div>
+          <div class="ai-feat-item"><span class="bullet">&bull;</span> Strict 15-call immutable budget cap per scan</div>
+          <div class="ai-feat-item"><span class="bullet">&bull;</span> Deterministic offline fallback if AI unconfigured</div>
+        </div>
+      </div>
+
+      <!-- 3. Storage & Orchestration -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Storage &amp; Orchestration</span>
+          <span class="tag badge-cyan">FastAPI</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="background:#151B2B; border:1px solid #232D42; border-radius:4px; padding:8px 10px;">
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#38BDF8; font-weight:700;">Atomic Store</div>
+            <div style="font-size:10px; color:#94A3B8; margin-top:2px;">In-memory cache + atomic <code style="color:#7DD3FC;">scans.json</code> disk snapshots with corruption recovery.</div>
+          </div>
+          <div style="background:#151B2B; border:1px solid #232D42; border-radius:4px; padding:8px 10px;">
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#38BDF8; font-weight:700;">SSE Dispatcher</div>
+            <div style="font-size:10px; color:#94A3B8; margin-top:2px;">Real-time event fanout (<code style="color:#7DD3FC;">/scans/{id}/events</code>) with heartbeat keepalives.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Presentation Layer -->
+      <div class="card ui-card">
+        <div class="card-header" style="border-bottom-color: rgba(56, 189, 248, 0.4);">
+          <span class="card-title">Presentation Layer</span>
+          <span class="tag badge-cyan">React 18</span>
+        </div>
+        <div class="ui-grid">
+          <div class="ui-item"><span class="ui-dot"></span> Results Triage HUD</div>
+          <div class="ui-item"><span class="ui-dot"></span> Authorization Matrix</div>
+          <div class="ui-item"><span class="ui-dot"></span> Discovered Surface</div>
+          <div class="ui-item"><span class="ui-dot"></span> Audit History &amp; Diff</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Footer Guarantees -->
+  <footer>
+    <div class="footer-col">
+      <span class="footer-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Strict Scope Enforced
+      </span>
+      <p class="footer-desc">Only explicitly allow-listed local/container target endpoints are probed. Rejects external redirection.</p>
+    </div>
+    <div class="footer-col">
+      <span class="footer-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Zero Secret Leakage
+      </span>
+      <p class="footer-desc">Tokens and passwords scrubbed before logging, disk writes, and LLM payloads ($TOKEN substitution).</p>
+    </div>
+    <div class="footer-col">
+      <span class="footer-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Shielded State Cleanup
+      </span>
+      <p class="footer-desc">Write-method tests execute only on scanner-created records; cleaned up in shielded finally blocks.</p>
+    </div>
+    <div class="footer-col">
+      <span class="footer-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Empirical Verification
+      </span>
+      <p class="footer-desc">Transparent 4-part risk scoring + active live reproduction proofs; zero false-positive guessing.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

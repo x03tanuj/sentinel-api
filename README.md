@@ -31,48 +31,152 @@
 
 ## Architecture Diagram
 
-SentinelAPI is composed of an orchestrating scanner service, an atomic snapshot persistence engine, an interactive React tactical dashboard, isolated target sandbox environments, and an optional evidence-only AI analysis boundary.
+SentinelAPI's architecture separates the deterministic security engine (our core proprietary IP) from presentation, storage, and the optional evidence-only AI analysis boundary. 
+
+> [!TIP]
+> **Slide Deck / Presentation Deliverable**: A high-resolution 2400×1400 static export matching our dark tactical design tokens is available at [docs/architecture.png](docs/architecture.png) for PowerPoint / Keynote slides and offline review.
 
 ```mermaid
-flowchart TD
-    subgraph Client["Presentation & CI/CD Layer"]
-        UI["React 18 + Tailwind Dashboard\n(:8080)"]
-        CLI["SentinelAPI CLI & CI Quality Gate\n(ci_gate.py)"]
+flowchart TB
+    %% Inputs & Target Under Test
+    subgraph Inputs ["1. Inputs & Target Under Test"]
+        direction LR
+        Spec["OpenAPI Contract\n(JSON / YAML / URL)"]
+        Target["Target Under Test\n(User's Own API — Allow-Listed Only)"]
     end
 
-    subgraph Scanner["SentinelAPI Engine (FastAPI :8000)"]
+    %% Security Engine (Judged Core IP)
+    subgraph SecurityEngine ["2. Security Engine (Judged Proprietary Core)"]
         direction TB
-        Loader["1. OpenAPI Spec Loader & Validator\n(prance, openapi-spec-validator)"]
-        Surface["2. Attack Surface Mapper\n(Endpoint Risk Scoring)"]
-        AuthMgr["3. Multi-Persona Identity Manager\n(JWT Ingestion, Credential Scrubbing)"]
-        Disc["4. Autonomous Ownership Discovery\n(Legitimate Collection Probing)"]
-        Matrix["5. Ground-Truth Matrix Compiler\n(Allow vs Deny Expectations)"]
-        Runner["6. Differential Test Runner\n(Jaccard Distance, Token-Bucket Rate Limiter)"]
-        Checks["7. Security Check Suite\n(BOLA, BFLA, Data Exposure, Rate Limit)"]
-        Repro["8. Empirical Reproduction Engine\n(Active Verification, Confidence Scoring)"]
-        Guard["Scope Guard & Redaction Filter\n(assert_in_scope, assert_no_secrets)"]
-        Store["Atomic JSON Snapshot Store\n(scans.json, In-Memory Ring Buffer)"]
+        
+        subgraph SafetyBounds ["Enforced Safety & Execution Boundaries"]
+            direction LR
+            ScopeGuard["Scope Guard\n(Strict Host Allowlist)"]
+            RateCap["Rate Cap\n(20 RPS Token Bucket)"]
+            BudgetCap["Budget Cap\n(Max Probes per Scan)"]
+        end
+
+        Mapper["Attack Surface Mapper\n(Endpoint Risk Scoring)"]
+        IdMgr["Identity Manager\n(Multi-Persona JWT Auth)"]
+        Executor["HTTP Executor\n(Controlled Probe Dispatch)"]
+        Generator["Test Generator\n(6 Attack Categories)"]
+        Matrix["Matrix Compiler\n(Ground-Truth Allow/Deny)"]
+        DiffEngine["Differential Engine\n(Jaccard & Field Divergence)"]
+        
+        subgraph Checks ["6 Modular Security Checks"]
+            direction LR
+            C_BOLA["BOLA / IDOR\n(API1:2023)"]
+            C_BFLA["BFLA Privileges\n(API5:2023)"]
+            C_DATA["Data Exposure\n(API3:2023)"]
+            C_RATE["Rate Limiting\n(API4:2023)"]
+            C_AUTH["Unauth Access\n(API2:2023)"]
+            C_INPUT["Input Handling\n(API8:2023)"]
+        end
+
+        Evidence["Evidence Engine\n(Sanitized Diffs & PoCs)"]
+        RiskEngine["Risk & Confidence Engine\n(4-Part Score & Live Repro)"]
     end
 
-    subgraph Targets["Multi-Domain Isolated Sandboxes"]
-        TargetEcom["ShopSentinel Retail (:9000)\n(8 Vulnerabilities)"]
-        TargetHealth["MedPulse Healthcare (:9001)\n(10 Vulnerabilities)"]
-        TargetFintech["ApexBank Digital (:9002)\n(10 Vulnerabilities)"]
-        TargetSecure["Aegis Zero-Trust (:9003)\n(Clean Pass Baseline)"]
+    %% CI/CD Security Quality Gate
+    subgraph CICD ["3. CI/CD Security Quality Gate"]
+        Gate["CI Quality Gate\n(ci_gate.py)"]
+        GHA["GitHub Actions\n(Fails Build on High/Crit)"]
     end
 
-    subgraph AI["AI Analyst Boundary (Optional & Sanitized)"]
-        LLM["Groq / OpenRouter / Gemini\n(Evidence Only, Zero Egress Secrets)"]
+    %% Storage & Orchestration API
+    subgraph BackendCore ["4. Storage & Orchestration"]
+        direction TB
+        Store["Atomic JSON Store\n(scans.json & Memory Cache)"]
+        API["FastAPI Orchestrator\n(Scan Lifecycle & SSE Events)"]
     end
 
-    UI -->|REST & SSE Stream| Scanner
-    CLI -->|Command Dispatch| Scanner
-    Scanner -->|Controlled HTTP Probes| Targets
-    Checks --> Repro
-    Repro --> Store
-    Store --> Scanner
-    Scanner -.->|Sanitized Metadata Only| LLM
+    %% Presentation Layer
+    subgraph Presentation ["5. Presentation Layer"]
+        direction TB
+        UI_Triage["Results Triage Workspace\n(HUD & Findings Stream)"]
+        UI_Matrix["Authorization Matrix\n(Interactive Heatmap Grid)"]
+        UI_History["Scan Audit History\n(Timeline & Comparisons)"]
+        UI_Inspector["Differential Inspector\n(Sanitized Response Diffs)"]
+    end
+
+    %% AI Analyst (Optional Side-Branch)
+    subgraph AIAnalyst ["6. AI Analyst (Optional Side-Branch)"]
+        direction TB
+        EgressGuard["Data Egress Guard\n(Zero Secrets / Zero PII)"]
+        LLM["Multi-Model LLM\n(Groq / OpenRouter / Gemini)"]
+        Explanation["Remediation Guide\n(Plaintext Code Fixes)"]
+    end
+
+    %% Data Flow Connections
+    Spec --> Mapper
+    Mapper --> Generator
+    IdMgr --> Executor
+    Target <-->|Probes & Responses| Executor
+    SafetyBounds -.-> Executor
+    
+    Generator --> Matrix
+    Matrix --> Executor
+    Executor --> DiffEngine
+    DiffEngine --> Checks
+    Checks --> Evidence
+    Evidence --> RiskEngine
+
+    %% Storage & Gate
+    RiskEngine --> Store
+    RiskEngine --> Gate
+    Gate --> GHA
+    Store <--> API
+
+    %% Presentation flow
+    API <-->|REST State & SSE Streams| UI_Triage
+    API <--> UI_Matrix
+    API <--> UI_History
+    API <--> UI_Inspector
+
+    %% AI flow: strictly ONE-WAY from Evidence to AI, zero feedback into checks
+    Evidence ==>|1. Sanitized Findings Only| EgressGuard
+    EgressGuard --> LLM
+    LLM --> Explanation
+    Explanation -.->|2. UI Remediation Card Only| UI_Inspector
+
+    %% Class styling
+    classDef engineStyle fill:#0D111C,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    classDef checkStyle fill:#151B2B,stroke:#F59E0B,stroke-width:1px,color:#F8FAFC
+    classDef targetStyle fill:#182033,stroke:#10B981,stroke-width:2px,color:#F8FAFC
+    classDef gateStyle fill:#151B2B,stroke:#EF4444,stroke-width:2px,color:#F8FAFC
+    classDef aiStyle fill:#151B2B,stroke:#A855F7,stroke-width:2px,stroke-dasharray: 4 4,color:#F8FAFC
+    classDef uiStyle fill:#0D111C,stroke:#38BDF8,stroke-width:1px,color:#F8FAFC
+
+    class SecurityEngine,Mapper,IdMgr,Executor,Generator,Matrix,DiffEngine,Evidence,RiskEngine engineStyle
+    class C_BOLA,C_BFLA,C_DATA,C_RATE,C_AUTH,C_INPUT checkStyle
+    class Target,Spec targetStyle
+    class Gate,GHA gateStyle
+    class AIAnalyst,EgressGuard,LLM,Explanation aiStyle
+    class UI_Triage,UI_Matrix,UI_History,UI_Inspector uiStyle
 ```
+
+### Component Architecture & Safety Boundaries
+
+| Layer / Block | Component | Codebase Module | Purpose & Core Safety Invariant |
+| :--- | :--- | :--- | :--- |
+| **Inputs** | OpenAPI Contract | `backend/app/parser/loader.py` | Validates OpenAPI 3.x specs, dereferences schemas, handles circular `$ref` safely. |
+| **Target Under Test** | Sandboxed Target | `target_api/`, `sample_targets/` | User's own API. Strictly bounded by scope guards (`ALLOWED_HOSTS`). |
+| **Security Engine** | Scope Guard | `backend/app/config.py` | Rejects targets outside explicit allowlist; prevents scanning external third parties. |
+| **Security Engine** | Rate & Budget Caps | `backend/app/engine/executor.py` | 20 RPS token bucket; capped request budgets per scan prevent denial-of-service. |
+| **Security Engine** | Surface Mapper | `backend/app/parser/surface.py` | Extracts parameters, auth rules, operations, and assigns preliminary risk rankings. |
+| **Security Engine** | Identity Manager | `backend/app/engine/identity.py` | Multi-persona session & JWT management; credentials never hit disk or telemetry. |
+| **Security Engine** | HTTP Executor | `backend/app/engine/executor.py` | Controlled probe dispatch with streaming size limits and automatic token scrubbing. |
+| **Security Engine** | Test Generator | `backend/app/engine/generator.py` | Generates prioritized test cases across 6 discrete attack categories. |
+| **Security Engine** | Matrix Compiler | `backend/app/engine/matrix.py` | Discovers resource ownership and compiles ground-truth allow/deny expectation matrix. |
+| **Security Engine** | Differential Engine | `backend/app/engine/differential.py` | Compares attack vs baseline using weighted Jaccard similarity and schema divergence. |
+| **Security Engine** | 6 Security Checks | `backend/app/engine/checks/` | Modular suites for BOLA (API1), Unauth (API2), Data Exposure (API3), Rate Limit (API4), BFLA (API5), Input Handling (API8). |
+| **Security Engine** | Evidence Engine | `backend/app/engine/evidence.py` | Defense-in-depth token scrubbing, diff construction, and reproducible curl PoCs (`$TOKEN`). |
+| **Security Engine** | Risk & Confidence | `backend/app/engine/risk.py`, `reproduce.py` | Transparent 4-part risk scoring + active empirical reproduction of top findings. |
+| **CI/CD Quality Gate** | CI Gate | `scripts/ci_gate.py`, `.github/` | Headless security quality gate breaking GitHub Actions CI builds on High/Critical flaws. |
+| **Storage & API** | Snapshot Store | `backend/app/store.py` | In-memory ring buffer with atomic, secret-free JSON disk persistence (`scans.json`). |
+| **Storage & API** | FastAPI Orchestrator| `backend/app/routes/scans.py` | REST API routes, bounded cancellation, shielded object cleanup, real-time SSE stream. |
+| **Presentation** | React Dashboard | `frontend/src/` | Tactical web UI: Triage Workspace, Authorization Heatmap, Findings Inspector, History. |
+| **AI Analyst** | AI Analyst (Optional)| `backend/app/ai/` | **Evidence-only side branch**. Zero secrets/PII; strictly one-way data egress; never feeds detection. |
 
 ---
 
