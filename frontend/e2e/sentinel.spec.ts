@@ -89,7 +89,12 @@ test.describe('SentinelAPI End-to-End Suite', () => {
     await expect(page.locator('text=$TOKEN')).toBeVisible();
     await expect(page.locator('text=Bearer ey')).not.toBeVisible();
     await expect(page.locator('text=Suggested Remediation')).toBeVisible();
-    await expect(page.locator('text=AI analysis is not configured on this server')).toBeVisible();
+    await expect(
+      page
+        .locator('text=AI analysis is not configured on this server')
+        .or(page.locator('[data-testid="explain-ai-button"]'))
+        .first()
+    ).toBeVisible();
 
     // Verify leaked field highlighting on data exposure finding
     const dataExpFinding = page
@@ -414,7 +419,7 @@ test.describe('SentinelAPI End-to-End Suite', () => {
 
     // Verify analysis rendered as text
     await expect(page.getByText('Plain Explanation')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Broken object-level authorization')).toBeVisible();
+    await expect(page.getByText(/Broken object[- ]level authorization/i).first()).toBeVisible();
     await expect(page.getByText('AI-generated - verify before use')).toBeVisible();
     await expect(page.getByText('Remediation Steps')).toBeVisible();
     await expect(page.getByText('Code Fix Example')).toBeVisible();

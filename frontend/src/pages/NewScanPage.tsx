@@ -371,7 +371,7 @@ export const NewScanPage: React.FC = () => {
                   </h3>
                   {isDemoPresetActive && (
                     <span className="px-1.5 py-0.5 rounded bg-brand/20 border border-brand/50 text-brand font-mono text-[10px] font-semibold">
-                      PRESET ACTIVE
+                      DEMO PRESET ACTIVE
                     </span>
                   )}
                 </div>

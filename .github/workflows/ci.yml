@@ -1,0 +1,282 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            backend/requirements.txt
+            target_api/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r target_api/requirements.txt
+          pip install -r backend/requirements.txt
+
+      - name: Run target_api test suite
+        run: |
+          cd target_api && pytest -v
+
+      - name: Run backend unit test suite (fast hermetic)
+        run: |
+          cd backend && pytest -v -m "not e2e and not integration and not live_llm"
+
+  backend-e2e:
+    name: Backend E2E Hermetic Subprocess
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            backend/requirements.txt
+            target_api/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r target_api/requirements.txt
+          pip install -r backend/requirements.txt
+
+      - name: Run backend e2e tests
+        run: |
+          cd backend && pytest -q -m e2e
+
+  frontend:
+    name: Frontend Quality & Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend && npm ci
+
+      - name: Run TypeScript typecheck
+        run: |
+          cd frontend && npm run typecheck
+
+      - name: Run ESLint
+        run: |
+          cd frontend && npm run lint
+
+      - name: Run Vitest test suite
+        run: |
+          cd frontend && npm test
+
+  docker-integration:
+    name: Docker Integration Matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare environment configuration
+        run: cp .env.example .env
+
+      - name: Build and spin up containers
+        run: |
+          docker compose up -d --build scanner target_api
+
+      - name: Wait for services to be healthy
+        run: |
+          for i in {1..30}; do
+            if curl -s -f http://127.0.0.1:8000/health && curl -s -f http://127.0.0.1:9000/health; then
+              echo "Services are healthy and responding."
+              break
+            fi
+            echo "Waiting for service health checks... ($i/30)"
+            sleep 2
+          done
+
+      - name: Reset target database state
+        run: curl -s -X POST http://127.0.0.1:9000/_reset
+
+      - name: Execute scan against vulnerable target
+        run: |
+          docker compose exec -T scanner python -m app.cli scan \
+            --spec http://target_api:9000/openapi.json \
+            --base-url http://target_api:9000 \
+            --identity userA,user,userA,passA123 \
+            --identity userB,user,userB,passB123 \
+            --identity admin,admin,admin,admin123 \
+            --budget 50 \
+            --json-out /tmp/vuln_findings.json
+          docker compose exec -T scanner cat /tmp/vuln_findings.json > vuln_findings.json
+
+      - name: Assert findings detected on vulnerable target
+        run: |
+          grep -q "BOLA" vuln_findings.json || grep -q "bola" vuln_findings.json
+          FINDING_COUNT=$(python3 -c "import json; data=json.load(open('vuln_findings.json')); print(len(data))")
+          echo "Vulnerable target scan produced $FINDING_COUNT findings."
+          if [ "$FINDING_COUNT" -le 0 ]; then
+            echo "Error: Expected findings on vulnerable target, got 0"
+            exit 1
+          fi
+
+      - name: Flip target to SECURE=true mode
+        run: |
+          SECURE=true docker compose up -d target_api
+          sleep 3
+          curl -s -X POST http://127.0.0.1:9000/_reset
+
+      - name: Execute scan against secure target
+        run: |
+          docker compose exec -T scanner python -m app.cli scan \
+            --spec http://target_api:9000/openapi.json \
+            --base-url http://target_api:9000 \
+            --identity userA,user,userA,passA123 \
+            --identity userB,user,userB,passB123 \
+            --identity admin,admin,admin,admin123 \
+            --budget 50 \
+            --json-out /tmp/secure_findings.json
+          docker compose exec -T scanner cat /tmp/secure_findings.json > secure_findings.json
+
+      - name: Assert zero high-severity findings on secure target
+        run: |
+          CRIT_HIGH_COUNT=$(python3 -c "import json; data=json.load(open('secure_findings.json')); print(len([f for f in data if str(f.get('severity','')).upper() in ('CRITICAL', 'HIGH')]))")
+          echo "Secure target produced $CRIT_HIGH_COUNT critical/high findings."
+          if [ "$CRIT_HIGH_COUNT" -ne 0 ]; then
+            echo "Error: Expected 0 critical/high findings on secure target, got $CRIT_HIGH_COUNT"
+            exit 1
+          fi
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Clean up Docker resources
+        if: always()
+        run: docker compose down -v
+
+  security-gate:
+    name: CI Security Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Prepare environment configuration
+        run: cp .env.example .env
+
+      - name: Build and spin up containers
+        run: |
+          docker compose up -d --build scanner target_api
+
+      - name: Wait for services to be healthy
+        run: |
+          for i in {1..30}; do
+            if curl -s -f http://127.0.0.1:8000/health && curl -s -f http://127.0.0.1:9000/health; then
+              echo "Services are healthy and responding."
+              break
+            fi
+            echo "Waiting for service health checks... ($i/30)"
+            sleep 2
+          done
+
+      - name: Reset target database state
+        run: curl -s -X POST http://127.0.0.1:9000/_reset
+
+      - name: Scan vulnerable target with JSON export
+        run: |
+          docker compose exec -T scanner python -m app.cli scan \
+            --spec http://target_api:9000/openapi.json \
+            --base-url http://target_api:9000 \
+            --identity userA,user,userA,passA123 \
+            --identity userB,user,userB,passB123 \
+            --identity admin,admin,admin,admin123 \
+            --budget 50 \
+            --json-out /tmp/ci_vuln_findings.json
+          docker compose exec -T scanner cat /tmp/ci_vuln_findings.json > ci_vuln_findings.json
+
+      - name: Run CI quality gate on vulnerable target (Expected to fail)
+        id: vuln_gate
+        continue-on-error: true
+        run: |
+          python3 scripts/ci_gate.py --findings ci_vuln_findings.json --fail-on CRITICAL,HIGH --min-confidence 0.7
+
+      - name: Assert quality gate correctly rejected vulnerable build
+        run: |
+          if [ "${{ steps.vuln_gate.outcome }}" != "failure" ]; then
+            echo "Error: CI quality gate was expected to fail on vulnerable build, but passed!"
+            exit 1
+          fi
+          echo "Verified: Quality gate successfully blocked vulnerable target deployment."
+
+      - name: Flip target to SECURE=true mode
+        run: |
+          SECURE=true docker compose up -d target_api
+          sleep 3
+          curl -s -X POST http://127.0.0.1:9000/_reset
+
+      - name: Scan secure target with JSON export
+        run: |
+          docker compose exec -T scanner python -m app.cli scan \
+            --spec http://target_api:9000/openapi.json \
+            --base-url http://target_api:9000 \
+            --identity userA,user,userA,passA123 \
+            --identity userB,user,userB,passB123 \
+            --identity admin,admin,admin,admin123 \
+            --budget 50 \
+            --json-out /tmp/ci_secure_findings.json
+          docker compose exec -T scanner cat /tmp/ci_secure_findings.json > ci_secure_findings.json
+
+      - name: Run CI quality gate on secure target (Must pass)
+        run: |
+          python3 scripts/ci_gate.py --findings ci_secure_findings.json --fail-on CRITICAL,HIGH --min-confidence 0.7
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Clean up Docker resources
+        if: always()
+        run: docker compose down -v

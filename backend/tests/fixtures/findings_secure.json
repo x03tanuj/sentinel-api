@@ -1,0 +1,13 @@
+[
+  {
+    "id": "find-info-001",
+    "check": "rate_limit",
+    "endpoint": "/public/health",
+    "method": "GET",
+    "title": "Rate Limit Conformance Passed",
+    "severity": "INFO",
+    "confidence": 0.95,
+    "explanation": "Endpoint properly bounds bursts and returns 429 correctly.",
+    "curl_poc": "curl -s http://target_api:9000/public/health"
+  }
+]

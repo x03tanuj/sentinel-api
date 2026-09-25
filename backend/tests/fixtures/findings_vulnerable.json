@@ -1,0 +1,35 @@
+[
+  {
+    "id": "find-001",
+    "check": "bola",
+    "endpoint": "/orders/{id}",
+    "method": "GET",
+    "title": "Broken Object Level Authorization (BOLA)",
+    "severity": "CRITICAL",
+    "confidence": 0.88,
+    "explanation": "User A can read order records belonging to User B without authorization.",
+    "curl_poc": "curl -s -H 'Authorization: Bearer $TOKEN' http://target_api:9000/orders/2"
+  },
+  {
+    "id": "find-002",
+    "check": "bfla",
+    "endpoint": "/admin/users",
+    "method": "GET",
+    "title": "Broken Function Level Authorization (BFLA)",
+    "severity": "HIGH",
+    "confidence": 0.85,
+    "explanation": "Standard user role can access administrative user directory.",
+    "curl_poc": "curl -s -H 'Authorization: Bearer $TOKEN' http://target_api:9000/admin/users"
+  },
+  {
+    "id": "find-003",
+    "check": "data_exposure",
+    "endpoint": "/products",
+    "method": "GET",
+    "title": "Unnecessary Debug Information Exposed",
+    "severity": "LOW",
+    "confidence": 0.50,
+    "explanation": "Public product listing returns debug header.",
+    "curl_poc": "curl -s http://target_api:9000/products"
+  }
+]

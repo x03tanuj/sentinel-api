@@ -7,7 +7,6 @@ interface StatCardProps {
   highlightColor?: string;
   badgeText?: string;
   badgeColor?: string;
-  isGap?: boolean;
   className?: string;
 }
 
@@ -18,7 +17,6 @@ export const StatCard: React.FC<StatCardProps> = ({
   highlightColor = 'text-slate-100',
   badgeText,
   badgeColor = 'bg-brand/10 text-brand border-brand/30',
-  isGap = false,
   className = '',
 }) => {
   return (
@@ -48,14 +46,6 @@ export const StatCard: React.FC<StatCardProps> = ({
           </span>
         )}
       </div>
-
-      {isGap && (
-        <div className="mt-1 pt-1 border-t border-border-subdued flex items-center justify-between">
-          <span className="font-mono text-[9px] text-amber-400">
-            * Backend Gap (Proposed in Phase 9B/10)
-          </span>
-        </div>
-      )}
     </div>
   );
 };

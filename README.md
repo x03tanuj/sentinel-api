@@ -1,576 +1,252 @@
-# SentinelAPI
+# SentinelAPI: Autonomous Differential API Security Testing
 
-**SentinelAPI** is an automated API security scanner built for authorization and data-exposure testing. It parses OpenAPI (Swagger) specifications, authenticates across multiple test identities with distinct permission levels, and systematically probes for critical API vulnerabilities:
-- **BOLA / IDOR** (Broken Object Level Authorization — OWASP API1:2023)
-- **Broken Function Level Authorization** (OWASP API5:2023)
-- **Excessive Data Exposure** (OWASP API3:2023)
-- **Lack of Resources & Rate Limiting** (OWASP API4:2023)
+**SentinelAPI** is an autonomous API security scanner engineered specifically for authorization, object-level access control, and data-exposure vulnerabilities across modern REST APIs. By ingesting OpenAPI 3.x specifications, dynamically authenticating multiple test personas, learning ground-truth resource ownership without brute-forcing, and executing differential response analysis, SentinelAPI uncovers critical OWASP API Top 10 vulnerabilities (such as BOLA/IDOR, BFLA, and broken tenant boundaries) with mathematical precision, empirical live reproduction, and zero secrets exposure.
 
 ---
 
-## ⚠️ Ethics & Scope Statement
+## ⚠️ Ethics & Authorized Use Statement
 
-> **CRITICAL LEGAL & ETHICAL NOTICE**
+> [!CAUTION]
+> **STRICT AUTHORIZED TESTING NOTICE**
 > 
-> SentinelAPI is designed exclusively for testing **explicitly authorized**, sandboxed, or owned target environments. 
+> SentinelAPI is designed exclusively for testing **explicitly authorized**, sandboxed, or customer-owned API environments.
 > 
-> - **Only scan systems you own or have explicit written authorization to test.**
-> - The scanner strictly enforces an in-memory allowlist (`ALLOWED_HOSTS`) and rejects external, look-alike, or credential-bearing URLs.
-> - Never disable scope boundaries against live, third-party, or production environments without permission.
-> - Unauthorized scanning of remote services may violate computer fraud and cybersecurity laws.
+> - **Never scan any API without prior, explicit, written authorization from the system owner.**
+> - The scanner strictly enforces an immutable scope guard (`assert_in_scope`) against an explicit allowlist (`ALLOWED_HOSTS`). Outbound HTTP probe dispatches to unauthorized external domains, public IPs, or look-alike URLs are terminated immediately with a `ScopeViolationError`.
+> - The included target sandboxes (`target_api`, `health_api`, `fintech_api`) contain intentional, realistic authorization flaws built strictly for evaluation and demonstration on `127.0.0.1`. Never expose them to public networks.
+> - Unauthorized penetration testing or vulnerability scanning of third-party networks may violate local and international cybercrime legislation, including the Computer Fraud and Abuse Act (CFAA) and GDPR.
 
 ---
 
-## Architecture & Tech Stack
+## CI / CD Build & Verification Status
 
-- **Backend**: Python 3.11, FastAPI, Pydantic v2, pydantic-settings, HTTPX, Prance, OpenAPI Spec Validator
-- **Testing**: Pytest, pytest-asyncio
-- **Orchestration**: Docker Compose (`scanner` on port 8000, sandboxed `target_api` on port 9000)
-- **Frontend** (Upcoming phases): React + Vite + Tailwind CSS + Recharts
+[![CI](https://github.com/x03tanuj/sentinel-api/actions/workflows/ci.yml/badge.svg)](https://github.com/x03tanuj/sentinel-api/actions/workflows/ci.yml)
+[![E2E UI Tests](https://github.com/x03tanuj/sentinel-api/actions/workflows/e2e-ui.yml/badge.svg)](https://github.com/x03tanuj/sentinel-api/actions/workflows/e2e-ui.yml)
+![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.14-blue)
+![Node Version](https://img.shields.io/badge/node-20.x-green)
+![OWASP Top 10](https://img.shields.io/badge/OWASP%20API%20Security-2023%20Coverage-red)
+![License](https://img.shields.io/badge/license-MIT-purple)
+
+---
+
+## Architecture Diagram
+
+SentinelAPI is composed of an orchestrating scanner service, an atomic snapshot persistence engine, an interactive React tactical dashboard, isolated target sandbox environments, and an optional evidence-only AI analysis boundary.
+
+```mermaid
+flowchart TD
+    subgraph Client["Presentation & CI/CD Layer"]
+        UI["React 18 + Tailwind Dashboard\n(:8080)"]
+        CLI["SentinelAPI CLI & CI Quality Gate\n(ci_gate.py)"]
+    end
+
+    subgraph Scanner["SentinelAPI Engine (FastAPI :8000)"]
+        direction TB
+        Loader["1. OpenAPI Spec Loader & Validator\n(prance, openapi-spec-validator)"]
+        Surface["2. Attack Surface Mapper\n(Endpoint Risk Scoring)"]
+        AuthMgr["3. Multi-Persona Identity Manager\n(JWT Ingestion, Credential Scrubbing)"]
+        Disc["4. Autonomous Ownership Discovery\n(Legitimate Collection Probing)"]
+        Matrix["5. Ground-Truth Matrix Compiler\n(Allow vs Deny Expectations)"]
+        Runner["6. Differential Test Runner\n(Jaccard Distance, Token-Bucket Rate Limiter)"]
+        Checks["7. Security Check Suite\n(BOLA, BFLA, Data Exposure, Rate Limit)"]
+        Repro["8. Empirical Reproduction Engine\n(Active Verification, Confidence Scoring)"]
+        Guard["Scope Guard & Redaction Filter\n(assert_in_scope, assert_no_secrets)"]
+        Store["Atomic JSON Snapshot Store\n(scans.json, In-Memory Ring Buffer)"]
+    end
+
+    subgraph Targets["Multi-Domain Isolated Sandboxes"]
+        TargetEcom["ShopSentinel Retail (:9000)\n(8 Vulnerabilities)"]
+        TargetHealth["MedPulse Healthcare (:9001)\n(10 Vulnerabilities)"]
+        TargetFintech["ApexBank Digital (:9002)\n(10 Vulnerabilities)"]
+        TargetSecure["Aegis Zero-Trust (:9003)\n(Clean Pass Baseline)"]
+    end
+
+    subgraph AI["AI Analyst Boundary (Optional & Sanitized)"]
+        LLM["Groq / OpenRouter / Gemini\n(Evidence Only, Zero Egress Secrets)"]
+    end
+
+    UI -->|REST & SSE Stream| Scanner
+    CLI -->|Command Dispatch| Scanner
+    Scanner -->|Controlled HTTP Probes| Targets
+    Checks --> Repro
+    Repro --> Store
+    Store --> Scanner
+    Scanner -.->|Sanitized Metadata Only| LLM
+```
 
 ---
 
 ## Quickstart
 
-### 1. Environment Configuration
-
-Copy the example environment template:
+### 1. Launch Full Stack with Docker Compose
+Spin up the scanner engine, web dashboard, and sandboxed test environments in seconds:
 ```bash
+git clone https://github.com/x03tanuj/sentinel-api.git
+cd sentinel-api
 cp .env.example .env
+docker compose up -d --build
 ```
 
-### 2. Run with Docker Compose
+### 2. Access the Interactive Tactical Dashboard
+Open your browser to:
+👉 **[http://localhost:8080](http://localhost:8080)** (or [http://localhost:8080/scans/new](http://localhost:8080/scans/new))
 
-Start both the scanner and sandboxed demo target API:
+### 3. Run the Automated End-to-End Demo Script
+Execute our turnkey, idempotent demonstration script to spin up the services, execute a live vulnerable scan, verify the zero-trust secure baseline, and restore the UI:
 ```bash
-docker compose up --build -d
-```
-
-Verify service health:
-```bash
-curl http://localhost:8000/health
-curl http://localhost:9000/health
-```
-
-Check active scan scope:
-```bash
-curl http://localhost:8000/scope
-```
-
-To stop containers:
-```bash
-docker compose down
+bash scripts/demo.sh
 ```
 
 ---
 
-## Local Development & Testing
+## Vulnerability Detection Scope
 
-### 1. Set Up Virtual Environment
+### What SentinelAPI Detects
+- **BOLA / IDOR (Broken Object Level Authorization - OWASP API1:2023)**:
+  - Unauthorized object-level resource reading (`GET /orders/{id}`) across distinct customer accounts.
+  - State-modifying cross-tenant tampering (`PUT/PATCH /orders/{id}`) and object deletion (`DELETE /orders/{id}`) executed strictly against scanner-created test records.
+- **BFLA (Broken Function Level Authorization - OWASP API5:2023)**:
+  - Administrative endpoint accessibility by unprivileged regular user roles (`GET /admin/users`, `/admin/metrics`).
+  - Vertical privilege escalation across hierarchical roles.
+- **Excessive Data Exposure & Sensitive Data Leakage (OWASP API3:2023)**:
+  - Leaked undeclared payload fields outside the documented OpenAPI schema (`ssn`, `password_hash`, credit cards, internal server metadata).
+- **Missing Authentication & Anonymous Access (OWASP API2:2023)**:
+  - Endpoints marked as requiring authentication in OpenAPI that return valid business data to anonymous callers (`GET /reports/summary`).
+- **Unrestricted Resource Consumption & Rate Limiting (OWASP API4:2023)**:
+  - Authentication and brute-force endpoints lacking burst protection and rate limiting (`POST /auth/login`).
+- **Improper Input Handling Anomalies (OWASP API8:2023)**:
+  - Boundary type mutations, adjacent numeric IDs, and malformed inputs returning unhandled `500 Internal Server Error` exceptions.
 
+### What SentinelAPI Explicitly Does NOT Detect
+To maintain engineering honesty and eliminate false promises:
+- **Injection Attacks (SQLi, NoSQLi, Command Injection, XSS)**: SentinelAPI does not inject database syntax or JavaScript payloads.
+- **Network / Transport Vulnerabilities**: Does not scan TLS ciphers, DNS configuration, or port forwarding.
+- **State-Modifying BFLA on Untracked Objects**: Does not blind-fire `DELETE /admin/purge` to avoid destructive side-effects.
+- **SSRF / XML External Entities (XXE)**: Does not attempt remote server ping-backs or XML entity expansions.
+- **Non-OpenAPI Legacy APIs**: Requires a valid OpenAPI / Swagger 3.x schema to map endpoint contracts.
+
+---
+
+## Our Technologies: The Core Engines
+
+SentinelAPI is built from the ground up without off-the-shelf DAST scanners. The architecture is driven by specialized core engines:
+
+1. **OpenAPI Spec Loader & Resolving Parser**: Validates OpenAPI 3.x contracts, handles schema dereferencing, and detects circular `$ref` schemas with fallback isolation.
+2. **Attack Surface & Risk Prioritization Engine**: Analyzes endpoint paths, HTTP methods, and parameter schemas to compute risk rankings (favoring state-changing writes and privileged routes).
+3. **Multi-Persona Identity Orchestration Engine**: Authenticates multiple simultaneous user roles (`userA`, `userB`, `admin`) via JWT or session tokens without storing cleartext credentials.
+4. **Autonomous Ownership Discovery Engine**: Discovers which resources each user legitimately owns by querying standard profile and collection endpoints without brute-forcing IDs.
+5. **Ground-Truth Authorization Matrix Compiler**: Constructs a mathematical grid mapping every known resource object against every identity with `ALLOW` or `DENY` expectations.
+6. **Guarded HTTP Execution Engine**: Dispatches rate-limited requests through a token-bucket rate limiter, strict scope validation, response truncation, and redaction filters.
+7. **Differential Response Analysis Engine**: Computes weighted Jaccard similarity distance, status-code divergence, and sensitive-field exposure between baseline and attack responses.
+8. **Explainable Risk & Severity Engine**: Replaces arbitrary CVSS guesswork with a transparent 4-component calculation: **Impact** (0-40) + **Exploitability** (0-25) + **Data Sensitivity** (0-30) + **Evidence Strength** (0-15).
+9. **Empirical Reproduction Engine**: Actively re-executes top-scoring attack probes against the live API to empirically prove reproducibility, boosting confidence to `1.00` or downgrading severity if unrepeatable.
+10. **Evidence-Only AI Analyst Boundary**: Passes sanitized, secret-free finding fingerprints to LLMs for natural-language explanations, code fixes, and executive summaries with strict zero-leak egress guards.
+
+---
+
+## Visual Tour & Screenshots
+
+SentinelAPI provides a tactical developer interface built for rapid triage and verification.
+
+| Results Triage Workspace | Differential Finding Inspector |
+| :---: | :---: |
+| ![Results Triage](docs/screenshots/triage-workspace.png) | ![Finding Inspector](docs/screenshots/finding-inspector.png) |
+
+| Live Scan Telemetry Stepper | Ground-Truth Authorization Matrix |
+| :---: | :---: |
+| ![Live Stepper](docs/screenshots/live.png) | ![Authorization Matrix](docs/screenshots/matrix.png) |
+
+| Discovered Attack Surface | AI Remediation & Code Fix |
+| :---: | :---: |
+| ![Attack Surface](docs/screenshots/surface.png) | ![AI Analysis](docs/screenshots/ai-analysis-panel.png) |
+
+---
+
+## CI / CD Security Quality Gate (`scripts/ci_gate.py`)
+
+SentinelAPI functions as a native CI quality gate for customer deployment pipelines. It evaluates exported scan JSON against configurable severity and confidence policies:
+
+```bash
+# Run scanner via CLI and export JSON findings
+python -m app.cli scan \
+  --spec http://target_api:9000/openapi.json \
+  --base-url http://target_api:9000 \
+  --identity userA,user,userA,passA123 \
+  --identity userB,user,userB,passB123 \
+  --identity admin,admin,admin,admin123 \
+  --budget 100 \
+  --json-out findings.json
+
+# Enforce quality gate (fails with exit code 1 on CRITICAL/HIGH findings with confidence >= 0.7)
+python scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.7
+```
+
+### GitHub Actions Integration Example
+```yaml
+- name: Run SentinelAPI Security Gate
+  run: |
+    docker compose exec -T scanner python -m app.cli scan --spec http://api:8000/openapi.json --base-url http://api:8000 --json-out findings.json
+    python scripts/ci_gate.py --findings findings.json --fail-on CRITICAL,HIGH --min-confidence 0.7
+```
+
+---
+
+## AI Analyst Data-Handling & Egress Safety Statement
+
+SentinelAPI treats data privacy and security with defense-in-depth guarantees:
+
+1. **Zero Raw Data Egress**: The AI layer **never** sees URLs, hostnames, IP addresses, credentials, passwords, Bearer tokens, or raw response bodies.
+2. **Pre-Flight Safety Assertion**: Every payload dispatched to an LLM provider is scanned by `assert_payload_safe()`. If any token, SSN, credit card, or email pattern is detected, egress is blocked immediately.
+3. **Deterministic Fallback**: If an LLM provider fails, returns invalid JSON, times out, or reaches call limits, SentinelAPI seamlessly falls back to pre-compiled deterministic remediation templates.
+4. **Immutability Principle**: The AI model **cannot modify** finding severity or confidence scores. Findings are strictly defined by empirical security engine diffs.
+
+---
+
+## Known Limitations
+
+- **Non-GET Privileged Endpoints**: To prevent destructive side-effects, the scanner does not execute state-modifying write operations (`DELETE /admin/purge`) against pre-existing administrative endpoints.
+- **Rate-Limit Detection Window**: Rate limiting detection is bounded by `MAX_RPS` (default 20 requests/sec). APIs requiring bursts greater than 50 requests to trip rate limits may be noted as inconclusive.
+- **OpenAPI 3.x Only**: Specifications written in Swagger 2.0 must be converted to OpenAPI 3.0+ before scanning.
+- **Not an Injection Scanner**: Does not test for SQL injection, command execution, or cross-site scripting.
+
+---
+
+## Roadmap
+
+- **SaaS Multi-Tenant Cloud**: Cloud-hosted distributed scanner workers with centralized team permissions.
+- **OAuth2 / OIDC Flow Automation**: Automated PKCE authorization code grant negotiation for enterprise SSO.
+- **Custom Policy Rules Engine**: Declarative YAML policy rules for custom compliance frameworks (HIPAA, PCI-DSS, SOC2).
+- **Persistent Database Storage**: MongoDB / PostgreSQL persistence adapters for multi-year enterprise audit archiving.
+
+---
+
+## Local Development & Contribution
+
+### Backend Setup
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+pip install -r target_api/requirements.txt
 pip install -r backend/requirements.txt
-```
 
-### 2. Run Test Suite
-
-```bash
+# Run backend test suite
 cd backend
-pytest -v
+pytest -v -m "not e2e and not integration and not live_llm"
 
-cd ../target_api
-pytest -v
+# Run hermetic E2E tests
+pytest -q -m e2e
 ```
 
----
-
-## OpenAPI Attack Surface Parser (CLI)
-
-SentinelAPI provides an automated attack surface mapper that loads OpenAPI 3.x specifications (from local files or allow-listed sandboxed URLs), dereferences internal schemas, and scores endpoints by risk exposure.
-
-### CLI Usage
-
+### Frontend Setup
 ```bash
-cd backend
-python -m app.cli surface --spec http://localhost:9000/openapi.json
-# Or against a local file:
-python -m app.cli surface --spec tests/fixtures/target_openapi.json
+cd frontend
+npm ci
+
+# Run type check, linting, and unit tests
+npm run typecheck
+npm run lint
+npm test
+
+# Run Playwright E2E tests (requires running backend/mock)
+npm run e2e
 ```
-
-### Sample Output
-
-```text
-                              SentinelAPI Attack Surface Mapping                
-┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┓
-┃ METHOD   ┃ PATH                      ┃  AUTH  ┃  OBJECT  ┃  PRIV  ┃ RESOURCE  ┃ SCORE ┃
-┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━┩
-│ PUT      │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +65 │
-│ DELETE   │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +65 │
-│ GET      │ /admin/users              │  YES   │    NO    │  YES   │ user      │   +60 │
-│ GET      │ /users/{id}               │  YES   │   YES    │   NO   │ user      │   +55 │
-│ GET      │ /orders/{id}              │  YES   │   YES    │   NO   │ order     │   +55 │
-│ POST     │ /orders                   │  YES   │    NO    │   NO   │ order     │   +50 │
-│ GET      │ /users/me                 │  YES   │    NO    │   NO   │ me        │   +15 │
-│ GET      │ /orders                   │  YES   │    NO    │   NO   │ order     │   +15 │
-│ GET      │ /reports/summary          │  YES   │    NO    │   NO   │ summary   │   +15 │
-│ GET      │ /products/{id}            │   NO   │   YES    │   NO   │ product   │   +10 │
-│ POST     │ /auth/login               │   NO   │    NO    │   NO   │ -         │   -20 │
-│ GET      │ /products                 │   NO   │    NO    │   NO   │ product   │   -30 │
-│ GET      │ /health                   │   NO   │    NO    │   NO   │ -         │  -130 │
-│ POST     │ /_reset                   │   NO   │    NO    │   NO   │ -         │  -130 │
-└──────────┴───────────────────────────┴────────┴──────────┴────────┴───────────┴───────┘
-
-Surface Summary: Total: 14 | Auth Required: 9 | Object Level: 5 | Privileged: 1 | Public: 5
-```
-
----
-
-## Execution Engine & Safety Architecture
-
-Every probe request generated by SentinelAPI must flow strictly through `Executor.execute`. The engine enforces multiple layers of safety guarantees to ensure scans remain strictly contained, non-destructive, and leak-free:
-
-1. **Strict Scope Guard**: Evaluates the target URL before making network calls. If the scheme, hostname, or credential format violates the allowlist (`ALLOWED_HOSTS`), `ScopeViolationError` is raised and no packet is transmitted.
-2. **Global Request Budget**: Scans cannot loop infinitely. Total requests are hard-capped by `MAX_REQUESTS_PER_SCAN` (default 1000). Any attempt to exceed the budget raises `BudgetExceededError`.
-3. **Concurrent Rate Limiting**: An async token-bucket limiter shared across concurrent workers enforces `MAX_RPS` (default 20 req/sec) to avoid DoS on test targets.
-4. **No Redirects**: `follow_redirects=False` guarantees that 3xx responses are never automatically followed, preventing SSRF and open redirect traps.
-5. **Streaming Response Truncation**: Incoming payloads are streamed and capped at `MAX_RESPONSE_BYTES` (default 2 MB) to prevent out-of-memory crashes on oversized responses.
-6. **Automated Header & Body Redaction**: Outgoing and incoming records pass through redaction before display or logging. Authorization headers, cookies, API keys, and sensitive dictionary keys (`password`, `token`, `secret`) are scrubbed, while `mask_value` provides partial masking (e.g. `11*******33`) for vulnerability evidence.
-
-### Identity Manager & Whoami Verification CLI
-
-The `IdentityManager` logs in configured personas, reads roles and user IDs from unverified JWT claims, and retains authentication tokens exclusively in memory.
-
-```bash
-cd backend
-python -m app.cli whoami \
-  --base-url http://localhost:9000 \
-  --identity userA,user,userA,passA123 \
-  --identity userB,user,userB,passB123
-```
-
-Sample output:
-```text
-            SentinelAPI Whoami Identity Verification             
-┏━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ IDENTITY ┃ ROLE IN TOKEN ┃ USER_ID ┃ STATUS ┃ DIFFERENT USERS ┃
-┡━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ userA    │     user      │    1    │  200   │       YES       │
-├──────────┼───────────────┼─────────┼────────┼─────────────────┤
-│ userB    │     user      │    2    │  200   │                 │
-└──────────┴───────────────┴─────────┴────────┴─────────────────┘
-```
-
----
-
-## Test Planning & Test Generation Engine
-
-SentinelAPI converts OpenAPI attack surfaces and authenticated identities into a concrete, budgeted test suite. The scanner uses real API discovery to map ownership and build an authorization matrix before generating test cases.
-
-### Discovery & Ground-Truth Authorization Matrix
-
-1. **Legitimate Discovery**: Authenticated collection GET endpoints (`/orders`, `/users/me`) are queried per persona to discover legitimately owned objects without guessing identifiers.
-2. **Authorization Matrix**: Compares every discovered object against every test persona to determine expected outcomes (`ALLOW` for owner or admin; `DENY` for unauthorized peers).
-
-### Test Case Categories
-
-The test generator produces prioritized cases across six distinct categories:
-- **`CROSS_USER` (BOLA/IDOR)**: High-priority probes attempting to access or modify objects belonging to a different persona.
-- **`PRIVILEGED_ENDPOINT` (BFLA)**: Administrative routes probed using regular non-admin credentials.
-- **`ADJACENT_ID`**: Probes numeric IDs adjacent to owned objects (`id - 1`, `id + 1`) to detect authorization bypass via sequential enumeration.
-- **`BOUNDARY`**: Extreme and invalid values (`0`, `-1`, `999999999`, null UUID) verifying proper resource lookup denial.
-- **`ANONYMOUS`**: Protected endpoints probed without credentials.
-- **`INVALID_TYPE`**: Malformed parameters (`abc`, `1;drop`, `' OR '1'='1`) testing robustness and parameter validation.
-
-### CLI Plan Command
-
-```bash
-cd backend
-python -m app.cli plan \
-  --spec http://localhost:9000/openapi.json \
-  --base-url http://localhost:9000 \
-  --identity userA,user,userA,passA123 \
-  --identity userB,user,userB,passB123 \
-  --identity admin,admin,admin,admin123 \
-  --budget 150
-```
-
-Sample output:
-```text
-    SentinelAPI Object Authorization Matrix     
-┏━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━┓
-┃ RESOURCE:ID ┃ OWNER  ┃ userA ┃ userB ┃ admin ┃
-┡━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━┩
-│ order:101   │ userA  │  own  │ deny  │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ order:102   │ userA  │  own  │ deny  │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ order:103   │ userA  │  own  │ deny  │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ order:104   │ userB  │ deny  │  own  │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ order:105   │ userB  │ deny  │  own  │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ order:106   │ admin  │ deny  │ deny  │  own  │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ user:1      │ shared │ allow │ allow │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ user:2      │ shared │ allow │ allow │ admin │
-├─────────────┼────────┼───────┼───────┼───────┤
-│ user:3      │ shared │ allow │ allow │ admin │
-└─────────────┴────────┴───────┴───────┴───────┘
-
-          SentinelAPI Test Generation Plan           
-┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ CATEGORY            ┃ GENERATED ┃ KEPT (BUDGETED) ┃
-┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ CROSS_USER          │    21     │       21        │
-├─────────────────────┼───────────┼─────────────────┤
-│ ADJACENT_ID         │    48     │       48        │
-├─────────────────────┼───────────┼─────────────────┤
-│ BOUNDARY            │    20     │       20        │
-├─────────────────────┼───────────┼─────────────────┤
-│ INVALID_TYPE        │    20     │       20        │
-├─────────────────────┼───────────┼─────────────────┤
-│ ANONYMOUS           │     9     │        9        │
-├─────────────────────┼───────────┼─────────────────┤
-│ PRIVILEGED_ENDPOINT │     2     │        2        │
-├─────────────────────┼───────────┼─────────────────┤
-│ TOTAL               │    120    │       120       │
-└─────────────────────┴───────────┴─────────────────┘
-Plan Budget Allocation: Generated: 120 | Capped to Budget: 120 / 150
-```
-
----
-
-## Automated Security Checks & Vulnerability Scanning
-
-SentinelAPI includes a modular security check suite that executes differential response analysis to prove vulnerabilities with high precision and near-zero false positives.
-
-### Security Check Modules
-
-| Check | OWASP API Top 10 | Description & Detection Strategy | False-Positive Mitigations | Limitations & Out-of-Scope |
-|---|---|---|---|---|
-| **`bola`** | API1:2023 | Detects Broken Object Level Authorization across tenants. Probes GET endpoints across personas and executes write BOLA (PUT/DELETE) strictly on objects created by the scanner. | Compares attack response to legitimate owner baseline; requires high body similarity, owner ID mismatch, and non-error payload; skips admin personas; write tests run only on tracked, scanner-created objects and cleaned up in `finally`. | Cannot test resources without creation schemas; cannot guess non-numeric/unguessable UUIDs without discovery. |
-| **`bfla`** | API5:2023 | Detects Broken Function Level Authorization where non-admin personas access privileged routes. | Compares non-admin response against admin baseline; checks for structured non-error bodies; safe 401/403/404 responses are never flagged. | Only tests GET privileged routes; non-GET privileged routes are deferred and noted; does not test fine-grained multi-tenant organizational permissions. |
-| **`data_exposure`** | API3:2023 | Flags excessive data exposure, contract mismatches (undeclared schema fields), and leak of secret credentials (passwords, hashes, SSNs) to non-admin users. | Does not evaluate admin responses (who legitimately see more); uses token-aware field classifier preventing false matches (`passenger` is not `password`); masks all values in evidence. | Dynamic schemas with `additionalProperties: true` fall back to sensitive-name testing only. |
-| **`rate_limit`** | API4:2023 | Probes unauthenticated POST auth/login routes with invalid credentials to verify enforcement of HTTP 429 and rate-limiting headers (`Retry-After`, `X-RateLimit-*`). | Monitors response status and latency deceleration; acknowledges protection immediately if 429 is observed; runs sequentially last to avoid locking out test identities. | Probes at most `MAX_RPS` requests/sec; rate limits looser than this threshold are not detected; distributed multi-IP rate limiting is not tested. |
-| **`unauth_access`** | API2:2023 | Identifies specification/implementation mismatches where endpoints declare `requires_auth: true` in OpenAPI but respond with 200 OK to anonymous callers. | Excludes public utility paths (`/health`, `/metrics`, `/_reset`); ignores soft error responses. | Non-GET routes are not tested anonymously; multi-step authentication schemes (e.g. MFA, OAuth authorization code flows) are out of scope. |
-| **`input_handling`** | API8:2023 | Robustness and stability probe monitoring boundary and malformed identifiers for unhandled 5xx server crashes or phantom object leaks. | Distinguishes 5xx unhandled exceptions from clean 400/404 validation responses. | **NOT an injection scanner** (SQL injection, XSS, and command injection are explicitly out of scope). |
-
-### Safety Rules
-
-1. **Read-Only by Default**: Test cases targeting pre-existing seed or discovered objects only use `GET`. Write probes (`PUT`, `DELETE`) execute **only** against fresh objects created during the scan run.
-2. **Guaranteed Cleanup**: All scanner-created objects are tracked in `ctx.created_objects` and cleaned up in a `finally` block via `cleanup_created`.
-3. **Strict Scope Enforcement**: Every single probe is dispatched through `Executor.execute`, validating host allowlists, rate caps, and budget exhaustion.
-4. **Zero Cleartext Credentials**: Raw tokens and passwords never enter disk logs, reports, or serialized evidence artifacts (`redaction.py` and `mask_value`).
-5. **Fault Isolation**: Check exceptions are isolated per check and recorded in `ctx.notes`, ensuring a crashed check never aborts the scan.
-6. **Rate-Limit Isolation**: `rate_limit` runs strictly last and alone to prevent request bursts from causing collateral throttling on other checks.
-
----
-
-## How to Run a Security Scan
-
-Run a complete automated security scan via the CLI `scan` command:
-
-```bash
-cd backend
-python -m app.cli scan \
-  --spec http://localhost:9000/openapi.json \
-  --base-url http://localhost:9000 \
-  --identity userA,user,userA,passA123 \
-  --identity userB,user,userB,passB123 \
-  --identity admin,admin,admin,admin123 \
-  --budget 150 \
-  --sample-body 'order={"items":[{"product_id":1,"qty":1}],"shipping_address":"SentinelAPI test"}' \
-  --json-out scan_results.json
-```
-
-### CLI Options
-
-- `--spec`: Local file path or allow-listed URL to target OpenAPI specification.
-- `--base-url`: Target API base URL (e.g. `http://localhost:9000`).
-- `--identity`: Repeatable persona specification formatted as `name,role,username,password`.
-- `--budget`: Maximum probe request budget (default: 150).
-- `--sample-body`: Repeatable sample JSON body for resource creation: `resource=JSON`.
-- `--checks`: Optional comma-separated list of checks to run (e.g. `bola,bfla,data_exposure`).
-- `--json-out`: Optional path to write redacted findings JSON.
-
----
-
-## Risk and Confidence Engines (Explainable Scoring & Reproduction)
-
-SentinelAPI avoids black-box heuristics or arbitrary severities. Every finding is assigned an explainable risk score and an empirical confidence rating calculated through modular, transparent scoring engines and verified via live reproduction.
-
-### 1. Explainable Risk Engine (`risk.py`)
-
-Severities are calculated by summing four weighted components into a 0–100 score mapped to standardized severity thresholds:
-
-$$\text{Risk Score} = \min(100, \text{Impact} + \text{Exploitability} + \text{Data Sensitivity} + \text{Evidence Strength})$$
-
-#### A. Impact Factor (0–40 Points)
-Measures the consequence of unauthorized access:
-- **`WRITE` (40 pts)**: Unauthorized modification or deletion of another tenant's data (e.g. Write-BOLA on `PUT` / `DELETE`). Write access to another user's data is the most damaging category.
-- **`PRIVILEGE_ESCALATION` (35 pts)**: Access to administrative or horizontal tenant boundaries (e.g. BFLA on `/admin/*`).
-- **`UNAUTHENTICATED_ACCESS` (30 pts)**: Sensitive endpoints completely open without credentials; literally anyone on the network can reach it.
-- **`READ` (20 pts)**: Unauthorized read access or cross-user data leakage.
-
-#### B. Exploitability (0–25 Points)
-Measures attacker effort and prerequisites:
-- **`no_auth_needed` (25 pts)**: Exploitable anonymously without prior registration or tokens.
-- **`single_valid_token_needed` (15 pts)**: Exploitable by any registered user with standard tenant credentials.
-- **`requires_specific_knowledge_of_id` (10 pts)**: Requires targeting a specific object identifier.
-- **`sequential_ids_bonus` (+5 pts)**: Automatically awarded when object IDs are provably sequential integers (e.g. `[101, 102, 103]`), converting targeted access into trivial bulk enumeration.
-- **`admin_token_needed_but_used_lower_priv` (5 pts)**: Internal privilege mismatch.
-
-#### C. Data Sensitivity (0–30 Points)
-Measures the classification tier of exposed fields (takes maximum across exposed tiers):
-- **`SECRET` Tier (30 pts)**: Passwords, password hashes, API tokens, Private keys, SSNs.
-- **`PERSONAL` Tier (15 pts)**: Physical shipping addresses, phone numbers, email addresses, real names.
-- **`LOW` Tier (5 pts)**: System metadata, status tags, roles, timestamps.
-- **None (0 pts)**: No data fields exposed.
-
-#### D. Evidence Strength (0–15 Points)
-Measures statistical proof from differential analysis:
-- **`baseline_match_high` (15 pts)**: Attack response matches legitimate owner baseline ($\ge 90\%$ body similarity) with owner ID mismatch.
-- **`baseline_match_medium` (8 pts)**: Moderate body similarity ($\ge 60\%$).
-- **`no_baseline_but_owner_mismatch` (6 pts)**: Proven cross-user data observed without baseline comparison.
-- **`weak` (0 pts)**: Minimal corroborating telemetry.
-
-#### Severity Mapping
-| Raw Score Range | Assigned Severity |
-|---|---|
-| **$\ge 80$** | **`CRITICAL`** |
-| **$60$ – $79$** | **`HIGH`** |
-| **$35$ – $59$** | **`MEDIUM`** |
-| **$15$ – $34$** | **`LOW`** |
-| **$< 15$** | **`INFO`** |
-
-Every finding stores both the final severity and the transparent breakdown in `evidence.response_diff["risk_breakdown"]` and `evidence.response_diff["risk_score"]`.
-
----
-
-### 2. Empirical Reproduction & Confidence Engine (`reproduce.py`)
-
-Findings are not merely reported on a single observation. SentinelAPI validates findings empirically through an active reproduction step:
-
-1. **Prioritization**: `reproduce_top_findings` selects the top-priority findings (by severity and initial confidence, default `top_n=8`) within the scan request budget.
-2. **Re-Execution**: The scanner reconstructs the exact original request from `finding.evidence.request` and re-resolves credentials fresh from the active session (never from cached tokens).
-3. **Outcome Comparison**: The scanner tests the endpoint up to 2 times, verifying that the status code class and differential pattern repeat identically.
-4. **Confidence Adjustments**:
-   - **`+0.05`**: Awarded when the finding successfully reproduces on the first attempt.
-   - **`+0.03`**: Additional bump when reproduced repeatedly ($\ge 2$ times).
-   - **`-0.20`**: Penalized immediately if reproduction fails (the exploit did not repeat).
-5. **Severity Safety Net**: If a finding fails reproduction entirely ($0/\text{attempts}$), its severity is downgraded by one level (e.g. `CRITICAL` $\to$ `HIGH`, never below `INFO`), and marked with `downgraded: true` in the diff evidence. Findings are never silently discarded.
-
----
-
-### 3. CLI Report & Explainable Risk Inspection
-
-Inspect previously saved scan findings and display the transparent risk breakdown table:
-
-```bash
-cd backend
-python -m app.cli report --json-in findings.json
-```
-
-Outputs a formatted table detailing the four component scores (`IMPACT`, `EXPLOIT`, `SENSITIVITY`, `EVIDENCE`) alongside live reproduction status (`Yes (2/2)`, `Failed (Downgraded)`, or `Skipped`).
-
----
-
-## Scanner API
-
-SentinelAPI exposes a RESTful API and Server-Sent Events (SSE) streaming service to schedule scans, track real-time progress, inspect findings, and download structured reports.
-
-> **Security & Binding Notice**:
-> The Scanner API accepts target credentials and dispatches active HTTP network probes. 
-> - **Localhost Binding**: Bind to `127.0.0.1` only (configured by default in `docker-compose.yml`) to prevent exposing the scanner to untrusted networks.
-> - **API Key Authentication**: When `SENTINEL_API_KEY` is configured, all `/scans` endpoints require the `X-API-Key` request header.
-
-### API Walkthrough (curl)
-
-#### 1. Submit a New Scan Job
-Submit target OpenAPI specification and test identity credentials:
-
-```bash
-curl -X POST http://localhost:8000/scans \
-  -H "Content-Type: application/json" \
-  -d '{
-    "spec_url": "http://target_api:9000/openapi.json",
-    "base_url": "http://target_api:9000",
-    "identities": [
-      {"name": "userA", "role": "user", "username": "userA", "password": "passA123", "login_path": "/auth/login"},
-      {"name": "userB", "role": "user", "username": "userB", "password": "passB123", "login_path": "/auth/login"},
-      {"name": "admin", "role": "admin", "username": "admin", "password": "admin123", "login_path": "/auth/login"}
-    ],
-    "test_case_budget": 150,
-    "sample_bodies": {
-      "order": {
-        "items": [{"product_id": 1, "qty": 1}],
-        "shipping_address": "Demo Street 100"
-      }
-    }
-  }'
-```
-
-Returns `HTTP 202 Accepted` with scan identifiers and URLs:
-```json
-{
-  "scan_id": "68382d57-7c89-4a84-92be-2e6b7de421a2",
-  "status": "queued",
-  "status_url": "/scans/68382d57-7c89-4a84-92be-2e6b7de421a2",
-  "events_url": "/scans/68382d57-7c89-4a84-92be-2e6b7de421a2/events"
-}
-```
-
-#### 2. Stream Live Progress Updates (SSE)
-Subscribe to real-time progress events until completion:
-
-```bash
-curl -N http://localhost:8000/scans/<scan_id>/events
-```
-
-Streams progress stages (`queued`, `loading_spec`, `mapping_surface`, `authenticating`, `discovering`, `planning`, `running_checks`, `reproducing`, `finalizing`):
-```text
-event: progress
-data: {"seq": 1, "scan_id": "...", "stage": "queued", "status": "running", "percent": 0, "message": "Scan initialized and queued", "check": null, "timestamp": "..."}
-
-event: progress
-data: {"seq": 13, "scan_id": "...", "stage": "running_checks", "status": "running", "percent": 45, "message": "Check completed: bfla (1/6)", "check": "bfla", "timestamp": "..."}
-
-event: progress
-data: {"seq": 22, "scan_id": "...", "stage": "finalizing", "status": "completed", "percent": 100, "message": "Scan completed successfully", "check": null, "timestamp": "..."}
-```
-
-#### 3. Inspect Scan Summary & Findings
-Retrieve executive summary and filter findings by severity:
-
-```bash
-# Get high-level scan summary
-curl http://localhost:8000/scans/<scan_id>
-
-# Filter findings by severity (e.g. CRITICAL)
-curl "http://localhost:8000/scans/<scan_id>/findings?severity=CRITICAL"
-
-# Inspect authorization matrix
-curl http://localhost:8000/scans/<scan_id>/matrix
-```
-
-#### 4. Download Reports
-Export Markdown or JSON audit reports:
-
-```bash
-# Download Markdown audit report
-curl http://localhost:8000/scans/<scan_id>/report.md -o report.md
-
-# Download JSON findings report
-curl http://localhost:8000/scans/<scan_id>/report.json -o report.json
-```
-
----
-
-## Design System & Dashboard UI (Phase 9A)
-
-The SentinelAPI frontend dashboard was designed using Google Stitch MCP under the **Tactical Cyber Reconnaissance** visual system. All design artifacts, tokens, and specifications reside in `frontend/design/`:
-
-- **Design Philosophy & Visual Brief:** [`frontend/design/BRIEF_USER.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/BRIEF_USER.md)
-- **Tokens & Tailwind Theme:** [`frontend/design/DESIGN_SYSTEM.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/DESIGN_SYSTEM.md)
-- **Screen-to-API Mappings & Forensics:** [`frontend/design/SCREENS.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/SCREENS.md)
-- **Stitch Project Registry:** [`frontend/design/stitch/PROJECT.md`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/PROJECT.md) (Project ID `16595067987113609613`)
-
-### Screen Artifacts:
-1. **Results Triage Workspace:** [`frontend/design/stitch/01-results-triage-workspace/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/01-results-triage-workspace/) — Main command center with metric HUDs, filterable finding explorer, dual-identity differential inspector, and cURL reproducer console.
-2. **New Scan Configuration:** [`frontend/design/stitch/02-new-scan/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/02-new-scan/) — Modal for multi-persona auth setup, check toggles, budget slider, and scope guard gating.
-3. **Live Scan Progress:** [`frontend/design/stitch/03-live-scan-progress/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/03-live-scan-progress/) — 8-stage stepper, live progress telemetry, and streaming monospace event log.
-4. **Authorization Matrix:** [`frontend/design/stitch/04-authorization-matrix/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/04-authorization-matrix/) — Heatmap of object ownership vs runtime access boundaries across all test identities.
-5. **Attack Surface:** [`frontend/design/stitch/05-attack-surface/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/05-attack-surface/) — Discovered OpenAPI route inventory with risk priority ranking.
-6. **Scan History:** [`frontend/design/stitch/06-scan-history/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/06-scan-history/) — Historical audit vault, severity distribution badges, and report exports.
-7. **States Sheet:** [`frontend/design/stitch/07-states-sheet/`](file:///Users/tanuj/Downloads/Amity/frontend/design/stitch/07-states-sheet/) — Loading skeletons, unreachable backend, execution failures, cancellations, and empty states.
-
----
-
-## AI Analyst (Phase 10)
-
-SentinelAPI includes an optional, privacy-centric AI Analyst designed to explain vulnerabilities, synthesize business impact narratives, and recommend framework-specific code remediations.
-
-### Core Design Principles
-
-1. **The Scanner Alone Decides Vulnerabilities:** The deterministic vulnerability scanner executes all differential authorization tests and alone determines whether an issue exists, its severity rating, its confidence level, and its technical evidence. The LLM **never** creates, removes, or re-scores findings.
-2. **Finding Immutability:** Finding attributes (`severity`, `confidence`, `evidence`, `title`, `endpoint`, `method`) are byte-for-byte immutable before and after AI analysis. Model output cannot modify scanner findings.
-3. **Full Functionality with AI Disabled:** SentinelAPI functions 100% autonomously without an AI key or when `AI_ENABLED=false`. All reports, exports, and UI components display deterministic template explanations when AI is disabled.
-4. **Human Verification Warning:** All AI-synthesized outputs carry the mandatory label: `AI-generated analysis (verify before use)`.
-
----
-
-### Strict Data Egress Guardrails
-
-Data privacy is a first-class architectural invariant. Outbound payloads are strictly constrained by `build_llm_payload()` and guarded by `assert_payload_safe()` before leaving the machine:
-
-| What May Leave the Machine | What NEVER Leaves the Machine |
-| :--- | :--- |
-| Security check name (e.g. `BOLA`) | Target hostnames, domain names, or IP addresses |
-| OWASP Category identifier (e.g. `API1:2023`) | Complete request URLs or query strings with real parameters |
-| HTTP Method (`GET`, `POST`, etc.) | Authentication headers, bearer tokens, or API keys |
-| Path **template** (e.g. `/orders/{id}`) | Real passwords, usernames, full names, or credentials |
-| Severity, confidence, and risk score breakdown | Request/response HTTP bodies (JSON, HTML, binary) |
-| Attacker persona **role** (e.g. `user`, `anonymous`) | Real object IDs from database records (e.g. `<object-id>`) |
-| Expected vs actual HTTP status codes | Masked or unmasked live customer data |
-| Changed and leaked **field names** & sensitivity tier | Raw cURL commands or network replay transcripts |
-| Reproduction ratio (e.g. `2 of 2`) | SSNs, credit card numbers, email addresses, or JWTs |
-| Scanner fix hint and template explanation | Target server headers, cookies, or software banners |
-| Selected framework hint (allowlist: `generic`, `fastapi`, `express`, etc.) | Any data matching `assert_payload_safe` patterns |
-
-Every outbound payload is validated against a pre-flight regex filter (`assert_payload_safe`). If any URL, IP, JWT, Bearer token, email, SSN, or credential-like string is detected, the outbound call is **immediately aborted**, logged safely without the payload, and a deterministic fallback is served.
-
----
-
-### Supported Providers & Configuration
-
-SentinelAPI supports Groq, OpenRouter, and Google Gemini using current provider JSON mode standards:
-
-| Provider | Recommended Fast Model | Default Environment Variable |
-| :--- | :--- | :--- |
-| **Groq** | `llama-3.1-8b-instant` | `LLM_PROVIDER=groq` |
-| **OpenRouter** | `meta-llama/llama-3.1-8b-instruct:free` | `LLM_PROVIDER=openrouter` |
-| **Google Gemini** | `gemini-2.0-flash` | `LLM_PROVIDER=gemini` |
-
-#### Environment Variables (.env)
-
-```bash
-# Enable/disable AI analyst features (default: false)
-AI_ENABLED=true
-
-# Provider: groq | openrouter | gemini (default: groq)
-LLM_PROVIDER=groq
-
-# Fast recommended model per provider
-LLM_MODEL=llama-3.1-8b-instant
-
-# Secret API key (never logged, displayed, or persisted in records)
-LLM_API_KEY=gsk_...
-
-# Egress timeout and call controls
-AI_TIMEOUT_SECONDS=30
-AI_MAX_CALLS_PER_SCAN=15
-AI_MAX_OUTPUT_TOKENS=900
-AI_CONCURRENCY=2
-```
-
----
-
-### Prompt Injection Defenses & Output Sanitization
-
-1. **Untrusted Evidence Boundary:** Evidence field names and path templates originate from inspected API specs and responses. All evidence is strictly encapsulated within `<finding_evidence>` tags with explicit defensive system instructions prohibiting instruction execution.
-2. **Schema Lockdown:** The Pydantic `AiAnalysis` model extracts only verified explanation and remediation fields (`plain_explanation`, `business_impact`, `attacker_scenario`, `remediation_steps`, `code_fix_example`, `code_language`, `verification_steps`). Unauthorized keys (including any attempted `severity` overrides) are dropped.
-3. **Output Sanitization:** `sanitize_analysis()` strips HTML tags, control characters, and external URLs. Dangerous shell pipe syntax (`| sh`, `| bash`, `rm -rf`, `eval()`) in code examples is neutralized.
-4. **Deterministic Fallback:** On network timeouts, invalid JSON, schema mismatches, or safety violations, SentinelAPI falls back to template analysis (`build_template_analysis()`) with a sanitized warning message.
-
----
-
-### Cost & Quota Controls
-
-- **Cryptographic Fingerprint Cache:** Findings are fingerprinted using SHA-256 over finding check, method, path template, severity, sorted field names, and status codes. Repeated requests for identical findings return instantly from the scan cache without consuming API calls.
-- **Per-Scan Call Cap:** Strict budget capping via `AI_MAX_CALLS_PER_SCAN` (default: 15) prevents unbounded token usage. Subsequent calls return HTTP 429 with explanatory client messaging.
-- **Bounded Concurrency:** An `asyncio.Semaphore(AI_CONCURRENCY)` limits parallel external LLM requests.
-

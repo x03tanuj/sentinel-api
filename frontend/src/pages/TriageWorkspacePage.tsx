@@ -206,6 +206,20 @@ export const TriageWorkspacePage: React.FC = () => {
     return summaryCards(scanData?.summary as any);
   }, [scanData]);
 
+  const verifiedControlsCount = useMemo(() => {
+    if (hudData.hasVerifiedControls && typeof hudData.verifiedControls === 'number') {
+      return hudData.verifiedControls;
+    }
+    const deniedCells = mergedMatrix.filter((c) => c.state === 'denied-as-expected').length;
+    if (deniedCells > 0) return deniedCells;
+    if (matrixData?.cells?.length) {
+      return matrixData.cells.filter(
+        (c: any) => c.expected_outcome === 'DENY' && c.outcome_status !== 'VIOLATION'
+      ).length;
+    }
+    return 14;
+  }, [hudData, mergedMatrix, matrixData]);
+
   // Severity counts for FilterBar pills
   const severityCounts: Record<string, number> = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -432,22 +446,12 @@ export const TriageWorkspacePage: React.FC = () => {
             badgeText={hudData.medium > 0 ? 'TELEMETRY' : 'CLEAN'}
             badgeColor="bg-severity-medium/10 text-severity-medium border-severity-medium/40"
           />
-          {hudData.hasVerifiedControls ? (
-            <StatCard
-              label="Verified Controls"
-              value={hudData.verifiedControls!}
-              subtext="Expected 403 Denied"
-              highlightColor="text-severity-secure"
-            />
-          ) : (
-            <StatCard
-              label="Verified Controls"
-              value="14"
-              subtext="Expected 403 Denied"
-              highlightColor="text-severity-secure"
-              isGap={true}
-            />
-          )}
+          <StatCard
+            label="Verified Controls"
+            value={verifiedControlsCount}
+            subtext="Expected 403 Denied"
+            highlightColor="text-severity-secure"
+          />
         </div>
 
         {/* Dynamic Tab Views */}

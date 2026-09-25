@@ -73,3 +73,7 @@ data/
 # Design artifacts & keys
 frontend/design/.stitch-cache/
 *.key
+
+# Playwright artifacts
+playwright-report/
+test-results/
