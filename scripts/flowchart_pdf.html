@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SentinelAPI — Architecture Flowchart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1587px; height: 1123px;
+      background: #ffffff;
+      color: #0F172A;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+    }
+    .page {
+      width: 1587px; height: 1123px;
+      padding: 48px 56px 36px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2.5px solid #0F172A; padding-bottom: 10px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .shield {
+      width: 42px; height: 42px;
+      background: #0F172A; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .shield svg { width: 24px; height: 24px; }
+    .title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .subtitle { font-size: 11px; color: #64748B; font-weight: 500; margin-top: 2px; }
+    .badge { font-size: 10px; font-weight: 600; border: 1.5px solid #CBD5E1; border-radius: 6px; padding: 3px 10px; color: #334155; }
+
+    /* Flow canvas */
+    .flow { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+
+    /* Row */
+    .row { display: flex; align-items: center; justify-content: center; width: 100%; }
+
+    /* Arrows */
+    .arr-down { display: flex; flex-direction: column; align-items: center; height: 26px; }
+    .arr-down .line { width: 2px; flex: 1; background: #94A3B8; }
+    .arr-down .head { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #94A3B8; }
+
+    .arr-right { display: flex; align-items: center; }
+    .arr-right .line { height: 2px; background: #94A3B8; }
+    .arr-right .head { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid #94A3B8; }
+
+    .arr-lbl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .arr-lbl .lbl-txt { font-size: 8px; color: #94A3B8; font-weight: 600; white-space: nowrap; }
+
+    /* Nodes */
+    .node {
+      border-radius: 12px; padding: 10px 14px;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+    }
+    .node .icon { font-size: 20px; line-height: 1; }
+    .node .lbl  { font-size: 12px; font-weight: 700; line-height: 1.25; }
+    .node .sub  { font-size: 9.5px; color: #64748B; line-height: 1.35; }
+
+    .node-input  { background: #F0F9FF; border: 1.5px solid #7DD3FC; min-width: 148px; }
+    .node-input .lbl { color: #0369A1; }
+    .node-target { background: #FFF7ED; border: 1.5px solid #FDBA74; min-width: 148px; }
+    .node-target .lbl { color: #C2410C; }
+    .node-engine { background: #EEF2FF; border: 1.5px solid #A5B4FC; min-width: 140px; }
+    .node-engine .lbl { color: #3730A3; }
+    .node-result { background: #F0FDF4; border: 1.5px solid #6EE7B7; min-width: 140px; }
+    .node-result .lbl { color: #15803D; }
+    .node-store  { background: #FFFBEB; border: 1.5px solid #FCD34D; min-width: 140px; }
+    .node-store .lbl { color: #92400E; }
+    .node-ui     { background: #F8FAFC; border: 1.5px solid #CBD5E1; min-width: 140px; }
+    .node-ui .lbl { color: #334155; }
+    .node-ai     { background: #FDF4FF; border: 1.5px dashed #D946EF; min-width: 140px; }
+    .node-ai .lbl { color: #86198F; }
+
+    /* Engine group */
+    .engine-group {
+      border: 2.5px solid #4F46E5; border-radius: 16px;
+      background: #F5F3FF; padding: 14px 20px 16px;
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .group-label {
+      position: absolute; top: -12px; left: 16px;
+      background: #4F46E5; color: #fff;
+      font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 10px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .callout {
+      background: #FFF1F2; border: 1px solid #FDA4AF; border-radius: 6px;
+      padding: 3px 10px; font-size: 9px; color: #9F1239; font-weight: 600; white-space: nowrap;
+    }
+
+    /* Diamond */
+    .diamond-wrap { display: flex; align-items: center; justify-content: center; width: 90px; height: 56px; position: relative; }
+    .diamond { width: 86px; height: 52px; background: #FEF9C3; border: 1.5px solid #FDE047; transform: rotate(45deg) scale(0.66); border-radius: 5px; position: absolute; }
+    .dlbl { font-size: 9px; font-weight: 700; color: #713F12; text-align: center; position: relative; z-index: 1; }
+
+    /* Legend */
+    .legend {
+      display: flex; gap: 18px; flex-wrap: wrap;
+      border-top: 1px solid #E2E8F0; padding-top: 8px; align-items: center;
+    }
+    .legend-title { font-size: 10px; font-weight: 700; color: #475569; }
+    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: #475569; }
+    .leg-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid transparent; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="shield">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 6V12C3 16.97 7.02 21.61 12 23C16.98 21.61 21 16.97 21 12V6L12 2Z" fill="#38BDF8"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="title">SentinelAPI</div>
+        <div class="subtitle">System Architecture Flowchart — Automated API Security Testing Platform</div>
+      </div>
+    </div>
+    <div class="badge">Phases 1–10 Complete · Hackathon Build 2026</div>
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow">
+
+    <!-- ROW 1: Inputs -->
+    <div class="row" style="gap:28px;">
+      <div class="node node-input">
+        <div class="icon">📄</div>
+        <div class="lbl">OpenAPI Spec</div>
+        <div class="sub">URL or pasted JSON/YAML</div>
+      </div>
+      <div class="node node-input">
+        <div class="icon">🔑</div>
+        <div class="lbl">Auth Credentials</div>
+        <div class="sub">Bearer / API Key / OAuth2</div>
+      </div>
+      <div class="node node-target">
+        <div class="icon">🎯</div>
+        <div class="lbl">User's API (Target)</div>
+        <div class="sub">Allow-listed hosts only<br>Sandboxed execution</div>
+      </div>
+    </div>
+
+    <!-- Down arrow -->
+    <div class="arr-down"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ROW 2: Security Engine -->
+    <div class="row">
+      <div class="engine-group" style="min-width:1100px;">
+        <div class="group-label">⚡ Security Engine — Judged Proprietary IP</div>
+        <div class="row" style="gap:0;">
+
+          <div class="node node-engine" style="min-width:160px;">
+            <div class="icon">🗺️</div>
+            <div class="lbl">Attack Surface Mapper</div>
+            <div class="sub">Parses endpoints, methods,<br>parameters, request schemas</div>
+          </div>
+          <div class="arr-lbl" style="width:52px;">
+            <div class="lbl-txt">routes + schema</div>
+            <div class="arr-right"><div class="line" style="width:36px;"></div><div class="head"></div></div>
+          </div>
+
+          <div class="node node-engine" style="min-width:160px;">
+            <div class="icon">🔐</div>
+            <div class="lbl">Identity Manager</div>
+            <div class="sub">Session store, token rotation,<br>privilege matrix</div>
+          </div>
+          <div class="arr-lbl" style="width:48px;">
+            <div class="lbl-txt">auth context</div>
+            <div class="arr-right"><div class="line" style="width:32px;"></div><div class="head"></div></div>
+          </div>
+
+          <div class="node node-engine" style="min-width:160px;">
+            <div class="icon">🚀</div>
+            <div class="lbl">HTTP Executor</div>
+            <div class="sub">Scope guard · Rate cap (10 req/s)<br>Budget tracker (1 000 req)</div>
+          </div>
+          <div class="arr-lbl" style="width:48px;">
+            <div class="lbl-txt">raw results</div>
+            <div class="arr-right"><div class="line" style="width:32px;"></div><div class="head"></div></div>
+          </div>
+
+          <div class="node node-engine" style="min-width:160px;">
+            <div class="icon">🧪</div>
+            <div class="lbl">Test Generator</div>
+            <div class="sub">OWASP Top-10 payloads<br>Fuzzing · BOLA · AuthZ</div>
+          </div>
+
+        </div>
+        <div style="display:flex; gap:12px; margin-top:4px;">
+          <div class="callout">🛡 Scope Guard — blocks out-of-allowlist requests</div>
+          <div class="callout">⏱ Rate Cap — hard limit: 10 req/s · 1 000 req budget per scan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Down arrow -->
+    <div class="arr-down"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ROW 3: Decision + Results path -->
+    <div class="row" style="gap:20px; align-items:center;">
+
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div class="diamond-wrap"><div class="diamond"></div><div class="dlbl">Vuln<br>Found?</div></div>
+        <div style="display:flex; width:88px; justify-content:space-between; font-size:9px; color:#64748B; padding: 0 6px;">
+          <span style="color:#DC2626; font-weight:600;">Yes ▶</span>
+          <span style="color:#16A34A; font-weight:600;">No ▶</span>
+        </div>
+      </div>
+
+      <div class="arr-right"><div class="line" style="width:20px;"></div><div class="head"></div></div>
+
+      <div class="node node-result" style="min-width:148px;">
+        <div class="icon">🔍</div>
+        <div class="lbl">Finding Scorer</div>
+        <div class="sub">CVSS v3 scoring<br>Severity tagging · Evidence</div>
+      </div>
+
+      <div class="arr-right"><div class="line" style="width:20px;"></div><div class="head"></div></div>
+
+      <div class="node node-result" style="min-width:136px;">
+        <div class="icon">✅</div>
+        <div class="lbl">CI Gate</div>
+        <div class="sub">pass / fail · exit code<br>Threshold enforcement</div>
+      </div>
+
+      <div class="arr-right"><div class="line" style="width:20px;"></div><div class="head"></div></div>
+
+      <div class="node node-store" style="min-width:136px;">
+        <div class="icon">🗄️</div>
+        <div class="lbl">Report Store</div>
+        <div class="sub">SQLite · Run history<br>SARIF export</div>
+      </div>
+
+      <!-- optional dashed boundary -->
+      <div style="display:flex; align-items:center; gap:6px; margin-left:12px;">
+        <div style="width:36px; border-top:2px dashed #CBD5E1;"></div>
+        <div style="font-size:8.5px; color:#94A3B8; white-space:nowrap;">Optional</div>
+        <div class="node node-ai" style="min-width:136px;">
+          <div class="icon">✨</div>
+          <div class="lbl">Gemini AI Layer</div>
+          <div class="sub">Remediation narration<br>Exploit classification</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Down arrow -->
+    <div class="arr-down"><div class="line"></div><div class="head"></div></div>
+
+    <!-- ROW 4: Presentation -->
+    <div class="row" style="gap:28px;">
+
+      <div class="node node-ui">
+        <div class="icon">🖥️</div>
+        <div class="lbl">React Dashboard</div>
+        <div class="sub">Real-time scan feed<br>Filter / export UI</div>
+      </div>
+      <div class="arr-right"><div class="line" style="width:20px;"></div><div class="head"></div></div>
+      <div class="node node-ui">
+        <div class="icon">📊</div>
+        <div class="lbl">HTML / PDF Report</div>
+        <div class="sub">Downloadable report<br>with remediation hints</div>
+      </div>
+      <div class="arr-right"><div class="line" style="width:20px;"></div><div class="head"></div></div>
+      <div class="node node-ui">
+        <div class="icon">🔔</div>
+        <div class="lbl">Webhook / Slack Alert</div>
+        <div class="sub">Critical-finding notifications</div>
+      </div>
+
+    </div>
+
+  </div><!-- /flow -->
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="legend-title">Legend:</span>
+    <div class="leg-item"><div class="leg-swatch" style="background:#F0F9FF; border-color:#7DD3FC;"></div>Input</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#FFF7ED; border-color:#FDBA74;"></div>Target API</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#EEF2FF; border-color:#A5B4FC;"></div>Security Engine (Judged IP)</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#F0FDF4; border-color:#6EE7B7;"></div>Results / CI</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#FFFBEB; border-color:#FCD34D;"></div>Storage</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#F8FAFC; border-color:#CBD5E1;"></div>Presentation</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#FDF4FF; border-color:#D946EF; border-style:dashed;"></div>AI Layer (optional)</div>
+    <div class="leg-item"><div class="leg-swatch" style="background:#FEF9C3; border-color:#FDE047;"></div>Decision</div>
+    <div style="margin-left:auto; font-size:9px; color:#94A3B8;">SentinelAPI · Hackathon 2026 · Phases 1–10</div>
+  </div>
+
+</div>
+</body>
+</html>
